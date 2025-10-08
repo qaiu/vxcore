@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.19.11.xsd">
+    <jdbc>
+        <!-- H2 数据库配置（用于测试） -->
+        <driver>org.h2.Driver</driver>
+        <url>jdbc:h2:mem:testdb;MODE=MySQL;DATABASE_TO_UPPER=FALSE</url>
+        <user>sa</user>
+        <password></password>
+    </jdbc>
+
+    <generator>
+        <database>
+            <name>org.jooq.meta.h2.H2Database</name>
+            <includes>.*</includes>
+            <excludes></excludes>
+            <inputSchema>PUBLIC</inputSchema>
+            <properties>
+                <property>
+                    <key>useAutoincrement</key>
+                    <value>true</value>
+                </property>
+                <property>
+                    <key>useInformationSchema</key>
+                    <value>true</value>
+                </property>
+            </properties>
+        </database>
+
+        <generate>
+            <interfaces>true</interfaces>
+            <records>true</records>
+            <immutablePojos>true</immutablePojos>
+            <fluentSetters>true</fluentSetters>
+            <daos>true</daos>
+            <jpaAnnotations>false</jpaAnnotations>
+            <validationAnnotations>false</validationAnnotations>
+            <springAnnotations>false</springAnnotations>
+            <globalObjectReferences>false</globalObjectReferences>
+        </generate>
+
+        <target>
+            <packageName>cn.qaiu.db.schema</packageName>
+            <directory>target/generated-sources/jooq</directory>
+        </target>
+    </generator>
+</configuration>

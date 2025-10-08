@@ -1,0 +1,6 @@
+{
+  "jdbcUrl": "jdbc:h2:tcp://127.0.0.1:9092/./db/data_h2;MODE=MySQL;DATABASE_TO_LOWER=FALSE;DB_CLOSE_ON_EXIT=FALSE",
+  "user": "h2db",
+  "password": "123456",
+  "maxPoolSize": 5
+}
