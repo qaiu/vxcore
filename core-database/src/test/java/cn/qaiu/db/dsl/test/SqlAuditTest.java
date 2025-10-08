@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,9 +39,9 @@ public class SqlAuditTest {
         // 重置统计信息
         SqlAuditStatistics.resetStatistics();
         
-        // 创建数据库连接
+        // 创建数据库连接 - 使用测试特定的数据库名称避免冲突
         JsonObject config = new JsonObject()
-            .put("url", "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1")
+            .put("url", "jdbc:h2:mem:testdb_" + System.nanoTime() + ";DB_CLOSE_DELAY=-1")
             .put("driver_class", "org.h2.Driver")
             .put("max_pool_size", 30);
         
@@ -73,6 +74,26 @@ public class SqlAuditTest {
                 testContext.completeNow();
             })
             .onFailure(testContext::failNow);
+    }
+    
+    @AfterEach
+    void tearDown(VertxTestContext testContext) {
+        // 清理数据库表数据
+        if (pool != null) {
+            pool.query("DROP TABLE IF EXISTS dsl_user").execute()
+                .onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        LOGGER.info("Test database table dropped");
+                    } else {
+                        LOGGER.error("Failed to drop table", ar.cause());
+                    }
+                    // 关闭连接池
+                    pool.close();
+                    testContext.completeNow();
+                });
+        } else {
+            testContext.completeNow();
+        }
     }
     
     @Test
