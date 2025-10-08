@@ -71,8 +71,11 @@ public abstract class AbstractDao<T, ID> implements JooqDao<T, ID> {
         try {
             ID entityId = getId(entity);
             if (entityId == null) {
+                LOGGER.warn("Entity ID is null, cannot update");
                 return Future.failedFuture(new IllegalArgumentException("Entity ID cannot be null for update"));
             }
+
+            LOGGER.debug("Updating entity: ID={}, class={}", entityId, entityClass.getSimpleName());
 
             // 调用实体的onUpdate方法
             if (entity instanceof cn.qaiu.db.dsl.BaseEntity) {
@@ -80,16 +83,19 @@ public abstract class AbstractDao<T, ID> implements JooqDao<T, ID> {
             }
 
             JsonObject data = entityMapper.toJsonObject(entity);
+            LOGGER.debug("Entity data for update: {}", data.encode());
 
             Condition whereCondition = DSL.field(primaryKeyField).eq(entityId);
             Query updateQuery = dslBuilder.buildUpdate(tableName, data, whereCondition);
 
             return executor.executeUpdate(updateQuery)
                     .map(rowCount -> {
+                        LOGGER.debug("Update query affected {} rows", rowCount);
                         if (rowCount > 0) {
                             LOGGER.debug("Updated entity in table {} with ID: {}", tableName, entityId);
                             return Optional.of(entity);
                         } else {
+                            LOGGER.warn("No rows affected by update query for ID: {}", entityId);
                             return Optional.<T>empty();
                         }
                     });

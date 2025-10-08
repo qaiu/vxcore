@@ -80,10 +80,16 @@ public class UserDao extends AbstractDao<User, Long> {
                 .compose(userOptional -> {
                     if (userOptional.isPresent()) {
                         User user = userOptional.get();
+                        LOGGER.debug("Found user for update: ID={}, current password={}", user.getId(), user.getPassword());
                         user.setPassword(newPassword);
+                        LOGGER.debug("Set new password: {}", newPassword);
                         return update(user)
-                                .map(updatedUser -> updatedUser.isPresent());
+                                .map(updatedUser -> {
+                                    LOGGER.debug("Update result: {}", updatedUser.isPresent());
+                                    return updatedUser.isPresent();
+                                });
                     } else {
+                        LOGGER.warn("User not found for ID: {}", userId);
                         return Future.succeededFuture(false);
                     }
                 });

@@ -6,9 +6,12 @@ import cn.qaiu.db.dsl.example.UserDao;
 import cn.qaiu.db.dsl.example.User;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.sqlclient.PoolOptions;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,13 +42,15 @@ public class SqlAuditTest {
         // 重置统计信息
         SqlAuditStatistics.resetStatistics();
         
-        // 创建数据库连接 - 使用测试特定的数据库名称避免冲突
-        JsonObject config = new JsonObject()
-            .put("url", "jdbc:h2:mem:testdb_" + System.nanoTime() + ";DB_CLOSE_DELAY=-1")
-            .put("driver_class", "org.h2.Driver")
-            .put("max_pool_size", 30);
+        // 创建 H2 测试数据库连接 - 使用随机数据库名避免冲突
+        String dbName = "testdb_" + System.currentTimeMillis();
+        PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+        JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                .setJdbcUrl("jdbc:h2:mem:" + dbName + ";DB_CLOSE_DELAY=-1;MODE=MySQL")
+                .setUser("sa")
+                .setPassword("");
         
-        pool = JDBCPool.pool(vertx, config);
+        pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
         
         // 创建JooqExecutor和UserDao
         executor = new JooqExecutor(pool);
@@ -78,19 +83,14 @@ public class SqlAuditTest {
     
     @AfterEach
     void tearDown(VertxTestContext testContext) {
-        // 清理数据库表数据
-        if (pool != null) {
-            pool.query("DROP TABLE IF EXISTS dsl_user").execute()
-                .onComplete(ar -> {
-                    if (ar.succeeded()) {
-                        LOGGER.info("Test database table dropped");
-                    } else {
-                        LOGGER.error("Failed to drop table", ar.cause());
-                    }
-                    // 关闭连接池
-                    pool.close();
-                    testContext.completeNow();
-                });
+        if (executor != null) {
+            // 清理测试数据
+            executor.executeQuery(DSL.query("DELETE FROM dsl_user"))
+                    .onSuccess(v -> {
+                        LOGGER.debug("Test data cleaned up");
+                        testContext.completeNow();
+                    })
+                    .onFailure(testContext::failNow);
         } else {
             testContext.completeNow();
         }

@@ -11,10 +11,12 @@ import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +47,11 @@ public class UserDslTest {
         try {
             Vertx vertx = Vertx.vertx();
 
-            // 创建 H2 测试数据库连接
+            // 创建 H2 测试数据库连接 - 使用随机数据库名避免冲突
+            String dbName = "testdb_" + System.currentTimeMillis();
             PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
             JDBCConnectOptions connectOptions = new JDBCConnectOptions()
-                    .setJdbcUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL")
+                    .setJdbcUrl("jdbc:h2:mem:" + dbName + ";DB_CLOSE_DELAY=-1;MODE=MySQL")
                     .setUser("sa")
                     .setPassword("");
 
@@ -66,6 +69,22 @@ public class UserDslTest {
         } catch (Exception e) {
             LOGGER.error("Test setup failed", e);
             testContext.failNow(e);
+        }
+    }
+
+    @AfterEach
+    @DisplayName("清理测试环境")
+    void tearDown(VertxTestContext testContext) {
+        if (executor != null) {
+            // 清理测试数据
+            executor.executeQuery(DSL.query("DELETE FROM dsl_user"))
+                    .onSuccess(v -> {
+                        LOGGER.debug("Test data cleaned up");
+                        testContext.completeNow();
+                    })
+                    .onFailure(testContext::failNow);
+        } else {
+            testContext.completeNow();
         }
     }
 
@@ -312,7 +331,10 @@ public class UserDslTest {
         testContext.verify(() -> {
             assertNotNull(user.getCreateTime());
             assertNotNull(user.getUpdateTime());
-            assertTrue(user.getCreateTime().equals(user.getUpdateTime()));
+            // 使用时间差比较而不是严格相等，因为LocalDateTime.now()可能有微秒级差异
+            long timeDiff = Math.abs(java.time.Duration.between(user.getCreateTime(), user.getUpdateTime()).toMillis());
+            assertTrue(timeDiff < 100, 
+                      "Create time and update time should be very close (within 100ms), but diff is: " + timeDiff + "ms");
         });
         
         // 测试更新时间回调

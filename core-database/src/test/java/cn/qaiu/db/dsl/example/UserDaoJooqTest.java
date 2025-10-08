@@ -4,9 +4,10 @@ import cn.qaiu.db.dsl.core.JooqExecutor;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.jdbcclient.JDBCConnectOptions;
+import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,16 +39,15 @@ public class UserDaoJooqTest {
     void setUp() throws InterruptedException {
         vertx = Vertx.vertx();
         
-        // 配置 H2 内存数据库
-        SqlConnectOptions connectOptions = new SqlConnectOptions()
-                .setPort(8000)
-                .setHost("localhost")
-                .setDatabase("testdb")
-                .setUser("test")
-                .setPassword("test");
+        // 配置 H2 内存数据库 - 使用JDBC连接
+        String dbName = "testdb_" + System.currentTimeMillis();
+        JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                .setJdbcUrl("jdbc:h2:mem:" + dbName + ";DB_CLOSE_DELAY=-1;MODE=MySQL")
+                .setUser("sa")
+                .setPassword("");
 
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
-        pool = Pool.pool(vertx, connectOptions, poolOptions);
+        pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
         
         executor = new JooqExecutor(pool);
         userDao = new UserDao(executor);
