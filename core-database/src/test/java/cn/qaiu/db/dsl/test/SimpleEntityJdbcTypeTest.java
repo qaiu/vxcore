@@ -10,6 +10,7 @@ import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,22 +32,21 @@ public class SimpleEntityJdbcTypeTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleEntityJdbcTypeTest.class);
 
+    private JDBCPool pool;
     private JooqExecutor executor;
 
     @BeforeEach
     @DisplayName("初始化测试环境")
-    void setUp(VertxTestContext testContext) {
+    void setUp(Vertx vertx, VertxTestContext testContext) {
         try {
-            Vertx vertx = Vertx.vertx();
-
-            // 创建 H2 测试数据库连接
+            // 创建 H2 测试数据库连接 - 使用测试特定的数据库名称避免冲突
             PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
             JDBCConnectOptions connectOptions = new JDBCConnectOptions()
-                    .setJdbcUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
+                    .setJdbcUrl("jdbc:h2:mem:testdb_" + System.nanoTime() + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
                     .setUser("sa")
                     .setPassword("");
 
-            JDBCPool pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
+            pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
 
             // 创建表
             initTestDatabase(pool)
@@ -65,6 +65,27 @@ public class SimpleEntityJdbcTypeTest {
         } catch (Exception e) {
             LOGGER.error("Failed to setup test environment", e);
             testContext.failNow(e);
+        }
+    }
+    
+    @AfterEach
+    @DisplayName("清理测试环境")
+    void tearDown(VertxTestContext testContext) {
+        // 清理数据库表数据并关闭连接
+        if (pool != null) {
+            pool.query("DROP TABLE IF EXISTS test_simple").execute()
+                .onComplete(ar -> {
+                    if (ar.succeeded()) {
+                        LOGGER.info("Test database table dropped");
+                    } else {
+                        LOGGER.error("Failed to drop table", ar.cause());
+                    }
+                    // 关闭连接池
+                    pool.close();
+                    testContext.completeNow();
+                });
+        } else {
+            testContext.completeNow();
         }
     }
 
