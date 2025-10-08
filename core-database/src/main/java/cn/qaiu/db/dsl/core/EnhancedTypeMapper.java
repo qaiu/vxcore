@@ -336,6 +336,14 @@ public class EnhancedTypeMapper {
      */
     public static void removeTypeConverter(Class<?> targetType) {
         TYPE_CONVERTERS.remove(targetType);
+        
+        // 如果是String类型，恢复默认转换器
+        if (targetType == String.class) {
+            TYPE_CONVERTERS.put(String.class, obj -> {
+                if (obj == null) return null;
+                return obj.toString();
+            });
+        }
     }
     
     /**

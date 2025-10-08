@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 核心jOOQ执行器
@@ -77,6 +78,9 @@ public class JooqExecutor {
             LOGGER.debug("Executing SQL: {}", sql);
             LOGGER.debug("Bind values: {}", params);
 
+            // 手动触发SqlAuditListener
+            triggerSqlAuditListener(query, "SELECT");
+
             return pool.preparedQuery(sql).execute(params);
         } catch (Exception e) {
             LOGGER.error("Failed to execute query", e);
@@ -101,6 +105,9 @@ public class JooqExecutor {
             LOGGER.debug("Executing SQL: {}", sql);
             LOGGER.debug("Bind values: {}", params);
 
+            // 手动触发SqlAuditListener
+            triggerSqlAuditListener(query, "UPDATE");
+
             return pool.preparedQuery(sql)
                     .execute(params)
                     .map(RowSet::rowCount);
@@ -124,8 +131,11 @@ public class JooqExecutor {
                 params.addValue(value);
             }
 
-            LOGGER.debug("Executing INSERT: {}", sql);
+            LOGGER.debug("Executing SQL: {}", sql);
             LOGGER.debug("Bind values: {}", params);
+
+            // 手动触发SqlAuditListener
+            triggerSqlAuditListener(query, "INSERT");
 
             return pool.preparedQuery(sql)
                     .execute(params)
@@ -144,8 +154,38 @@ public class JooqExecutor {
     }
 
     /**
-     * 异步检测数据库类型
+     * 手动触发SqlAuditListener
      */
+    private void triggerSqlAuditListener(Query query, String operation) {
+        try {
+            // 创建模拟的ExecuteContext来触发SqlAuditListener
+            // 这里简化处理，实际应用中可能需要更复杂的实现
+            LOGGER.debug("Triggering SQL audit for operation: {}", operation);
+            
+            // 直接调用SqlAuditListener的静态方法来记录统计信息
+            String normalizedSql = normalizeSql(query.getSQL());
+            // 使用SqlAuditListener的公共方法来增加查询计数
+            SqlAuditListener.incrementQueryCount(normalizedSql);
+            
+        } catch (Exception e) {
+            LOGGER.warn("Failed to trigger SQL audit listener", e);
+        }
+    }
+    
+    /**
+     * 标准化SQL语句（用于统计）
+     */
+    private String normalizeSql(String sql) {
+        if (sql == null) return "";
+        
+        // 移除多余的空格和换行
+        String normalized = sql.replaceAll("\\s+", " ").trim();
+        
+        // 移除参数占位符，用于统计相同类型的查询
+        normalized = normalized.replaceAll("\\?", "?");
+        
+        return normalized;
+    }
     private void detectDatabaseTypeAsync() {
         pool.getConnection()
             .onSuccess(conn -> {

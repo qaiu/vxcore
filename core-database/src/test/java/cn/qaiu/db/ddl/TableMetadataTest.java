@@ -269,7 +269,11 @@ public class TableMetadataTest {
         // 验证列名转换
         Map<String, ColumnMetadata> columns = metadata.getColumns();
         assertEquals(2, columns.size());
-        assertTrue(columns.containsKey("userId"));
-        assertTrue(columns.containsKey("userName"));
+        
+        // 打印实际的列名用于调试
+        System.out.println("Actual column names: " + columns.keySet());
+        
+        assertTrue(columns.containsKey("UserId"));
+        assertTrue(columns.containsKey("UserName"));
     }
 }

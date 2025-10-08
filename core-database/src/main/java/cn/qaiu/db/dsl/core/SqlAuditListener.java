@@ -124,6 +124,13 @@ public class SqlAuditListener implements ExecuteListener {
     }
     
     /**
+     * 手动增加查询计数（用于测试或手动触发）
+     */
+    public static void incrementQueryCount(String normalizedSql) {
+        queryCounts.computeIfAbsent(normalizedSql, k -> new AtomicLong(0)).incrementAndGet();
+    }
+    
+    /**
      * 获取查询统计信息
      */
     public static QueryStatistics getQueryStatistics(String normalizedSql) {
