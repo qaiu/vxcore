@@ -171,7 +171,7 @@ mvn test -Dtest=*PostgreSQL*
 ## 联系方式
 
 - 作者: QAIU
-- 邮箱: qaiu@qaiu.top
+- 邮箱: qaiu@qq.com
 - 网站: https://qaiu.top
 - GitHub: https://github.com/qaiu
 
