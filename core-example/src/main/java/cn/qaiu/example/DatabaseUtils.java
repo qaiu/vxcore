@@ -25,7 +25,7 @@ public class DatabaseUtils {
         logger.info("创建H2内存数据库连接...");
         
         io.vertx.jdbcclient.JDBCConnectOptions connectOptions = new io.vertx.jdbcclient.JDBCConnectOptions()
-                .setJdbcUrl("jdbc:h2:mem:lambda_demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
+                .setJdbcUrl("jdbc:h2:mem:lambda_demo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE")
                 .setUser("sa")
                 .setPassword("");
         

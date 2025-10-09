@@ -3,9 +3,9 @@
     <jdbc>
         <!-- PostgreSQL Configuration -->
         <driver>org.postgresql.Driver</driver>
-        <url>jdbc:postgresql://ep-sweet-poetry-adzdzocn-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&amp;channel_binding=require</url>
-        <user>neondb_owner</user>
-        <password>npg_SP4cxkzXs9fA</password>
+        <url>jdbc:postgresql://your-postgres-host/your-database?sslmode=require&amp;channel_binding=require</url>
+        <user>your-username</user>
+        <password>your-password</password>
         
         <!-- MySQL Configuration (commented out) -->
         <!--

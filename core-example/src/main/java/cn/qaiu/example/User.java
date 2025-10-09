@@ -3,10 +3,7 @@ package cn.qaiu.example;
 import cn.qaiu.db.ddl.DdlColumn;
 import cn.qaiu.db.ddl.DdlTable;
 import cn.qaiu.db.dsl.BaseEntity;
-import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import io.vertx.codegen.format.SnakeCase;
-import io.vertx.sqlclient.templates.annotations.RowMapped;
 
 import java.math.BigDecimal;
 
@@ -18,8 +15,6 @@ import java.math.BigDecimal;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-@DataObject(generateConverter = true)
-@RowMapped(formatter = SnakeCase.class)
 @DdlTable(
     value = "dsl_user",              // 表名
     keyFields = "id",                // 主键字段

@@ -114,7 +114,7 @@ public class DefaultMapper<T> implements EntityMapper<T> {
                     Object value = field.get(entity);
 
                     if (value != null) {
-                        String jsonKey = snakeToCamelCase(columnName);
+                        String jsonKey = cn.qaiu.db.dsl.core.FieldNameConverter.toJavaFieldName(columnName);
                         json.put(jsonKey, convertToJsonValue(value));
                     }
                 }
@@ -183,21 +183,10 @@ public class DefaultMapper<T> implements EntityMapper<T> {
 
     /**
      * 获取字段对应的列名
+     * 默认使用下划线命名，符合数据库字段命名规范
      */
     private String getColumnName(java.lang.reflect.Field field) {
-        // 优先使用DDL注解
-        DdlColumn ddlColumn = field.getAnnotation(DdlColumn.class);
-        if (ddlColumn != null) {
-            // 优先使用value字段，如果为空则使用name字段
-            if (!ddlColumn.value().isEmpty()) {
-                return ddlColumn.value();
-            } else if (!ddlColumn.name().isEmpty()) {
-                return ddlColumn.name();
-            }
-        }
-
-        // 默认使用字段名的驼峰转下划线
-        return camelToSnakeCase(field.getName());
+        return cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(field);
     }
 
     /**
@@ -271,53 +260,4 @@ public class DefaultMapper<T> implements EntityMapper<T> {
         return value;
     }
 
-    /**
-     * camelCase转snake_case
-     */
-    private String camelToSnakeCase(String camelCase) {
-        if (camelCase == null || camelCase.isEmpty()) {
-            return camelCase;
-        }
-
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < camelCase.length(); i++) {
-            char c = camelCase.charAt(i);
-            if (Character.isUpperCase(c)) {
-                if (i > 0) {
-                    result.append('_');
-                }
-                result.append(Character.toLowerCase(c));
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
-
-    /**
-     * snake_case转camelCase
-     */
-    private String snakeToCamelCase(String snakeCase) {
-        if (snakeCase == null || snakeCase.isEmpty()) {
-            return snakeCase;
-        }
-
-        StringBuilder result = new StringBuilder();
-        boolean capitalizeNext = false;
-
-        for (char c : snakeCase.toCharArray()) {
-            if (c == '_') {
-                capitalizeNext = true;
-            } else {
-                if (capitalizeNext) {
-                    result.append(Character.toUpperCase(c));
-                    capitalizeNext = false;
-                } else {
-                    result.append(c);
-                }
-            }
-        }
-
-        return result.toString();
-    }
 }

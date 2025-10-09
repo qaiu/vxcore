@@ -1,6 +1,5 @@
 package cn.qaiu.db.dsl.lambda;
 
-import io.vertx.core.Future;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 
@@ -44,7 +43,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> eq(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).eq(value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).eq(dbValue));
         }
         return this;
     }
@@ -54,7 +55,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> ne(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).ne(value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).ne(dbValue));
         }
         return this;
     }
@@ -64,7 +67,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> gt(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).gt(value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).gt(dbValue));
         }
         return this;
     }
@@ -74,7 +79,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> ge(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).ge(value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).ge(dbValue));
         }
         return this;
     }
@@ -84,7 +91,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> lt(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).lt(value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).lt(dbValue));
         }
         return this;
     }
@@ -94,7 +103,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> le(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).le(value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).le(dbValue));
         }
         return this;
     }
@@ -104,7 +115,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> like(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).like("%" + value + "%"));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).like("%" + dbValue + "%"));
         }
         return this;
     }
@@ -114,7 +127,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> likeLeft(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).like("%" + value));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).like("%" + dbValue));
         }
         return this;
     }
@@ -124,7 +139,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> likeRight(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).like(value + "%"));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).like(dbValue + "%"));
         }
         return this;
     }
@@ -134,7 +151,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> notLike(SFunction<T, R> column, R value) {
         if (value != null) {
-            conditions.add(getField(column).notLike("%" + value + "%"));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue = convertValueForDatabase(value);
+            conditions.add(DSL.field(fieldName).notLike("%" + dbValue + "%"));
         }
         return this;
     }
@@ -144,7 +163,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> in(SFunction<T, R> column, Collection<R> values) {
         if (values != null && !values.isEmpty()) {
-            conditions.add(getField(column).in(values));
+            String fieldName = getDatabaseFieldName(column);
+            Object[] dbValues = values.stream().map(this::convertValueForDatabase).toArray();
+            conditions.add(DSL.field(fieldName).in(dbValues));
         }
         return this;
     }
@@ -155,7 +176,9 @@ public class LambdaQueryWrapper<T> {
     @SafeVarargs
     public final <R> LambdaQueryWrapper<T> in(SFunction<T, R> column, R... values) {
         if (values != null && values.length > 0) {
-            conditions.add(getField(column).in(values));
+            String fieldName = getDatabaseFieldName(column);
+            Object[] dbValues = java.util.Arrays.stream(values).map(this::convertValueForDatabase).toArray();
+            conditions.add(DSL.field(fieldName).in(dbValues));
         }
         return this;
     }
@@ -165,7 +188,9 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> notIn(SFunction<T, R> column, Collection<R> values) {
         if (values != null && !values.isEmpty()) {
-            conditions.add(getField(column).notIn(values));
+            String fieldName = getDatabaseFieldName(column);
+            Object[] dbValues = values.stream().map(this::convertValueForDatabase).toArray();
+            conditions.add(DSL.field(fieldName).notIn(dbValues));
         }
         return this;
     }
@@ -174,7 +199,8 @@ public class LambdaQueryWrapper<T> {
      * 为空条件
      */
     public <R> LambdaQueryWrapper<T> isNull(SFunction<T, R> column) {
-        conditions.add(getField(column).isNull());
+        String fieldName = getDatabaseFieldName(column);
+        conditions.add(DSL.field(fieldName).isNull());
         return this;
     }
     
@@ -182,7 +208,8 @@ public class LambdaQueryWrapper<T> {
      * 不为空条件
      */
     public <R> LambdaQueryWrapper<T> isNotNull(SFunction<T, R> column) {
-        conditions.add(getField(column).isNotNull());
+        String fieldName = getDatabaseFieldName(column);
+        conditions.add(DSL.field(fieldName).isNotNull());
         return this;
     }
     
@@ -191,7 +218,10 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> between(SFunction<T, R> column, R value1, R value2) {
         if (value1 != null && value2 != null) {
-            conditions.add(getField(column).between(value1, value2));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue1 = convertValueForDatabase(value1);
+            Object dbValue2 = convertValueForDatabase(value2);
+            conditions.add(DSL.field(fieldName).between(dbValue1, dbValue2));
         }
         return this;
     }
@@ -201,7 +231,10 @@ public class LambdaQueryWrapper<T> {
      */
     public <R> LambdaQueryWrapper<T> notBetween(SFunction<T, R> column, R value1, R value2) {
         if (value1 != null && value2 != null) {
-            conditions.add(getField(column).notBetween(value1, value2));
+            String fieldName = getDatabaseFieldName(column);
+            Object dbValue1 = convertValueForDatabase(value1);
+            Object dbValue2 = convertValueForDatabase(value2);
+            conditions.add(DSL.field(fieldName).notBetween(dbValue1, dbValue2));
         }
         return this;
     }
@@ -236,7 +269,8 @@ public class LambdaQueryWrapper<T> {
      * 升序排序
      */
     public <R> LambdaQueryWrapper<T> orderByAsc(SFunction<T, R> column) {
-        orderByFields.add(getField(column).asc());
+        String fieldName = getDatabaseFieldName(column);
+        orderByFields.add(DSL.field(fieldName).asc());
         return this;
     }
     
@@ -244,7 +278,8 @@ public class LambdaQueryWrapper<T> {
      * 降序排序
      */
     public <R> LambdaQueryWrapper<T> orderByDesc(SFunction<T, R> column) {
-        orderByFields.add(getField(column).desc());
+        String fieldName = getDatabaseFieldName(column);
+        orderByFields.add(DSL.field(fieldName).desc());
         return this;
     }
     
@@ -273,7 +308,10 @@ public class LambdaQueryWrapper<T> {
      */
     @SafeVarargs
     public final <R> LambdaQueryWrapper<T> select(SFunction<T, R>... columns) {
-        Arrays.stream(columns).forEach(column -> selectFields.add(getField(column)));
+        Arrays.stream(columns).forEach(column -> {
+            String fieldName = getDatabaseFieldName(column);
+            selectFields.add(DSL.field(fieldName));
+        });
         return this;
     }
     
@@ -329,15 +367,25 @@ public class LambdaQueryWrapper<T> {
         }
         
         if (!orderByFields.isEmpty()) {
-            query = ((SelectConditionStep<?>) query).orderBy(orderByFields);
+            if (query instanceof SelectConditionStep) {
+                query = ((SelectConditionStep<?>) query).orderBy(orderByFields);
+            }
         }
         
         if (limitCount != null) {
-            query = ((SelectOrderByStep<?>) query).limit(limitCount);
+            if (query instanceof SelectOrderByStep) {
+                query = ((SelectOrderByStep<?>) query).limit(limitCount);
+            } else if (query instanceof SelectConditionStep) {
+                query = ((SelectConditionStep<?>) query).limit(limitCount);
+            }
         }
         
         if (offsetCount != null) {
-            query = ((SelectLimitStep<?>) query).offset(offsetCount);
+            if (query instanceof SelectLimitStep) {
+                query = ((SelectLimitStep<?>) query).offset(offsetCount);
+            } else if (query instanceof SelectOrderByStep) {
+                query = ((SelectOrderByStep<?>) query).limit(limitCount != null ? limitCount : Long.MAX_VALUE).offset(offsetCount);
+            }
         }
         
         return query;
@@ -360,11 +408,45 @@ public class LambdaQueryWrapper<T> {
     // =================== 工具方法 ===================
     
     /**
-     * 从Lambda表达式获取字段名
+     * 获取数据库字段名（处理驼峰转下划线）
+     * 默认使用下划线命名，符合数据库字段命名规范
      */
-    private <R> Field<R> getField(SFunction<T, R> column) {
-        String fieldName = LambdaUtils.getFieldName(column);
-        return DSL.field(fieldName, LambdaUtils.getFieldType(column));
+    private <R> String getDatabaseFieldName(SFunction<T, R> column) {
+        String javaFieldName = LambdaUtils.getFieldName(column);
+        
+        // 通过反射获取实体类字段的@DdlColumn注解（包括父类字段）
+        java.lang.reflect.Field field = getFieldFromClassHierarchy(entityClass, javaFieldName);
+        if (field != null) {
+            cn.qaiu.db.ddl.DdlColumn ddlColumn = field.getAnnotation(cn.qaiu.db.ddl.DdlColumn.class);
+            if (ddlColumn != null) {
+                // 优先使用value字段，如果为空则使用name字段
+                if (!ddlColumn.value().isEmpty()) {
+                    return ddlColumn.value();
+                } else if (!ddlColumn.name().isEmpty()) {
+                    return ddlColumn.name();
+                }
+            }
+        }
+        
+        // 默认使用驼峰转下划线（符合数据库字段命名规范）
+        return cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(javaFieldName);
+    }
+    
+    /**
+     * 从类层次结构中获取字段（包括父类）
+     */
+    private java.lang.reflect.Field getFieldFromClassHierarchy(Class<?> clazz, String fieldName) {
+        Class<?> currentClass = clazz;
+        while (currentClass != null && currentClass != Object.class) {
+            try {
+                java.lang.reflect.Field field = currentClass.getDeclaredField(fieldName);
+                return field;
+            } catch (NoSuchFieldException e) {
+                // 继续在父类中查找
+            }
+            currentClass = currentClass.getSuperclass();
+        }
+        return null;
     }
     
     /**
@@ -391,5 +473,15 @@ public class LambdaQueryWrapper<T> {
      */
     public Class<T> getEntityClass() {
         return entityClass;
+    }
+    
+    /**
+     * 将值转换为数据库兼容的值
+     */
+    private Object convertValueForDatabase(Object value) {
+        if (value instanceof Enum) {
+            return ((Enum<?>) value).name();
+        }
+        return value;
     }
 }

@@ -60,6 +60,9 @@ generated-test-sources/
 **/application-*.properties
 **/database.properties
 **/db.properties
+**/jooq-codegen-local.xml
+**/jooq-codegen-*.xml
+!**/jooq-codegen.xml
 
 # Environment files
 .env

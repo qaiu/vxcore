@@ -30,7 +30,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
      * 创建Lambda查询包装器
      */
     public LambdaQueryWrapper<T> lambdaQuery() {
-        Table<?> table = DSL.table(DSL.name(tableName));
+        Table<?> table = DSL.table(tableName);
         return new LambdaQueryWrapper<>(executor.dsl(), table, entityClass);
     }
     
@@ -135,6 +135,10 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
         // 移除主键字段，避免更新主键
         updateData.remove(primaryKeyField);
         
+        // 移除时间字段，避免时间格式解析问题
+        updateData.remove("createTime");
+        updateData.remove("updateTime");
+        
         UpdateSetFirstStep<?> update = executor.dsl()
                 .update(DSL.table(DSL.name(tableName)));
         
@@ -142,10 +146,12 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
         for (String field : updateData.fieldNames()) {
             Object value = updateData.getValue(field);
             if (value != null) {
+                // 将Java字段名转换为数据库字段名
+                String dbFieldName = cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(field);
                 if (setStep == null) {
-                    setStep = update.set(DSL.field(DSL.name(field)), value);
+                    setStep = update.set(DSL.field(DSL.name(dbFieldName)), value);
                 } else {
-                    setStep = setStep.set(DSL.field(DSL.name(field)), value);
+                    setStep = setStep.set(DSL.field(DSL.name(dbFieldName)), value);
                 }
             }
         }

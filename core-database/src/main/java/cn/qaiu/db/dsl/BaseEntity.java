@@ -26,8 +26,13 @@ public abstract class BaseEntity implements Serializable {
     /**
      * 所有实体基础字段
      */
+    @cn.qaiu.db.ddl.DdlColumn(value = "id", type = "BIGINT", nullable = false, autoIncrement = true, comment = "主键ID")
     protected Long id;
+    
+    @cn.qaiu.db.ddl.DdlColumn(value = "create_time", type = "TIMESTAMP", nullable = false, defaultValue = "CURRENT_TIMESTAMP", comment = "创建时间")
     protected LocalDateTime createTime;
+    
+    @cn.qaiu.db.ddl.DdlColumn(value = "update_time", type = "TIMESTAMP", nullable = false, defaultValue = "CURRENT_TIMESTAMP", comment = "更新时间")
     protected LocalDateTime updateTime;
     
     /**

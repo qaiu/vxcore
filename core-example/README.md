@@ -71,11 +71,11 @@ mvn exec:java -Dexec.mainClass="cn.qaiu.example.ExampleRunner" -Dexec.args="h2"
 当前配置使用Neon PostgreSQL数据库：
 
 ```properties
-postgresql.host=ep-sweet-poetry-adzdzocn-pooler.c-2.us-east-1.aws.neon.tech
+postgresql.host=your-postgres-host
 postgresql.port=5432
-postgresql.database=neondb
-postgresql.user=neondb_owner
-postgresql.password=npg_SP4cxkzXs9fA
+postgresql.database=your-database
+postgresql.user=your-username
+postgresql.password=your-password
 postgresql.sslmode=require
 postgresql.channel_binding=require
 ```

@@ -28,13 +28,15 @@ public class LambdaUtils {
                 SerializedLambda serializedLambda = (SerializedLambda) method.invoke(column);
                 String methodName = serializedLambda.getImplMethodName();
                 
-                // 处理getter方法名
+                // 处理getter方法名，返回Java字段名（驼峰格式）
                 if (methodName.startsWith("get")) {
-                    return toSnakeCase(methodName.substring(3));
+                    String fieldName = methodName.substring(3);
+                    return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
                 } else if (methodName.startsWith("is")) {
-                    return toSnakeCase(methodName.substring(2));
+                    String fieldName = methodName.substring(2);
+                    return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
                 } else {
-                    return toSnakeCase(methodName);
+                    return methodName;
                 }
             } catch (Exception e) {
                 throw new RuntimeException("Failed to extract field name from lambda expression", e);
@@ -81,54 +83,6 @@ public class LambdaUtils {
         return type;
     }
     
-    /**
-     * 将驼峰命名转换为下划线命名
-     */
-    private static String toSnakeCase(String camelCase) {
-        if (camelCase == null || camelCase.isEmpty()) {
-            return camelCase;
-        }
-        
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < camelCase.length(); i++) {
-            char c = camelCase.charAt(i);
-            if (Character.isUpperCase(c)) {
-                if (i > 0) {
-                    result.append('_');
-                }
-                result.append(Character.toLowerCase(c));
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
-    
-    /**
-     * 将下划线命名转换为驼峰命名
-     */
-    public static String toCamelCase(String snakeCase) {
-        if (snakeCase == null || snakeCase.isEmpty()) {
-            return snakeCase;
-        }
-        
-        StringBuilder result = new StringBuilder();
-        boolean capitalizeNext = false;
-        
-        for (char c : snakeCase.toCharArray()) {
-            if (c == '_') {
-                capitalizeNext = true;
-            } else {
-                if (capitalizeNext) {
-                    result.append(Character.toUpperCase(c));
-                    capitalizeNext = false;
-                } else {
-                    result.append(c);
-                }
-            }
-        }
-        return result.toString();
-    }
     
     /**
      * 清空缓存

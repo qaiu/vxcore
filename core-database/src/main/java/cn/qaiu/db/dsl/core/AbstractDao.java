@@ -49,7 +49,7 @@ public abstract class AbstractDao<T, ID> implements JooqDao<T, ID> {
             JsonObject data = entityMapper.toJsonObject(entity);
 
             // 移除主键字段（插入时通常由数据库自动生成）
-            data.remove(dslBuilder.camelToSnakeCase(primaryKeyField));
+            data.remove(cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(primaryKeyField));
 
             Query insertQuery = dslBuilder.buildInsert(tableName, data);
 

@@ -16,6 +16,9 @@ import org.jooq.impl.DefaultConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// 动态导入PostgreSQL和MySQL客户端类
+import java.lang.reflect.Method;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,11 +40,25 @@ public class JooqExecutor {
         
         // 创建带SQL审计监听器的配置
         Configuration configuration = new DefaultConfiguration();
-        configuration.set(SQLDialect.H2); // 默认使用H2方言
-        configuration.set(new SqlAuditListener()); // 添加SQL审计监听器
         
+        // 根据Pool类型设置默认方言
+        String poolClassName = pool.getClass().getName();
+        if (poolClassName.contains("PgPool")) {
+            configuration.set(SQLDialect.POSTGRES);
+            this.databaseType = JDBCType.PostgreSQL;
+            LOGGER.info("Detected database type: PostgreSQL, DSL context will use PostgreSQL dialect");
+        } else if (poolClassName.contains("MySQLPool")) {
+            configuration.set(SQLDialect.MYSQL);
+            this.databaseType = JDBCType.MySQL;
+            LOGGER.info("Detected database type: MySQL, DSL context will use MySQL dialect");
+        } else {
+            configuration.set(SQLDialect.H2); // 默认使用H2方言
+            this.databaseType = JDBCType.H2DB;
+            LOGGER.info("Detected database type: H2DB, DSL context will use H2 dialect for compatibility");
+        }
+        
+        configuration.set(new SqlAuditListener()); // 添加SQL审计监听器
         this.dslContext = DSL.using(configuration);
-        this.databaseType = JDBCType.H2DB; // 默认使用H2
         
         // 异步检测数据库类型并更新DSLContext
         detectDatabaseTypeAsync();
@@ -69,19 +86,47 @@ public class JooqExecutor {
             String sql = query.getSQL();
             List<Object> bindValues = query.getBindValues();
             
-            // 使用更安全的方式创建 Tuple
-            Tuple params = Tuple.tuple();
-            for (Object value : bindValues) {
-                params.addValue(value);
+            // 对于PostgreSQL，使用直接SQL查询而不是参数化查询
+            if (databaseType == JDBCType.PostgreSQL) {
+                // 手动替换参数占位符
+                String finalSql = sql;
+                for (Object value : bindValues) {
+                    String paramValue;
+                    if (value == null) {
+                        paramValue = "NULL";
+                    } else if (value instanceof String) {
+                        paramValue = "'" + value.toString().replace("'", "''") + "'";
+                    } else if (value instanceof Number) {
+                        paramValue = value.toString();
+                    } else if (value instanceof Boolean) {
+                        paramValue = ((Boolean) value) ? "true" : "false";
+                    } else {
+                        paramValue = "'" + value.toString().replace("'", "''") + "'";
+                    }
+                    finalSql = finalSql.replaceFirst("\\?", paramValue);
+                }
+                
+                LOGGER.debug("Executing direct SQL: {}", finalSql);
+                
+                // 手动触发SqlAuditListener
+                triggerSqlAuditListener(query, "SELECT");
+                
+                return pool.query(finalSql).execute();
+            } else {
+                // 对于其他数据库，使用参数化查询
+                Tuple params = Tuple.tuple();
+                for (Object value : bindValues) {
+                    params.addValue(value);
+                }
+
+                LOGGER.debug("Executing SQL: {}", sql);
+                LOGGER.debug("Bind values: {}", params);
+
+                // 手动触发SqlAuditListener
+                triggerSqlAuditListener(query, "SELECT");
+
+                return pool.preparedQuery(sql).execute(params);
             }
-
-            LOGGER.debug("Executing SQL: {}", sql);
-            LOGGER.debug("Bind values: {}", params);
-
-            // 手动触发SqlAuditListener
-            triggerSqlAuditListener(query, "SELECT");
-
-            return pool.preparedQuery(sql).execute(params);
         } catch (Exception e) {
             LOGGER.error("Failed to execute query", e);
             return Future.failedFuture(e);
@@ -96,21 +141,49 @@ public class JooqExecutor {
             String sql = query.getSQL();
             List<Object> bindValues = query.getBindValues();
             
-            // 使用更安全的方式创建 Tuple
-            Tuple params = Tuple.tuple();
-            for (Object value : bindValues) {
-                params.addValue(value);
+            // 对于PostgreSQL，使用直接SQL查询而不是参数化查询
+            if (databaseType == JDBCType.PostgreSQL) {
+                // 手动替换参数占位符
+                String finalSql = sql;
+                for (Object value : bindValues) {
+                    String paramValue;
+                    if (value == null) {
+                        paramValue = "NULL";
+                    } else if (value instanceof String) {
+                        paramValue = "'" + value.toString().replace("'", "''") + "'";
+                    } else if (value instanceof Number) {
+                        paramValue = value.toString();
+                    } else if (value instanceof Boolean) {
+                        paramValue = ((Boolean) value) ? "true" : "false";
+                    } else {
+                        paramValue = "'" + value.toString().replace("'", "''") + "'";
+                    }
+                    finalSql = finalSql.replaceFirst("\\?", paramValue);
+                }
+                
+                LOGGER.debug("Executing direct SQL: {}", finalSql);
+                
+                // 手动触发SqlAuditListener
+                triggerSqlAuditListener(query, "UPDATE");
+                
+                return pool.query(finalSql).execute().map(RowSet::rowCount);
+            } else {
+                // 对于其他数据库，使用参数化查询
+                Tuple params = Tuple.tuple();
+                for (Object value : bindValues) {
+                    params.addValue(value);
+                }
+
+                LOGGER.debug("Executing SQL: {}", sql);
+                LOGGER.debug("Bind values: {}", params);
+
+                // 手动触发SqlAuditListener
+                triggerSqlAuditListener(query, "UPDATE");
+
+                return pool.preparedQuery(sql)
+                        .execute(params)
+                        .map(RowSet::rowCount);
             }
-
-            LOGGER.debug("Executing SQL: {}", sql);
-            LOGGER.debug("Bind values: {}", params);
-
-            // 手动触发SqlAuditListener
-            triggerSqlAuditListener(query, "UPDATE");
-
-            return pool.preparedQuery(sql)
-                    .execute(params)
-                    .map(RowSet::rowCount);
         } catch (Exception e) {
             LOGGER.error("Failed to execute update", e);
             return Future.failedFuture(e);

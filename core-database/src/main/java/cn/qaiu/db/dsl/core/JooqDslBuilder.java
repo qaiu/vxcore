@@ -113,7 +113,7 @@ public class JooqDslBuilder {
             if (!"id".equals(key) && !"create_time".equals(key)) {
                 Object value = convertJsonValue(data.getValue(key));
                 if (value != null) {
-                    String fieldName = camelToSnakeCase(key);
+                    String fieldName = cn.qaiu.vx.core.util.StringCase.toUnderlineCase(key);
                     setClauses.add(fieldName + " = ?");
                     values.add(value);
                 }
@@ -189,7 +189,7 @@ public class JooqDslBuilder {
         
         // 添加排序
         if (orderBy != null && !orderBy.isEmpty()) {
-            String orderField = camelToSnakeCase(orderBy);
+            String orderField = cn.qaiu.vx.core.util.StringCase.toUnderlineCase(orderBy);
             sql.append(" ORDER BY ").append(orderField);
             sql.append(ascending ? " ASC" : " DESC");
         }
@@ -214,7 +214,7 @@ public class JooqDslBuilder {
         
         // 收集字段
         for (String key : firstData.fieldNames()) {
-            columns.add(camelToSnakeCase(key));
+            columns.add(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(key));
         }
         
         // 添加时间戳字段
@@ -266,7 +266,7 @@ public class JooqDslBuilder {
      * 构建 IN 查询条件
      */
     public Condition buildInCondition(String fieldName, List<?> values) {
-        Field<Object> field = DSL.field(camelToSnakeCase(fieldName));
+        Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
         return field.in(values.toArray());
     }
 
@@ -274,7 +274,7 @@ public class JooqDslBuilder {
      * 构建 LIKE 查询条件
      */
     public Condition buildLikeCondition(String fieldName, String pattern) {
-        Field<String> field = DSL.field(camelToSnakeCase(fieldName), String.class);
+        Field<String> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName), String.class);
         return field.like(pattern);
     }
 
@@ -282,7 +282,7 @@ public class JooqDslBuilder {
      * 构建 BETWEEN 查询条件
      */
     public Condition buildBetweenCondition(String fieldName, Object minValue, Object maxValue) {
-        Field<Object> field = DSL.field(camelToSnakeCase(fieldName));
+        Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
         return field.between(minValue, maxValue);
     }
 
@@ -290,7 +290,7 @@ public class JooqDslBuilder {
      * 构建比较查询条件
      */
     public Condition buildComparisonCondition(String fieldName, String operator, Object value) {
-        Field<Object> field = DSL.field(camelToSnakeCase(fieldName));
+        Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
         
         switch (operator.toUpperCase()) {
             case "EQ":
@@ -349,7 +349,8 @@ public class JooqDslBuilder {
             return ddlTable.value();
         }
         
-        return camelToSnakeCase(entityClass.getSimpleName());
+        // 默认使用类名的驼峰转下划线（符合数据库表命名规范）
+        return cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseTableName(entityClass.getSimpleName());
     }
 
     /**
@@ -380,28 +381,6 @@ public class JooqDslBuilder {
         return condition.toString();
     }
 
-    /**
-     * camelCase 转 snake_case
-     */
-    public String camelToSnakeCase(String camelCase) {
-        if (camelCase == null || camelCase.isEmpty()) {
-            return camelCase;
-        }
-
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < camelCase.length(); i++) {
-            char c = camelCase.charAt(i);
-            if (Character.isUpperCase(c)) {
-                if (i > 0) {
-                    result.append('_');
-                }
-                result.append(Character.toLowerCase(c));
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
-    }
 
     /**
      * 获取 DSLContext

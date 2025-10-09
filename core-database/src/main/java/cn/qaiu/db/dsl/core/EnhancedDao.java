@@ -562,7 +562,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
             }
 
             JsonObject data = entityMapper.toJsonObject(entity);
-            data.remove(dslBuilder.camelToSnakeCase(primaryKeyField));
+            data.remove(cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(primaryKeyField));
 
             Query insertQuery = dslBuilder.buildInsert(tableName, data);
 
