@@ -15,10 +15,16 @@ import java.lang.annotation.*;
 public @interface DdlColumn {
 
     /**
-     * 列名
+     * 列名（value的别名）
      * @return 列名，为空时使用字段名转下划线
      */
     String name() default "";
+
+    /**
+     * 列名（name的别名，提供更简洁的使用方式）
+     * @return 列名，为空时使用字段名转下划线
+     */
+    String value() default "";
 
     /**
      * SQL数据类型

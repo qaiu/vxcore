@@ -187,8 +187,13 @@ public class DefaultMapper<T> implements EntityMapper<T> {
     private String getColumnName(java.lang.reflect.Field field) {
         // 优先使用DDL注解
         DdlColumn ddlColumn = field.getAnnotation(DdlColumn.class);
-        if (ddlColumn != null && !ddlColumn.name().isEmpty()) {
-            return ddlColumn.name();
+        if (ddlColumn != null) {
+            // 优先使用value字段，如果为空则使用name字段
+            if (!ddlColumn.value().isEmpty()) {
+                return ddlColumn.value();
+            } else if (!ddlColumn.name().isEmpty()) {
+                return ddlColumn.name();
+            }
         }
 
         // 默认使用字段名的驼峰转下划线

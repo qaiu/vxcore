@@ -1,0 +1,15 @@
+{
+  "codegen": {
+    "generators": [
+      {
+        "name": "data_object",
+        "includes": [
+          "cn.qaiu.example.*"
+        ],
+        "excludes": [
+          "cn.qaiu.example.generated.*"
+        ]
+      }
+    ]
+  }
+}

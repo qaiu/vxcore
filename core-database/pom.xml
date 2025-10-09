@@ -139,26 +139,6 @@
 
     <build>
         <plugins>
-            <!-- Build Helper Plugin to include examples directory -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.4.0</version>
-                <executions>
-                    <execution>
-                        <id>add-examples-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>examples</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             
             <!-- Maven Surefire Plugin for running tests -->
             <plugin>

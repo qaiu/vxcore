@@ -2,22 +2,10 @@ package cn.qaiu.db.ddl.example;
 
 import cn.qaiu.db.ddl.EnhancedCreateTable;
 import cn.qaiu.db.pool.JDBCType;
-import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.SharedData;
-import io.vertx.jdbcclient.JDBCConnectOptions;
-import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
-
-import static cn.qaiu.vx.core.util.ConfigConstant.*;
 
 /**
  * DDL映射使用示例

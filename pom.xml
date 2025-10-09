@@ -15,6 +15,7 @@
     <modules>
         <module>core</module>
         <module>core-database</module>
+        <module>core-example</module>
     </modules>
 
     <properties>
@@ -55,6 +56,12 @@
             <dependency>
                 <groupId>cn.qaiu</groupId>
                 <artifactId>core-database</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.qaiu</groupId>
+                <artifactId>core-example</artifactId>
                 <version>${revision}</version>
             </dependency>
 

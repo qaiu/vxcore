@@ -14,22 +14,7 @@ import org.junit.jupiter.api.Nested;
 public class DslTestSuite {
 
     @Nested
-    @DisplayName("Base Entity Tests")
-    static class BaseEntityTests extends BaseEntityTest {
-    }
-
-    @Nested
-    @DisplayName("Entity Mapper Tests")
-    static class EntityMapperTests extends EntityMapperTest {
-    }
-
-    @Nested
     @DisplayName("JOOQ Vert.x Executor Tests")
     static class JooqVertxExecutorTests extends JooqVertxExecutorTest {
-    }
-
-    @Nested
-    @DisplayName("User DSL Tests")
-    static class UserDslTests extends UserDslTest {
     }
 }

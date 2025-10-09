@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://www.jooq.org/xsd/jooq-codegen-3.19.0.xsd">
+    <jdbc>
+        <!-- PostgreSQL Configuration -->
+        <driver>org.postgresql.Driver</driver>
+        <url>jdbc:postgresql://ep-sweet-poetry-adzdzocn-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&amp;channel_binding=require</url>
+        <user>neondb_owner</user>
+        <password>npg_SP4cxkzXs9fA</password>
+        
+        <!-- MySQL Configuration (commented out) -->
+        <!--
+        <driver>com.mysql.cj.jdbc.Driver</driver>
+        <url>jdbc:mysql://localhost:3306/vxcore_example?useSSL=false&amp;serverTimezone=UTC</url>
+        <user>root</user>
+        <password>password</password>
+        -->
+        
+        <!-- H2 Configuration (commented out) -->
+        <!--
+        <driver>org.h2.Driver</driver>
+        <url>jdbc:h2:mem:vxcore_example;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</url>
+        <user>sa</user>
+        <password></password>
+        -->
+    </jdbc>
+
+    <generator>
+        <database>
+            <name>org.jooq.meta.extensions.ddl.DDLDatabase</name>
+            <includes>.*</includes>
+            <excludes></excludes>
+            <inputSchema>public</inputSchema>
+            <outputSchemaToDefault>true</outputSchemaToDefault>
+            
+            <!-- Custom schema mapping -->
+            <schemata>
+                <schema>
+                    <inputSchema>public</inputSchema>
+                    <outputSchema>public</outputSchema>
+                </schema>
+            </schemata>
+            
+            <!-- Table and column naming strategies -->
+            <forcedTypes>
+                <forcedType>
+                    <name>BOOLEAN</name>
+                    <expression>.*\.(is_|has_|can_).*</expression>
+                </forcedType>
+                <forcedType>
+                    <name>LOCALDATETIME</name>
+                    <expression>.*\.(created_at|updated_at|deleted_at).*</expression>
+                </forcedType>
+                <forcedType>
+                    <name>LOCALDATE</name>
+                    <expression>.*\.(date|birth_date).*</expression>
+                </forcedType>
+            </forcedTypes>
+        </database>
+
+        <target>
+            <packageName>cn.qaiu.example.generated</packageName>
+            <directory>src/main/java</directory>
+            <clean>true</clean>
+            <encoding>UTF-8</encoding>
+        </target>
+
+        <generate>
+            <!-- Generate POJOs -->
+            <pojos>true</pojos>
+            <pojosEqualsAndHashCode>true</pojosEqualsAndHashCode>
+            <pojosToString>true</pojosToString>
+            
+            <!-- Generate DAOs -->
+            <daos>true</daos>
+            
+            <!-- Generate Records -->
+            <records>true</records>
+            
+            <!-- Generate Interfaces -->
+            <interfaces>true</interfaces>
+            
+            <!-- Generate Immutables -->
+            <immutables>false</immutables>
+            
+            <!-- Generate Kotlin extensions -->
+            <kotlinNotNullRecordAttributes>true</kotlinNotNullRecordAttributes>
+            <kotlinNotNullPojoAttributes>true</kotlinNotNullPojoAttributes>
+            <kotlinNotNullInterfaceAttributes>true</kotlinNotNullInterfaceAttributes>
+            
+            <!-- Generate Java 8+ features -->
+            <javaTimeTypes>true</javaTimeTypes>
+            <fluentSetters>true</fluentSetters>
+            
+            <!-- Generate Vert.x compatible code -->
+            <generatedAnnotation>true</generatedAnnotation>
+            <generatedAnnotationType>JAVAX_ANNOTATION_GENERATED</generatedAnnotationType>
+        </generate>
+    </generator>
+</configuration>

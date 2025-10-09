@@ -107,7 +107,10 @@ public class ColumnMetadata {
         // 处理DdlColumn注解
         if (field.isAnnotationPresent(DdlColumn.class)) {
             DdlColumn ddlColumn = field.getAnnotation(DdlColumn.class);
-            if (!ddlColumn.name().isEmpty()) {
+            // 优先使用value字段，如果为空则使用name字段
+            if (!ddlColumn.value().isEmpty()) {
+                columnName = ddlColumn.value();
+            } else if (!ddlColumn.name().isEmpty()) {
                 columnName = ddlColumn.name();
             }
             if (!ddlColumn.type().isEmpty()) {
