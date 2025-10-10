@@ -132,9 +132,9 @@ public class LambdaQueryTest {
         userDao.lambdaOne(User::getUsername, "john_doe")
                 .onSuccess(user -> {
                     assertTrue(user.isPresent());
-                    assertEquals("john_doe", user.get().getName());
+                    assertEquals("john_doe", user.get().getUsername());
                     assertEquals("john@example.com", user.get().getEmail());
-                    logger.info("✓ 等值查询测试通过: {}", user.get().getName());
+                    logger.info("✓ 等值查询测试通过: {}", user.get().getUsername());
                 })
                 .onFailure(error -> fail("等值查询失败: " + error.getMessage()));
     }
@@ -148,7 +148,7 @@ public class LambdaQueryTest {
         userDao.lambdaList(userDao.lambdaQuery().like(User::getUsername, "john"))
                 .onSuccess(users -> {
                     assertEquals(1, users.size());
-                    assertEquals("john_doe", users.get(0).getName());
+                    assertEquals("john_doe", users.get(0).getUsername());
                     logger.info("✓ LIKE查询测试通过: 找到 {} 个用户", users.size());
                 })
                 .onFailure(error -> fail("LIKE查询失败: " + error.getMessage()));
@@ -280,7 +280,7 @@ public class LambdaQueryTest {
                     assertTrue(users.size() >= 1);
                     users.forEach(user -> {
                         assertNotNull(user.getId());
-                        assertNotNull(user.getName());
+                        assertNotNull(user.getUsername());
                         assertNotNull(user.getEmail());
                         assertNotNull(user.getStatus());
                         // 其他字段应该为null（未选择）
