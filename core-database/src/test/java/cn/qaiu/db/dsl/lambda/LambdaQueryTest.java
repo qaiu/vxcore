@@ -91,18 +91,26 @@ public class LambdaQueryTest {
             )
             """;
         
-        pool.query(createTableSql).execute()
-                .onSuccess(result -> logger.info("Test table created successfully"))
-                .onFailure(error -> logger.error("Failed to create test table", error));
+        try {
+            cn.qaiu.vx.core.util.FutureUtils.getResult(pool.query(createTableSql).execute());
+            logger.info("Test table created successfully");
+        } catch (Exception e) {
+            logger.error("Failed to create test table", e);
+            throw new RuntimeException("Failed to create test table", e);
+        }
     }
     
     /**
      * 清空测试数据
      */
     private void clearTestData() {
-        pool.query("DELETE FROM users").execute()
-                .onSuccess(result -> logger.debug("Test data cleared"))
-                .onFailure(error -> logger.error("Failed to clear test data", error));
+        try {
+            cn.qaiu.vx.core.util.FutureUtils.getResult(pool.query("DELETE FROM users").execute());
+            logger.debug("Test data cleared");
+        } catch (Exception e) {
+            logger.error("Failed to clear test data", e);
+            throw new RuntimeException("Failed to clear test data", e);
+        }
     }
     
     /**
@@ -118,9 +126,13 @@ public class LambdaQueryTest {
             ('charlie_davis', 'charlie@example.com', 'password202', 32, 'PENDING', 750.80, false, 'Product Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
         
-        pool.query(insertSql).execute()
-                .onSuccess(result -> logger.debug("Test data inserted: {} rows", result.rowCount()))
-                .onFailure(error -> logger.error("Failed to insert test data", error));
+        try {
+            var result = cn.qaiu.vx.core.util.FutureUtils.getResult(pool.query(insertSql).execute());
+            logger.debug("Test data inserted: {} rows", result.rowCount());
+        } catch (Exception e) {
+            logger.error("Failed to insert test data", e);
+            throw new RuntimeException("Failed to insert test data", e);
+        }
     }
     
     @Test
