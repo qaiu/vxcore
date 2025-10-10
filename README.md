@@ -240,13 +240,12 @@ public class ChatHandler {
 
 ### 🏗️ 架构设计
 - [系统架构](docs/04-architecture.md) - 整体架构设计
-- [核心组件](docs/05-components.md) - 核心组件详解
-- [数据流设计](docs/06-data-flow.md) - 数据流转和生命周期
+- [开发指南](docs/05-developer-guide.md) - 开发者指南和核心组件详解
 
 ### 💻 开发指南
-- [DSL框架](docs/07-dsl-framework.md) - jOOQ DSL框架使用指南
 - [Lambda查询](core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - Lambda查询详解
 - [多数据源](core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 多数据源配置和使用
+- [项目结构](core-database/docs/PROJECT_STRUCTURE.md) - 数据库模块项目结构
 
 ### 🌐 Web开发
 - [WebSocket指南](docs/WEBSOCKET_GUIDE.md) - WebSocket开发指南
@@ -257,7 +256,8 @@ public class ChatHandler {
 - [代码生成器](docs/12-code-generator.md) - 代码生成器使用指南
 - [异常处理](docs/09-exception-handling.md) - 异常处理机制
 - [配置管理](docs/10-configuration.md) - 配置管理详解
-- [性能优化](docs/11-performance.md) - 性能调优指南
+- [集成测试](docs/INTEGRATION_TEST_GUIDE.md) - 集成测试指南
+- [Git工作流](docs/29-git-workflow.md) - Git工作流规范
 
 ## 🧪 测试
 
