@@ -273,7 +273,7 @@ public class UserController {
 @RouteMapping("/users")
 public Future<JsonResult> createUser(@RequestBody User user) {
     // 参数验证
-    if (user.getName() == null || user.getName().trim().isEmpty()) {
+    if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
         throw new ValidationException("用户名不能为空");
     }
     

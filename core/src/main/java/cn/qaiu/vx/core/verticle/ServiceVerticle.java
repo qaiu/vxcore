@@ -37,11 +37,11 @@ public class ServiceVerticle extends AbstractVerticle {
             StringBuilder serviceNames = new StringBuilder();
             handlers.forEach(asyncService -> {
                 try {
-                    serviceNames.append(asyncService.getName()).append("|");
+                    serviceNames.append(asyncService.getUsername()).append("|");
                     BaseAsyncService asInstance = (BaseAsyncService) ReflectionUtil.newWithNoParam(asyncService);
                     binder.setAddress(asInstance.getAddress()).register(asInstance.getAsyncInterfaceClass(), asInstance);
                 } catch (Exception e) {
-                    LOGGER.error("Failed to register service: {}", asyncService.getName(), e);
+                    LOGGER.error("Failed to register service: {}", asyncService.getUsername(), e);
                 }
             });
 

@@ -24,7 +24,7 @@ public class LambdaUtils {
      * 从Lambda表达式中获取字段名
      */
     public static <T, R> String getFieldName(SFunction<T, R> column) {
-        String cacheKey = column.getClass().getName();
+        String cacheKey = column.getClass().getUsername();
         return FIELD_NAME_CACHE.computeIfAbsent(cacheKey, key -> {
             try {
                 Method method = column.getClass().getDeclaredMethod("writeReplace");
@@ -76,7 +76,7 @@ public class LambdaUtils {
      * 从Lambda表达式中获取字段类型
      */
     public static <T, R> Class<R> getFieldType(SFunction<T, R> column) {
-        String cacheKey = column.getClass().getName();
+        String cacheKey = column.getClass().getUsername();
         @SuppressWarnings("unchecked")
         Class<R> type = (Class<R>) FIELD_TYPE_CACHE.computeIfAbsent(cacheKey, key -> {
             try {
@@ -90,7 +90,7 @@ public class LambdaUtils {
                 // 查找对应的方法
                 Method[] methods = clazz.getDeclaredMethods();
                 for (Method m : methods) {
-                    if (m.getName().equals(methodName)) {
+                    if (m.getUsername().equals(methodName)) {
                         return m.getReturnType();
                     }
                 }
@@ -98,7 +98,7 @@ public class LambdaUtils {
                 // 如果没找到，尝试从公共方法中查找
                 methods = clazz.getMethods();
                 for (Method m : methods) {
-                    if (m.getName().equals(methodName)) {
+                    if (m.getUsername().equals(methodName)) {
                         return m.getReturnType();
                     }
                 }

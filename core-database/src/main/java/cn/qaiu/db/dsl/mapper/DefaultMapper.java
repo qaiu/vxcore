@@ -55,7 +55,7 @@ public class DefaultMapper<T> implements EntityMapper<T> {
                     try {
                         field.setAccessible(true);
                         Object value = getValueFromRow(row, columnName, field.getType());
-                        LOGGER.debug("Field {} -> Column {} -> Value: {}", field.getName(), columnName, value);
+                        LOGGER.debug("Field {} -> Column {} -> Value: {}", field.getUsername(), columnName, value);
                         if (value != null) {
                             field.set(entity, value);
                         }
@@ -113,7 +113,7 @@ public class DefaultMapper<T> implements EntityMapper<T> {
                     field.setAccessible(true);
                     Object value = field.get(entity);
 
-                    LOGGER.debug("Field: {}, Column: {}, Value: {}", field.getName(), columnName, value);
+                    LOGGER.debug("Field: {}, Column: {}, Value: {}", field.getUsername(), columnName, value);
                     
                     if (value != null) {
                         // 直接使用数据库字段名，不进行转换
@@ -138,7 +138,7 @@ public class DefaultMapper<T> implements EntityMapper<T> {
      * 判断是否应该跳过某个字段（不映射到数据库）
      */
     private boolean shouldSkipField(java.lang.reflect.Field field) {
-        String fieldName = field.getName();
+        String fieldName = field.getUsername();
         
         // 跳过序列化相关字段
         if ("serialVersionUID".equals(fieldName)) {
@@ -245,7 +245,7 @@ public class DefaultMapper<T> implements EntityMapper<T> {
             }
 
         } catch (Exception e) {
-            LOGGER.warn("Failed to get value for column {} of type {}", columnName, targetType.getName(), e);
+            LOGGER.warn("Failed to get value for column {} of type {}", columnName, targetType.getUsername(), e);
             return null;
         }
     }

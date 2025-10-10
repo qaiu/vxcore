@@ -34,10 +34,10 @@ public class PostgreSQLExecutorStrategy extends AbstractExecutorStrategy {
     @Override
     public boolean supports(Pool pool) {
         boolean supported = pool instanceof PgPool || 
-                           pool.getClass().getName().contains("PgPool");
+                           pool.getClass().getUsername().contains("PgPool");
         
         if (supported) {
-            LOGGER.debug("PostgreSQL executor strategy supports pool: {}", pool.getClass().getName());
+            LOGGER.debug("PostgreSQL executor strategy supports pool: {}", pool.getClass().getUsername());
         }
         
         return supported;

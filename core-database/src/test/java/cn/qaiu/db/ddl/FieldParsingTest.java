@@ -89,7 +89,7 @@ public class FieldParsingTest {
             
             System.out.println("📋 字段列表:");
             for (ColumnMetadata column : metadata.getColumns().values()) {
-                System.out.println("  - " + column.getName() + ": " + column.getType() + 
+                System.out.println("  - " + column.getUsername() + ": " + column.getType() + 
                     (column.getLength() > 0 ? "(" + column.getLength() + ")" : "") +
                     (column.getComment() != null ? " COMMENT '" + column.getComment() + "'" : ""));
             }

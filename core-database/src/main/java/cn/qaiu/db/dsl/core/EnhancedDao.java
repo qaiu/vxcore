@@ -568,9 +568,15 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
             return executor.executeInsert(insertQuery)
                     .map(generatedId -> {
+                        System.out.println("[DEBUG] EnhancedDao.performInsert: generatedId=" + generatedId);
                         setId(entity, generatedId);
                         LOGGER.debug("Inserted entity to table {} with ID: {}", tableName, generatedId);
-                        return Optional.of(entity);
+                        if (generatedId != null && generatedId > 0) {
+                            return Optional.of(entity);
+                        } else {
+                            LOGGER.warn("Insert returned invalid ID: {}, returning empty Optional", generatedId);
+                            return Optional.empty();
+                        }
                     });
         } catch (Exception e) {
             LOGGER.error("Failed to insert entity", e);

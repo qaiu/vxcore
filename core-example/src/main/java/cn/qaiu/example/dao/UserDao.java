@@ -54,7 +54,32 @@ public class UserDao extends LambdaDao<User, Long> {
     // =================== 个性化业务查询方法 ===================
     
     /**
-     * 创建用户
+     * 创建用户 - 简化版本（用于测试）
+     */
+    public Future<User> createUser(String name, String email, String password) {
+        LOGGER.debug("Creating user: name={}, email={}", name, email);
+        
+        User user = new User();
+        user.setUsername(name);
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setAge(25); // 默认年龄
+        user.setBio(""); // 默认简介
+        user.setStatus(User.UserStatus.ACTIVE);
+        user.setBalance(new BigDecimal("100.00")); // 默认余额
+        user.setEmailVerified(false);
+        
+        return insert(user).map(optionalUser -> {
+            if (optionalUser.isPresent()) {
+                return optionalUser.get();
+            } else {
+                throw new RuntimeException("Failed to create user");
+            }
+        });
+    }
+    
+    /**
+     * 创建用户 - 完整版本
      */
     public Future<User> createUser(String name, String email, String password, Integer age, String bio) {
         LOGGER.debug("Creating user: name={}, email={}", name, email);
@@ -76,6 +101,16 @@ public class UserDao extends LambdaDao<User, Long> {
                 throw new RuntimeException("Failed to create user");
             }
         });
+    }
+    
+    /**
+     * 根据用户名查找用户
+     */
+    public Future<List<User>> findByName(String name) {
+        LOGGER.debug("Finding user by name: {}", name);
+        
+        return lambdaList(lambdaQuery()
+                .eq(User::getUsername, name));
     }
     
     /**
@@ -116,6 +151,57 @@ public class UserDao extends LambdaDao<User, Long> {
     }
     
     /**
+     * 更新用户密码
+     */
+    public Future<Boolean> updatePassword(Long userId, String newPassword) {
+        LOGGER.debug("Updating password for user: {}", userId);
+        
+        return findById(userId)
+                .compose(userOpt -> {
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
+                        user.setPassword(newPassword);
+                        return update(user).map(opt -> opt.isPresent());
+                    }
+                    return Future.succeededFuture(false);
+                });
+    }
+    
+    /**
+     * 验证用户邮箱
+     */
+    public Future<Boolean> verifyUserEmail(Long userId) {
+        LOGGER.debug("Verifying email for user: {}", userId);
+        
+        return findById(userId)
+                .compose(userOpt -> {
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
+                        user.setEmailVerified(true);
+                        return update(user).map(opt -> opt.isPresent());
+                    }
+                    return Future.succeededFuture(false);
+                });
+    }
+    
+    /**
+     * 更新用户状态
+     */
+    public Future<Boolean> updateUserStatus(Long userId, User.UserStatus status) {
+        LOGGER.debug("Updating status for user: {}", userId);
+        
+        return findById(userId)
+                .compose(userOpt -> {
+                    if (userOpt.isPresent()) {
+                        User user = userOpt.get();
+                        user.setStatus(status);
+                        return update(user).map(opt -> opt.isPresent());
+                    }
+                    return Future.succeededFuture(false);
+                });
+    }
+    
+    /**
      * 根据年龄范围查找用户
      */
     public Future<List<User>> findByAgeRange(Integer minAge, Integer maxAge) {
@@ -134,6 +220,16 @@ public class UserDao extends LambdaDao<User, Long> {
         
         return lambdaList(lambdaQuery()
                 .between(User::getBalance, minBalance, maxBalance));
+    }
+    
+    /**
+     * 根据最小余额查找用户
+     */
+    public Future<List<User>> findByMinBalance(BigDecimal minBalance) {
+        LOGGER.debug("Finding users with minimum balance: {}", minBalance);
+        
+        return lambdaList(lambdaQuery()
+                .ge(User::getBalance, minBalance));
     }
     
     /**
@@ -283,6 +379,49 @@ public class UserDao extends LambdaDao<User, Long> {
     }
     
     /**
+     * 批量保存用户
+     */
+    public Future<List<User>> saveAll(List<User> users) {
+        LOGGER.debug("Batch saving {} users", users.size());
+        List<Future<User>> futures = users.stream()
+                .map(this::save)
+                .collect(java.util.stream.Collectors.toList());
+        
+        return Future.all(futures)
+                .map(compositeFuture -> {
+                    List<User> results = new ArrayList<>();
+                    for (int i = 0; i < futures.size(); i++) {
+                        results.add(compositeFuture.resultAt(i));
+                    }
+                    return results;
+                });
+    }
+    
+    /**
+     * 批量更新用户
+     */
+    public Future<Integer> updateAll(List<User> users) {
+        LOGGER.debug("Batch updating {} users", users.size());
+        Future<Void> result = Future.succeededFuture();
+        for (User user : users) {
+            result = result.compose(v -> update(user).map(opt -> null));
+        }
+        return result.map(v -> users.size());
+    }
+    
+    /**
+     * 批量删除用户
+     */
+    public Future<Integer> deleteAllById(List<Long> ids) {
+        LOGGER.debug("Batch deleting {} users", ids.size());
+        Future<Void> result = Future.succeededFuture();
+        for (Long id : ids) {
+            result = result.compose(v -> deleteById(id).map(deleted -> null));
+        }
+        return result.map(v -> ids.size());
+    }
+    
+    /**
      * Lambda插入（兼容性方法）
      */
     public Future<Optional<User>> lambdaInsert(User user) {
@@ -334,9 +473,12 @@ public class UserDao extends LambdaDao<User, Long> {
         LOGGER.debug("Getting user statistics");
         
         Field<BigDecimal> balanceField = DSL.field("balance", BigDecimal.class);
+        Field<Integer> ageField = DSL.field("age", Integer.class);
         
         Query query = DSL.select(
                 DSL.count().as("total_users"),
+                DSL.count(DSL.field("status").eq("ACTIVE")).as("active_users"),
+                DSL.avg(ageField).as("avg_age"),
                 DSL.sum(balanceField).as("total_balance"),
                 DSL.avg(balanceField).as("avg_balance"),
                 DSL.max(balanceField).as("max_balance"),
@@ -349,6 +491,8 @@ public class UserDao extends LambdaDao<User, Long> {
                     if (rows.size() == 0) {
                         return new JsonObject()
                                 .put("totalUsers", 0)
+                                .put("activeUsers", 0)
+                                .put("averageAge", 0.0)
                                 .put("totalBalance", 0)
                                 .put("avgBalance", 0)
                                 .put("maxBalance", 0)
@@ -358,6 +502,8 @@ public class UserDao extends LambdaDao<User, Long> {
                     var row = rows.iterator().next();
                     return new JsonObject()
                             .put("totalUsers", row.getInteger("total_users"))
+                            .put("activeUsers", row.getInteger("active_users"))
+                            .put("averageAge", row.getBigDecimal("avg_age") != null ? row.getBigDecimal("avg_age").doubleValue() : 0.0)
                             .put("totalBalance", row.getBigDecimal("total_balance"))
                             .put("avgBalance", row.getBigDecimal("avg_balance"))
                             .put("maxBalance", row.getBigDecimal("max_balance"))

@@ -128,7 +128,7 @@ public class TableMetadata {
     }
 
     private static Case getCase(Class<?> clz) {
-        return switch (clz.getName()) {
+        return switch (clz.getUsername()) {
             case "io.vertx.codegen.format.CamelCase" -> io.vertx.codegen.format.CamelCase.INSTANCE;
             case "io.vertx.codegen.format.SnakeCase" -> SnakeCase.INSTANCE;
             case "io.vertx.codegen.format.LowerCamelCase" -> LowerCamelCase.INSTANCE;
@@ -143,26 +143,26 @@ public class TableMetadata {
         // 注意：Java反射不保证字段的声明顺序，但我们可以通过排序来获得可预测的顺序
         java.util.Arrays.sort(fields, (f1, f2) -> {
             // 优先处理主键字段
-            if ("id".equals(f1.getName()) && !"id".equals(f2.getName())) {
+            if ("id".equals(f1.getUsername()) && !"id".equals(f2.getUsername())) {
                 return -1;
             }
-            if (!"id".equals(f1.getName()) && "id".equals(f2.getName())) {
+            if (!"id".equals(f1.getUsername()) && "id".equals(f2.getUsername())) {
                 return 1;
             }
             // 其他字段按名称排序
-            return f1.getName().compareTo(f2.getName());
+            return f1.getUsername().compareTo(f2.getUsername());
         });
         return fields;
     }
 
     private static boolean isIgnoredField(Field field) {
-        return field.getName().equals("serialVersionUID")
+        return field.getUsername().equals("serialVersionUID")
                 || field.isAnnotationPresent(TableGenIgnore.class)
                 || field.isAnnotationPresent(DdlIgnore.class);
     }
 
     public void addColumn(ColumnMetadata column) {
-        columns.put(column.getName(), column);
+        columns.put(column.getUsername(), column);
     }
 
     public ColumnMetadata getColumn(String name) {

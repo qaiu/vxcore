@@ -180,7 +180,7 @@ public class ConfigurationMetadataGenerator {
             ConfigurationProperty prop = field.getAnnotation(ConfigurationProperty.class);
             if (prop != null) {
                 ConfigurationPropertyMetadata meta = new ConfigurationPropertyMetadata();
-                meta.setName(prefix + "." + field.getName());
+                meta.setName(prefix + "." + field.getUsername());
                 meta.setType(field.getType().getSimpleName());
                 meta.setDescription(prop.description());
                 meta.setDefaultValue(prop.defaultValue());
@@ -286,7 +286,7 @@ public class ConfigurationPropertyBinder {
             if (prop != null) {
                 String key = prop.key();
                 if (key.isEmpty()) {
-                    key = field.getName();
+                    key = field.getUsername();
                 }
                 
                 Object value = getValue(config, key, field.getType());

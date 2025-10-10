@@ -74,16 +74,16 @@ public class WebSocketHandlerFactory {
         for (Method method : methods) {
             if (method.isAnnotationPresent(OnOpen.class)) {
                 handlerInfo.setOnOpenMethod(method);
-                LOGGER.debug("Found @OnOpen method: {}", method.getName());
+                LOGGER.debug("Found @OnOpen method: {}", method.getUsername());
             } else if (method.isAnnotationPresent(OnMessage.class)) {
                 handlerInfo.addOnMessageMethod(method);
-                LOGGER.debug("Found @OnMessage method: {}", method.getName());
+                LOGGER.debug("Found @OnMessage method: {}", method.getUsername());
             } else if (method.isAnnotationPresent(OnClose.class)) {
                 handlerInfo.setOnCloseMethod(method);
-                LOGGER.debug("Found @OnClose method: {}", method.getName());
+                LOGGER.debug("Found @OnClose method: {}", method.getUsername());
             } else if (method.isAnnotationPresent(OnError.class)) {
                 handlerInfo.addOnErrorMethod(method);
-                LOGGER.debug("Found @OnError method: {}", method.getName());
+                LOGGER.debug("Found @OnError method: {}", method.getUsername());
             }
         }
     }
@@ -214,7 +214,7 @@ public class WebSocketHandlerFactory {
             method.invoke(instance, args);
             
         } catch (Exception e) {
-            LOGGER.error("Failed to invoke WebSocket event method: {}", method.getName(), e);
+            LOGGER.error("Failed to invoke WebSocket event method: {}", method.getUsername(), e);
         }
     }
     

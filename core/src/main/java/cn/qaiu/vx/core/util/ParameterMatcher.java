@@ -85,7 +85,7 @@ public class ParameterMatcher {
                     bestMatch = new MatchResult(method, params, score);
                 }
             } catch (Exception e) {
-                LOGGER.debug("Method {} failed parameter extraction: {}", method.getName(), e.getMessage());
+                LOGGER.debug("Method {} failed parameter extraction: {}", method.getUsername(), e.getMessage());
                 // 继续尝试其他方法
             }
         }

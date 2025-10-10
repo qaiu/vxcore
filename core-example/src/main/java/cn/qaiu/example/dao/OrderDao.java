@@ -268,7 +268,7 @@ public class OrderDao extends LambdaDao<Order, Long> {
         // 简化实现：使用 findAll 然后过滤
         return findAll().map(allOrders -> 
             allOrders.stream()
-                .filter(order -> order.getCreatedAt().isAfter(startTime) && order.getCreatedAt().isBefore(endTime))
+                .filter(order -> order.getCreateTime().isAfter(startTime) && order.getCreateTime().isBefore(endTime))
                 .collect(java.util.stream.Collectors.toList())
         );
     }

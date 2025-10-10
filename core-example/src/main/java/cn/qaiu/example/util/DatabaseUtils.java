@@ -113,8 +113,8 @@ public class DatabaseUtils {
         product.setStock(stock);
         product.setStatus(status);
         product.setDescription(description);
-        product.setCreatedAt(LocalDateTime.now());
-        product.setUpdatedAt(LocalDateTime.now());
+        product.setCreateTime(LocalDateTime.now());
+        product.setUpdateTime(LocalDateTime.now());
         return product;
     }
 }

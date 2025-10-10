@@ -34,7 +34,7 @@ public class DataSourceConfig {
     }
     
     // Getters and Setters
-    public String getName() {
+    public String getUsername() {
         return name;
     }
     

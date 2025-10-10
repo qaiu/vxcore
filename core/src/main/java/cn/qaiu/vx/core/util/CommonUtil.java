@@ -91,8 +91,8 @@ public class CommonUtil {
         JsonObject data = new JsonObject();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
-            if (jsonObject.containsKey(field.getName())) {
-                data.put(field.getName(), jsonObject.getValue(field.getName()));
+            if (jsonObject.containsKey(field.getUsername())) {
+                data.put(field.getUsername(), jsonObject.getValue(field.getUsername()));
             }
         }
         return data;

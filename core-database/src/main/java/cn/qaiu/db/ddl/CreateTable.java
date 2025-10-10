@@ -55,7 +55,7 @@ public class CreateTable {
     public static String UNIQUE_PREFIX = "idx_";
 
     private static Case getCase(Class<?> clz) {
-        return switch (clz.getName()) {
+        return switch (clz.getUsername()) {
             case "io.vertx.codegen.format.CamelCase" -> CamelCase.INSTANCE;
             case "io.vertx.codegen.format.SnakeCase" -> SnakeCase.INSTANCE;
             case "io.vertx.codegen.format.LowerCamelCase" -> LowerCamelCase.INSTANCE;
@@ -88,7 +88,7 @@ public class CreateTable {
             return sqlList;
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate CREATE TABLE SQL for class: "
-                    + clz.getName() + ", error String: '" + sb + "'", e);
+                    + clz.getUsername() + ", error String: '" + sb + "'", e);
         }
 
     }
@@ -165,7 +165,7 @@ public class CreateTable {
             }
 
             // 获取字段名和SQL类型
-            String column = LowerCamelCase.INSTANCE.to(tableInfo.caseFormat, field.getName());
+            String column = LowerCamelCase.INSTANCE.to(tableInfo.caseFormat, field.getUsername());
             String sqlType = javaProperty2SqlColumnMap.get(field.getType());
 
             // 处理字段注解
@@ -214,7 +214,7 @@ public class CreateTable {
         
         // 如果没有有效字段，抛出异常
         if (!hasValidFields) {
-            throw new RuntimeException("实体类 " + clz.getName() + " 没有有效的字段，无法创建表");
+            throw new RuntimeException("实体类 " + clz.getUsername() + " 没有有效的字段，无法创建表");
         }
     }
 
@@ -225,21 +225,21 @@ public class CreateTable {
         // 注意：Java反射不保证字段的声明顺序，但我们可以通过排序来获得可预测的顺序
         Arrays.sort(fields, (f1, f2) -> {
             // 优先处理主键字段
-            if ("id".equals(f1.getName()) && !"id".equals(f2.getName())) {
+            if ("id".equals(f1.getUsername()) && !"id".equals(f2.getUsername())) {
                 return -1;
             }
-            if (!"id".equals(f1.getName()) && "id".equals(f2.getName())) {
+            if (!"id".equals(f1.getUsername()) && "id".equals(f2.getUsername())) {
                 return 1;
             }
             // 其他字段按名称排序
-            return f1.getName().compareTo(f2.getName());
+            return f1.getUsername().compareTo(f2.getUsername());
         });
         return fields;
     }
 
     // 判断是否忽略字段
     private static boolean isIgnoredField(Field field) {
-        return field.getName().equals("serialVersionUID")
+        return field.getUsername().equals("serialVersionUID")
                 || StringUtils.isEmpty(javaProperty2SqlColumnMap.get(field.getType()))
                 || field.isAnnotationPresent(TableGenIgnore.class)
                 || field.isAnnotationPresent(DdlIgnore.class);
@@ -376,7 +376,7 @@ public class CreateTable {
         }
 
         // 将字段名转换为下划线命名法
-        String columnName = LowerCamelCase.INSTANCE.to(SnakeCase.INSTANCE, field.getName());
+        String columnName = LowerCamelCase.INSTANCE.to(SnakeCase.INSTANCE, field.getUsername());
         String indexName = UNIQUE_PREFIX + tableInfo.tableName + "_" + constraint.uniqueKey();
 
         // 检查是否已有相同索引名称的索引
@@ -437,7 +437,7 @@ public class CreateTable {
         for (Class<?> clazz : allTableClasses) {
             try {
                 List<String> sqlList = getCreateTableSQL(clazz, type);
-                LOGGER.info("Class `{}` auto-generate table", clazz.getName());
+                LOGGER.info("Class `{}` auto-generate table", clazz.getUsername());
 
                 for (String sql : sqlList) {
                     try {
@@ -459,11 +459,11 @@ public class CreateTable {
             } catch (RuntimeException e) {
                 // 处理空实体类的情况
                 if (e.getMessage() != null && e.getMessage().contains("没有有效的字段")) {
-                    LOGGER.warn("跳过空实体类: {} - {}", clazz.getName(), e.getMessage());
+                    LOGGER.warn("跳过空实体类: {} - {}", clazz.getUsername(), e.getMessage());
                     futures.add(Future.succeededFuture()); // 继续处理其他实体类
                 } else {
                     // 其他异常继续抛出
-                    LOGGER.error("处理实体类 {} 时发生错误: {}", clazz.getName(), e.getMessage());
+                    LOGGER.error("处理实体类 {} 时发生错误: {}", clazz.getUsername(), e.getMessage());
                     futures.add(Future.failedFuture(e));
                     throw e;
                 }

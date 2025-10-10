@@ -195,7 +195,7 @@ public Future<User> findById(Long id) {
 // 优雅：高级功能强大
 public Future<List<User>> findUsers(UserQuery query) {
     return userDao.lambdaQuery()
-        .eqIf(query.getName() != null, User::getName, query.getName())
+        .eqIf(query.getUsername() != null, User::getName, query.getUsername())
         .eqIf(query.getStatus() != null, User::getStatus, query.getStatus())
         .betweenIf(query.getStartDate() != null && query.getEndDate() != null, 
                    User::getCreateTime, query.getStartDate(), query.getEndDate())

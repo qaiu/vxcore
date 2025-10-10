@@ -2,6 +2,7 @@ package cn.qaiu.example.entity;
 
 import cn.qaiu.db.ddl.DdlColumn;
 import cn.qaiu.db.ddl.DdlTable;
+import cn.qaiu.db.dsl.BaseEntity;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
@@ -23,15 +24,8 @@ import java.time.LocalDateTime;
     collate = "utf8mb4_unicode_ci",
     engine = "InnoDB"
 )
-public class User {
+public class User extends BaseEntity {
     
-    @DdlColumn(
-        type = "BIGINT",
-        autoIncrement = true,
-        nullable = false,
-        comment = "用户ID"
-    )
-    private Long id;
     
     @DdlColumn(
         type = "VARCHAR",
@@ -102,27 +96,22 @@ public class User {
     )
     private Boolean emailVerified;
     
-    @DdlColumn(
-        type = "TIMESTAMP",
-        nullable = false,
-        defaultValue = "CURRENT_TIMESTAMP",
-        defaultValueIsFunction = true,
-        comment = "创建时间"
-    )
-    private LocalDateTime createdAt;
-    
-    @DdlColumn(
-        type = "TIMESTAMP",
-        nullable = true,
-        comment = "更新时间"
-    )
-    private LocalDateTime updatedAt;
     
     /**
      * 用户状态枚举
      */
     public enum UserStatus {
-        ACTIVE, INACTIVE, SUSPENDED, DELETED
+        ACTIVE("激活"), INACTIVE("未激活"), SUSPENDED("暂停"), DELETED("已删除");
+        
+        private final String description;
+        
+        UserStatus(String description) {
+            this.description = description;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
     }
     
     // 构造函数
@@ -130,7 +119,7 @@ public class User {
     }
     
     public User(JsonObject json) {
-        this.id = json.getLong("id");
+        super(json);
         this.username = json.getString("username");
         this.email = json.getString("email");
         this.password = json.getString("password");
@@ -139,18 +128,9 @@ public class User {
         this.status = json.getString("status") != null ? UserStatus.valueOf(json.getString("status")) : null;
         this.balance = json.getValue("balance") != null ? new BigDecimal(json.getValue("balance").toString()) : null;
         this.emailVerified = json.getBoolean("email_verified");
-        this.createdAt = json.getString("created_at") != null ? LocalDateTime.parse(json.getString("created_at")) : null;
-        this.updatedAt = json.getString("updated_at") != null ? LocalDateTime.parse(json.getString("updated_at")) : null;
     }
     
     // Getter 和 Setter 方法
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
     
     public String getUsername() {
         return username;
@@ -215,29 +195,47 @@ public class User {
     public void setEmailVerified(Boolean emailVerified) {
         this.emailVerified = emailVerified;
     }
+
     
     public LocalDateTime getCreatedAt() {
-        return createdAt;
+        return getCreateTime();
     }
     
     public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+        setCreateTime(createdAt);
     }
     
     public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+        return getUpdateTime();
     }
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+        setUpdateTime(updatedAt);
     }
+    
+    // 业务方法
+    public boolean verifyPassword(String password) {
+        return this.password != null && this.password.equals(password);
+    }
+    
+    public boolean isActive() {
+        return status == UserStatus.ACTIVE;
+    }
+    
+    public void suspend() {
+        this.status = UserStatus.SUSPENDED;
+    }
+    
+    public void activate() {
+        this.status = UserStatus.ACTIVE;
+    }
+    
     
     /**
      * 转换为 JsonObject
      */
-    public JsonObject toJson() {
-        JsonObject json = new JsonObject();
-        if (id != null) json.put("id", id);
+    @Override
+    protected void fillJson(JsonObject json) {
         if (username != null) json.put("username", username);
         if (email != null) json.put("email", email);
         if (password != null) json.put("password", password);
@@ -246,9 +244,6 @@ public class User {
         if (status != null) json.put("status", status.name());
         if (balance != null) json.put("balance", balance);
         if (emailVerified != null) json.put("email_verified", emailVerified);
-        if (createdAt != null) json.put("created_at", createdAt.toString());
-        if (updatedAt != null) json.put("updated_at", updatedAt.toString());
-        return json;
     }
     
     @Override

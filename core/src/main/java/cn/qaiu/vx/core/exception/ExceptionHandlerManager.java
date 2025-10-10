@@ -56,7 +56,7 @@ public class ExceptionHandlerManager {
             LocalExceptionHandlerWrapper wrapper = new LocalExceptionHandlerWrapper(controllerClass, handlerMethod, annotation.priority());
             controllerHandlers.put(exceptionType, wrapper);
             LOGGER.debug("Registered local exception handler for {} in {}: {}", 
-                    exceptionType.getSimpleName(), controllerClass.getSimpleName(), handlerMethod.getName());
+                    exceptionType.getSimpleName(), controllerClass.getSimpleName(), handlerMethod.getUsername());
         }
     }
     

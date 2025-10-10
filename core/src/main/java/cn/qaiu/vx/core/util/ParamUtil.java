@@ -66,7 +66,7 @@ public final class ParamUtil {
      */
     public static Object getParameterValue(Parameter parameter, Map<String, String> pathParams,
                                          MultiMap queryParams, JsonObject requestBody) {
-        String paramName = parameter.getName();
+        String paramName = parameter.getUsername();
         Class<?> paramType = parameter.getType();
         
         // 检查路径变量注解
@@ -181,7 +181,7 @@ public final class ParamUtil {
      */
     public static List<java.lang.reflect.Method> getCandidateMethods(java.lang.reflect.Method[] methods, String methodName) {
         return Arrays.stream(methods)
-                .filter(method -> method.getName().equals(methodName))
+                .filter(method -> method.getUsername().equals(methodName))
                 .collect(Collectors.toList());
     }
     

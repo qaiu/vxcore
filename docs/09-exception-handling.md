@@ -249,7 +249,7 @@ public class UserController {
     @RouteMapping(value = "/users", method = HttpMethod.POST)
     public Future<JsonResult> createUser(@RequestBody User user) {
         // 参数验证
-        if (user.getName() == null || user.getName().trim().isEmpty()) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new ValidationException("用户名不能为空");
         }
         
@@ -292,7 +292,7 @@ public class UserController {
 public class UserService {
     
     public Future<User> create(User user) {
-        return userDao.findByName(user.getName())
+        return userDao.findByName(user.getUsername())
             .compose(existingUser -> {
                 if (existingUser != null) {
                     throw new BusinessException("用户名已存在");

@@ -31,10 +31,24 @@ public class UserService {
     }
     
     /**
+     * 创建用户 - 简化版本（用于测试）
+     */
+    public Future<User> createUser(String name, String email, String password) {
+        return userDao.createUser(name, email, password);
+    }
+    
+    /**
      * 根据ID获取用户
      */
     public Future<User> getUserById(Long id) {
         return userDao.getById(id);
+    }
+    
+    /**
+     * 根据ID查找用户（返回Optional）
+     */
+    public Future<Optional<User>> findById(Long id) {
+        return userDao.findById(id);
     }
     
     /**

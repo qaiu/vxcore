@@ -84,7 +84,7 @@ public class ColumnMetadata {
      * 从Java字段创建列元数据
      */
     public static ColumnMetadata fromField(Field field, TableMetadata tableMetadata) {
-        String columnName = LowerCamelCase.INSTANCE.to(tableMetadata.getCaseFormat(), field.getName());
+        String columnName = LowerCamelCase.INSTANCE.to(tableMetadata.getCaseFormat(), field.getUsername());
         String sqlType = JAVA_TO_SQL_TYPE_MAP.get(field.getType());
         
         if (sqlType == null) {
@@ -163,7 +163,7 @@ public class ColumnMetadata {
             }
         }
 
-        boolean isPrimaryKey = field.getName().equals(tableMetadata.getPrimaryKey());
+        boolean isPrimaryKey = field.getUsername().equals(tableMetadata.getPrimaryKey());
 
         return new ColumnMetadata(columnName, sqlType, length, precision, scale,
                 nullable, defaultValue, defaultValueIsFunction, autoIncrement,
@@ -249,7 +249,7 @@ public class ColumnMetadata {
     }
 
     // Getters and Setters
-    public String getName() { return name; }
+    public String getUsername() { return name; }
     public void setName(String name) { this.name = name; }
 
     public String getType() { return type; }

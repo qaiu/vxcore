@@ -73,7 +73,7 @@ public class SimpleEntity extends BaseEntity {
     }
     
     // Getter/Setter
-    public String getName() {
+    public String getUsername() {
         return name;
     }
     

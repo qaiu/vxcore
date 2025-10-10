@@ -119,7 +119,7 @@ public class User extends BaseEntity {
     }
     
     // Getter 和 Setter 方法
-    public String getName() {
+    public String getUsername() {
         return name;
     }
     
@@ -406,7 +406,7 @@ public class UserService {
      */
     public Future<User> createUser(User user) {
         // 参数验证
-        if (user.getName() == null || user.getName().trim().isEmpty()) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             return Future.failedFuture(new IllegalArgumentException("用户名不能为空"));
         }
         

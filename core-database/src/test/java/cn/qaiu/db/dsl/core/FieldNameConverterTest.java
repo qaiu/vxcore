@@ -284,10 +284,10 @@ class FieldNameConverterTest {
                 String databaseFieldName = FieldNameConverter.toDatabaseFieldName(field);
                 String javaFieldName = FieldNameConverter.toJavaFieldName(databaseFieldName);
                 
-                assertNotNull(databaseFieldName, "数据库字段名不应为null: " + field.getName());
-                assertNotNull(javaFieldName, "Java字段名不应为null: " + field.getName());
-                assertFalse(databaseFieldName.isEmpty(), "数据库字段名不应为空: " + field.getName());
-                assertFalse(javaFieldName.isEmpty(), "Java字段名不应为空: " + field.getName());
+                assertNotNull(databaseFieldName, "数据库字段名不应为null: " + field.getUsername());
+                assertNotNull(javaFieldName, "Java字段名不应为null: " + field.getUsername());
+                assertFalse(databaseFieldName.isEmpty(), "数据库字段名不应为空: " + field.getUsername());
+                assertFalse(javaFieldName.isEmpty(), "Java字段名不应为空: " + field.getUsername());
             }
         }
 

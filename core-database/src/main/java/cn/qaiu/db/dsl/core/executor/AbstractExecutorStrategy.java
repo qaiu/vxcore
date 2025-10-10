@@ -67,24 +67,52 @@ public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
         String sql = query.getSQL();
         Object[] bindValues = query.getBindValues().toArray();
         
+        System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: SQL=" + sql);
         LOGGER.debug("Executing insert: {} with bind values: {}", sql, java.util.Arrays.toString(bindValues));
         
         return pool.preparedQuery(sql)
                 .execute(io.vertx.sqlclient.Tuple.from(bindValues))
                 .compose(result -> {
-                    // 尝试获取生成的ID
-                    if (result.size() > 0) {
-                        io.vertx.sqlclient.Row row = result.iterator().next();
-                        // 尝试从第一列获取ID
-                        Object id = row.getValue(0);
-                        if (id instanceof Number) {
-                            return Future.succeededFuture(((Number) id).longValue());
-                        }
+                    int rowCount = result.rowCount();
+                    System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: rowCount=" + rowCount);
+                    LOGGER.debug("Insert affected rows: {}", rowCount);
+                    
+                    if (rowCount > 0) {
+                        // 插入成功后，查询获取最后插入的ID
+                        // H2使用IDENTITY()，MySQL使用LAST_INSERT_ID()
+                        System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: calling IDENTITY()");
+                        return pool.query("SELECT IDENTITY()").execute()
+                                .map(idResult -> {
+                                    System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: IDENTITY() size=" + idResult.size());
+                                    if (idResult.size() > 0) {
+                                        io.vertx.sqlclient.Row row = idResult.iterator().next();
+                                        Object id = row.getValue(0);
+                                        System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: ID=" + id + ", type=" + (id != null ? id.getClass().getName() : "null"));
+                                        if (id instanceof Number) {
+                                            Long generatedId = ((Number) id).longValue();
+                                            System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: generatedId=" + generatedId);
+                                            LOGGER.debug("Retrieved generated ID: {}", generatedId);
+                                            return generatedId;
+                                        }
+                                    }
+                                    System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: returning 0");
+                                    LOGGER.warn("Could not retrieve generated ID");
+                                    return 0L;
+                                });
+                    } else {
+                        System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: rowCount=0, returning 0");
+                        LOGGER.warn("Insert affected 0 rows");
+                        return Future.succeededFuture(0L);
                     }
-                    return Future.succeededFuture(0L);
                 })
-                .onSuccess(id -> LOGGER.debug("Insert executed successfully, generated ID: {}", id))
-                .onFailure(error -> LOGGER.error("Insert execution failed: {}", error.getMessage(), error));
+                .onSuccess(id -> {
+                    System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: Final ID=" + id);
+                    LOGGER.debug("Insert executed successfully, generated ID: {}", id);
+                })
+                .onFailure(error -> {
+                    System.out.println("[DEBUG] AbstractExecutorStrategy.executeInsert: FAILED - " + error.getMessage());
+                    LOGGER.error("Insert execution failed: {}", error.getMessage(), error);
+                });
     }
     
     @Override

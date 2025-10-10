@@ -50,9 +50,9 @@ class UserDaoTest {
         userDao = new UserDao(executor);
 
         // 初始化数据库
-        executor.executeUpdate(DSL.query("CREATE TABLE IF NOT EXISTS dsl_user (" +
+        executor.executeUpdate(DSL.query("CREATE TABLE IF NOT EXISTS users (" +
                 "id BIGINT PRIMARY KEY AUTO_INCREMENT, " +
-                "name VARCHAR(50) NOT NULL, " +
+                "username VARCHAR(50) NOT NULL, " +
                 "email VARCHAR(100) NOT NULL, " +
                 "password VARCHAR(255) NOT NULL, " +
                 "age INT DEFAULT 0, " +
@@ -60,10 +60,10 @@ class UserDaoTest {
                 "balance DECIMAL(10,2) DEFAULT 0.00, " +
                 "email_verified BOOLEAN DEFAULT FALSE, " +
                 "bio TEXT, " +
-                "create_time DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-                "update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
+                "create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
                 ")"))
-                .compose(v -> executor.executeUpdate(DSL.query("DELETE FROM dsl_user")))
+                .compose(v -> executor.executeUpdate(DSL.query("DELETE FROM users")))
                 .onComplete(testContext.succeedingThenComplete());
     }
 
@@ -78,7 +78,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(user -> {
                         assertNotNull(user);
                         assertNotNull(user.getId());
-                        assertEquals("testuser", user.getName());
+                        assertEquals("testuser", user.getUsername());
                         assertEquals("test@example.com", user.getEmail());
                         assertEquals("password123", user.getPassword());
                         assertEquals(User.UserStatus.ACTIVE, user.getStatus());
@@ -96,7 +96,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(optional -> {
                         assertTrue(optional.isPresent());
                         User user = optional.get();
-                        assertEquals("testuser", user.getName());
+                        assertEquals("testuser", user.getUsername());
                         assertEquals("test@example.com", user.getEmail());
                         testContext.completeNow();
                     }));
@@ -148,7 +148,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(users -> {
                         assertTrue(!users.isEmpty());
                         User user = users.get(0);
-                        assertEquals("testuser", user.getName());
+                        assertEquals("testuser", user.getUsername());
                         testContext.completeNow();
                     }));
         }
@@ -157,7 +157,7 @@ class UserDaoTest {
         @DisplayName("根据邮箱查找用户测试")
         void testFindByEmail(VertxTestContext testContext) {
             userDao.createUser("testuser", "test@example.com", "password123")
-                    .compose(v -> userDao.findByEmail("test@example.com"))
+                    .compose(v -> userDao.findOneByEmail("test@example.com"))
                     .onComplete(testContext.succeeding(optional -> {
                         assertTrue(optional.isPresent());
                         User user = optional.get();
@@ -184,13 +184,13 @@ class UserDaoTest {
         @DisplayName("根据年龄范围查找用户测试")
         void testFindByAgeRange(VertxTestContext testContext) {
             User user1 = new User();
-            user1.setName("user1");
+            user1.setUsername("user1");
             user1.setEmail("user1@example.com");
             user1.setPassword("password123");
             user1.setAge(25);
 
             User user2 = new User();
-            user2.setName("user2");
+            user2.setUsername("user2");
             user2.setEmail("user2@example.com");
             user2.setPassword("password123");
             user2.setAge(35);
@@ -200,7 +200,7 @@ class UserDaoTest {
                     .compose(v -> userDao.findByAgeRange(20, 30))
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
-                        assertEquals("user1", users.get(0).getName());
+                        assertEquals("user1", users.get(0).getUsername());
                         testContext.completeNow();
                     }));
         }
@@ -209,13 +209,13 @@ class UserDaoTest {
         @DisplayName("根据最小余额查找用户测试")
         void testFindByMinBalance(VertxTestContext testContext) {
             User user1 = new User();
-            user1.setName("user1");
+            user1.setUsername("user1");
             user1.setEmail("user1@example.com");
             user1.setPassword("password123");
             user1.setBalance(new BigDecimal("50.00"));
 
             User user2 = new User();
-            user2.setName("user2");
+            user2.setUsername("user2");
             user2.setEmail("user2@example.com");
             user2.setPassword("password123");
             user2.setBalance(new BigDecimal("200.00"));
@@ -225,7 +225,7 @@ class UserDaoTest {
                     .compose(v -> userDao.findByMinBalance(new BigDecimal("100.00")))
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
-                        assertEquals("user2", users.get(0).getName());
+                        assertEquals("user2", users.get(0).getUsername());
                         testContext.completeNow();
                     }));
         }
@@ -239,13 +239,13 @@ class UserDaoTest {
         @DisplayName("获取用户统计信息测试")
         void testGetUserStatistics(VertxTestContext testContext) {
             User user1 = new User();
-            user1.setName("user1");
+            user1.setUsername("user1");
             user1.setEmail("user1@example.com");
             user1.setPassword("password123");
             user1.setAge(25);
 
             User user2 = new User();
-            user2.setName("user2");
+            user2.setUsername("user2");
             user2.setEmail("user2@example.com");
             user2.setPassword("password123");
             user2.setAge(35);
@@ -275,7 +275,7 @@ class UserDaoTest {
                 final int index = i;
                 createUsers = createUsers.compose(v -> {
                     User user = new User();
-                    user.setName("user" + index);
+                    user.setUsername("user" + index);
                     user.setEmail("user" + index + "@example.com");
                     user.setPassword("password123");
                     return userDao.insert(user).map(u -> null);
@@ -298,20 +298,20 @@ class UserDaoTest {
         @DisplayName("Lambda查询基本功能测试")
         void testLambdaQuery(VertxTestContext testContext) {
             User user = new User();
-            user.setName("testuser");
+            user.setUsername("testuser");
             user.setEmail("test@example.com");
             user.setPassword("password123");
             user.setAge(25);
 
             userDao.insert(user)
                     .compose(v -> userDao.lambdaQuery()
-                            .eq(User::getName, "testuser")
+                            .eq(User::getUsername, "testuser")
                             .eq(User::getAge, 25)
                             .list())
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
                         User foundUser = users.get(0);
-                        assertEquals("testuser", foundUser.getName());
+                        assertEquals("testuser", foundUser.getUsername());
                         assertEquals(25, foundUser.getAge());
                         testContext.completeNow();
                     }));
@@ -321,14 +321,14 @@ class UserDaoTest {
         @DisplayName("Lambda查询条件组合测试")
         void testLambdaQueryConditions(VertxTestContext testContext) {
             User user1 = new User();
-            user1.setName("user1");
+            user1.setUsername("user1");
             user1.setEmail("user1@example.com");
             user1.setPassword("password123");
             user1.setAge(25);
             user1.setStatus(User.UserStatus.ACTIVE);
 
             User user2 = new User();
-            user2.setName("user2");
+            user2.setUsername("user2");
             user2.setEmail("user2@example.com");
             user2.setPassword("password123");
             user2.setAge(35);
@@ -342,7 +342,7 @@ class UserDaoTest {
                             .list())
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
-                        assertEquals("user2", users.get(0).getName());
+                        assertEquals("user2", users.get(0).getUsername());
                         testContext.completeNow();
                     }));
         }
@@ -356,12 +356,12 @@ class UserDaoTest {
         @DisplayName("批量插入用户测试")
         void testInsertBatch(VertxTestContext testContext) {
             User user1 = new User();
-            user1.setName("user1");
+            user1.setUsername("user1");
             user1.setEmail("user1@example.com");
             user1.setPassword("password123");
 
             User user2 = new User();
-            user2.setName("user2");
+            user2.setUsername("user2");
             user2.setEmail("user2@example.com");
             user2.setPassword("password123");
 

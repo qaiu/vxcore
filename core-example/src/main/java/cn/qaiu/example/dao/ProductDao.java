@@ -323,7 +323,7 @@ public class ProductDao extends LambdaDao<Product, Long> {
         // 简化实现：使用 findAll 然后过滤
         return findAll().map(allProducts -> 
             allProducts.stream()
-                .filter(product -> product.getCreatedAt().isAfter(startTime) && product.getCreatedAt().isBefore(endTime))
+                .filter(product -> product.getCreateTime().isAfter(startTime) && product.getCreateTime().isBefore(endTime))
                 .collect(java.util.stream.Collectors.toList())
         );
     }

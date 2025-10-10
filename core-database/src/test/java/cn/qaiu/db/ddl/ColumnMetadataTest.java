@@ -47,7 +47,7 @@ public class ColumnMetadataTest {
         columnMetadata.setPrimaryKey(true);
 
         // 验证属性
-        assertEquals("test_column", columnMetadata.getName());
+        assertEquals("test_column", columnMetadata.getUsername());
         assertEquals("VARCHAR", columnMetadata.getType());
         assertEquals(100, columnMetadata.getLength());
         assertEquals(10, columnMetadata.getPrecision());
@@ -75,7 +75,7 @@ public class ColumnMetadataTest {
             "unique_test", "idx_test", 2, true
         );
 
-        assertEquals("test_column", metadata.getName());
+        assertEquals("test_column", metadata.getUsername());
         assertEquals("VARCHAR", metadata.getType());
         assertEquals(100, metadata.getLength());
         assertEquals(10, metadata.getPrecision());
@@ -126,7 +126,7 @@ public class ColumnMetadataTest {
             ColumnMetadata metadata = ColumnMetadata.fromField(field, tableMetadata);
 
             assertNotNull(metadata);
-            assertEquals("test_column", metadata.getName());
+            assertEquals("test_column", metadata.getUsername());
             assertEquals("VARCHAR", metadata.getType());
             assertEquals(100, metadata.getLength());
             assertEquals(10, metadata.getPrecision());

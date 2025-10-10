@@ -2,6 +2,7 @@ package cn.qaiu.example.entity;
 
 import cn.qaiu.db.ddl.DdlColumn;
 import cn.qaiu.db.ddl.DdlTable;
+import cn.qaiu.db.dsl.BaseEntity;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
@@ -23,15 +24,8 @@ import java.time.LocalDateTime;
     collate = "utf8mb4_unicode_ci",
     engine = "InnoDB"
 )
-public class Order {
+public class Order extends BaseEntity {
 
-    @DdlColumn(
-        type = "BIGINT",
-        autoIncrement = true,
-        nullable = false,
-        comment = "订单ID"
-    )
-    private Long id;
 
     @DdlColumn(
         type = "VARCHAR",
@@ -137,22 +131,6 @@ public class Order {
     )
     private String remark;
 
-    @DdlColumn(
-        type = "TIMESTAMP",
-        nullable = false,
-        defaultValue = "CURRENT_TIMESTAMP",
-        defaultValueIsFunction = true,
-        indexName = "idx_created_at",
-        comment = "创建时间"
-    )
-    private LocalDateTime createdAt;
-
-    @DdlColumn(
-        type = "TIMESTAMP",
-        nullable = true,
-        comment = "更新时间"
-    )
-    private LocalDateTime updatedAt;
 
     /**
      * 订单状态枚举
@@ -177,8 +155,6 @@ public class Order {
 
     // 默认构造函数
     public Order() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
         this.status = OrderStatus.PENDING;
         this.quantity = 1;
     }
@@ -199,8 +175,8 @@ public class Order {
         this.deliveryTime = json.getString("delivery_time") != null ? LocalDateTime.parse(json.getString("delivery_time")) : null;
         this.cancelTime = json.getString("cancel_time") != null ? LocalDateTime.parse(json.getString("cancel_time")) : null;
         this.remark = json.getString("remark");
-        this.createdAt = json.getString("created_at") != null ? LocalDateTime.parse(json.getString("created_at")) : LocalDateTime.now();
-        this.updatedAt = json.getString("updated_at") != null ? LocalDateTime.parse(json.getString("updated_at")) : LocalDateTime.now();
+        this.createTime = json.getString("created_at") != null ? LocalDateTime.parse(json.getString("created_at")) : LocalDateTime.now();
+        this.updateTime = json.getString("updated_at") != null ? LocalDateTime.parse(json.getString("updated_at")) : LocalDateTime.now();
     }
 
     // 转换为 JsonObject
@@ -220,8 +196,8 @@ public class Order {
         if (deliveryTime != null) json.put("delivery_time", deliveryTime.toString());
         if (cancelTime != null) json.put("cancel_time", cancelTime.toString());
         if (remark != null) json.put("remark", remark);
-        if (createdAt != null) json.put("created_at", createdAt.toString());
-        if (updatedAt != null) json.put("updated_at", updatedAt.toString());
+        if (createTime != null) json.put("created_at", createTime.toString());
+        if (updateTime != null) json.put("updated_at", updateTime.toString());
         return json;
     }
 
@@ -241,7 +217,7 @@ public class Order {
         this.status = OrderStatus.PAID;
         this.paymentMethod = paymentMethod;
         this.paymentTime = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
     }
 
     /**
@@ -250,7 +226,7 @@ public class Order {
     public void ship() {
         this.status = OrderStatus.SHIPPED;
         this.shipTime = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
     }
 
     /**
@@ -259,7 +235,7 @@ public class Order {
     public void confirmDelivery() {
         this.status = OrderStatus.DELIVERED;
         this.deliveryTime = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
     }
 
     /**
@@ -268,7 +244,7 @@ public class Order {
     public void cancel() {
         this.status = OrderStatus.CANCELLED;
         this.cancelTime = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
     }
 
     // Getters and Setters
@@ -384,21 +360,6 @@ public class Order {
         this.remark = remark;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 
     @Override
     public String toString() {
@@ -412,7 +373,7 @@ public class Order {
                 ", totalAmount=" + totalAmount +
                 ", status=" + status +
                 ", paymentMethod='" + paymentMethod + '\'' +
-                ", createdAt=" + createdAt +
+                ", createTime=" + createTime +
                 '}';
     }
 }

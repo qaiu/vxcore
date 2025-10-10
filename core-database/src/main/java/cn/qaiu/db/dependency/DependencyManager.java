@@ -167,7 +167,7 @@ public class DependencyManager {
         private List<MavenDependency> dependencies;
         
         // Getters and Setters
-        public String getName() { return name; }
+        public String getUsername() { return name; }
         public void setName(String name) { this.name = name; }
         
         public String getDescription() { return description; }

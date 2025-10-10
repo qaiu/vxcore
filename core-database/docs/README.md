@@ -214,7 +214,7 @@ public class UserVerticle extends AbstractVerticle {
     // 业务方法示例
     private Future<User> createUser(String name, String email) {
         User user = new User();
-        user.setName(name);
+        user.setUsername(name);
         user.setEmail(email);
         user.setStatus("ACTIVE");
         
@@ -382,7 +382,7 @@ public Future<Void> createUserWithProfile(User user, UserProfile profile) {
 
 ```java
 User user = new User();
-user.setName("john_doe");
+user.setUsername("john_doe");
 user.setEmail("john@example.com");
 user.setStatus("ACTIVE");
 
@@ -719,7 +719,7 @@ public class UserService {
                 }
                 
                 User newUser = new User();
-                newUser.setName(request.name);
+                newuser.setUsername(request.name);
                 newUser.setEmail(request.email);
                 newUser.setActive(true);
                 

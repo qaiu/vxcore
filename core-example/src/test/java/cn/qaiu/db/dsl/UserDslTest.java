@@ -74,7 +74,7 @@ public class UserDslTest {
     void tearDown(VertxTestContext testContext) {
         if (executor != null) {
             // 清理测试数据
-            executor.executeQuery(DSL.query("DELETE FROM dsl_user"))
+            executor.executeQuery(DSL.query("DELETE FROM users"))
                     .onSuccess(v -> {
                         LOGGER.debug("Test data cleaned up");
                         testContext.completeNow();
@@ -90,7 +90,7 @@ public class UserDslTest {
      */
     private Future<Void> initTestDatabase(JDBCPool pool) {
         String createTableSQL = """
-                CREATE TABLE IF NOT EXISTS dsl_user (
+                CREATE TABLE IF NOT EXISTS users (
                     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     username VARCHAR(50) NOT NULL UNIQUE,
                     email VARCHAR(100) NOT NULL UNIQUE,
@@ -157,7 +157,7 @@ public class UserDslTest {
     @DisplayName("测试根据邮箱查询")
     void testFindByEmail(VertxTestContext testContext) {
         userDao.createUser("bob", "bob@example.com", "password123")
-                .compose(user -> userDao.findByEmail("bob@example.com"))
+                .compose(user -> userDao.findOneByEmail("bob@example.com"))
                 .onSuccess(userOpt -> {
                     testContext.verify(() -> {
                         assertTrue(userOpt.isPresent());

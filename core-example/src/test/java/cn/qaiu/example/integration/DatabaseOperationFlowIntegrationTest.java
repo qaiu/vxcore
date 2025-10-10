@@ -502,7 +502,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
                     .onSuccess(createdUser -> {
                         testContext.verify(() -> {
                             assertNotNull(createdUser, "创建的用户不应为空");
@@ -528,7 +528,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
                     .compose(createdUser -> {
                         // 通过服务层查询用户
                         return userService.findById(createdUser.getId());
@@ -558,7 +558,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
                     .compose(createdUser -> {
                         // 更新用户信息
                         createdUser.setUsername("updatedserviceuser");
@@ -590,7 +590,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
                     .compose(createdUser -> {
                         // 删除用户
                         return userService.deleteUser(createdUser.getId());

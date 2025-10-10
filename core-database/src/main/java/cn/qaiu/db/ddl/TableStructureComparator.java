@@ -121,19 +121,19 @@ public class TableStructureComparator {
                 
                 for (Row row : rows) {
                     ColumnInfo columnInfo = extractColumnInfo(row, dbType);
-                    actualColumns.put(columnInfo.getName(), columnInfo);
+                    actualColumns.put(columnInfo.getUsername(), columnInfo);
                 }
                 
                 // 比较每个期望的列
                 for (ColumnMetadata expectedColumn : expectedMetadata.getColumns().values()) {
-                    ColumnInfo actualColumn = actualColumns.get(expectedColumn.getName());
+                    ColumnInfo actualColumn = actualColumns.get(expectedColumn.getUsername());
                     
                     if (actualColumn == null) {
                         // 列不存在
                         differences.add(new TableDifference(
                             DifferenceType.COLUMN_NOT_EXISTS,
                             expectedMetadata.getTableName(),
-                            expectedColumn.getName(),
+                            expectedColumn.getUsername(),
                             expectedColumn.toColumnDefinition(dbType),
                             "column does not exist",
                             generateAddColumnSql(expectedMetadata.getTableName(), expectedColumn, dbType)
@@ -146,14 +146,14 @@ public class TableStructureComparator {
                 
                 // 检查多余的列
                 for (ColumnInfo actualColumn : actualColumns.values()) {
-                    if (!expectedMetadata.getColumns().containsKey(actualColumn.getName())) {
+                    if (!expectedMetadata.getColumns().containsKey(actualColumn.getUsername())) {
                         differences.add(new TableDifference(
                             DifferenceType.EXTRA_COLUMN,
                             expectedMetadata.getTableName(),
-                            actualColumn.getName(),
+                            actualColumn.getUsername(),
                             "column should not exist",
                             actualColumn.toString(),
-                            generateDropColumnSql(expectedMetadata.getTableName(), actualColumn.getName(), dbType)
+                            generateDropColumnSql(expectedMetadata.getTableName(), actualColumn.getUsername(), dbType)
                         ));
                     }
                 }
@@ -176,7 +176,7 @@ public class TableStructureComparator {
             differences.add(new TableDifference(
                 DifferenceType.COLUMN_TYPE_MISMATCH,
                 tableName,
-                expected.getName(),
+                expected.getUsername(),
                 expected.getType(),
                 actual.getType(),
                 generateAlterColumnTypeSql(tableName, expected, dbType)
@@ -188,7 +188,7 @@ public class TableStructureComparator {
             differences.add(new TableDifference(
                 DifferenceType.COLUMN_LENGTH_MISMATCH,
                 tableName,
-                expected.getName(),
+                expected.getUsername(),
                 String.valueOf(expected.getLength()),
                 String.valueOf(actual.getLength()),
                 generateAlterColumnLengthSql(tableName, expected, dbType)
@@ -202,7 +202,7 @@ public class TableStructureComparator {
                 differences.add(new TableDifference(
                     DifferenceType.COLUMN_NULLABLE_MISMATCH,
                     tableName,
-                    expected.getName(),
+                    expected.getUsername(),
                     String.valueOf(expected.isNullable()),
                     String.valueOf(actual.isNullable()),
                     generateAlterColumnNullableSql(tableName, expected, dbType)
@@ -215,7 +215,7 @@ public class TableStructureComparator {
             differences.add(new TableDifference(
                 DifferenceType.COLUMN_DEFAULT_MISMATCH,
                 tableName,
-                expected.getName(),
+                expected.getUsername(),
                 expected.getDefaultValue(),
                 actual.getDefaultValue(),
                 generateAlterColumnDefaultSql(tableName, expected, dbType)
@@ -227,7 +227,7 @@ public class TableStructureComparator {
             differences.add(new TableDifference(
                 DifferenceType.COLUMN_AUTO_INCREMENT_MISMATCH,
                 tableName,
-                expected.getName(),
+                expected.getUsername(),
                 String.valueOf(expected.isAutoIncrement()),
                 String.valueOf(actual.isAutoIncrement()),
                 generateAlterColumnAutoIncrementSql(tableName, expected, dbType)
@@ -703,7 +703,7 @@ public class TableStructureComparator {
             StringBuilder sql = new StringBuilder();
             sql.append(String.format("ALTER TABLE %s%s%s ALTER COLUMN %s%s%s TYPE %s",
                     quotationMarks, tableName, quotationMarks,
-                    quotationMarks, column.getName(), quotationMarks,
+                    quotationMarks, column.getUsername(), quotationMarks,
                     column.getType()));
             
             // 添加注释（PostgreSQL需要单独的COMMENT ON COLUMN语句）
@@ -711,7 +711,7 @@ public class TableStructureComparator {
                 sql.append(";\n");
                 sql.append(String.format("COMMENT ON COLUMN %s%s%s.%s%s%s IS '%s'",
                         quotationMarks, tableName, quotationMarks,
-                        quotationMarks, column.getName(), quotationMarks,
+                        quotationMarks, column.getUsername(), quotationMarks,
                         column.getComment()));
             }
             
@@ -753,20 +753,20 @@ public class TableStructureComparator {
                     // 函数类型的默认值不需要引号
                     sql.append(String.format("ALTER TABLE %s%s%s ALTER COLUMN %s%s%s SET DEFAULT %s",
                             quotationMarks, tableName, quotationMarks,
-                            quotationMarks, column.getName(), quotationMarks,
+                            quotationMarks, column.getUsername(), quotationMarks,
                             defaultValue));
                 } else {
                     // 字面值需要引号
                     sql.append(String.format("ALTER TABLE %s%s%s ALTER COLUMN %s%s%s SET DEFAULT '%s'",
                             quotationMarks, tableName, quotationMarks,
-                            quotationMarks, column.getName(), quotationMarks,
+                            quotationMarks, column.getUsername(), quotationMarks,
                             defaultValue));
                 }
             } else {
                 // 删除默认值
                 sql.append(String.format("ALTER TABLE %s%s%s ALTER COLUMN %s%s%s DROP DEFAULT",
                         quotationMarks, tableName, quotationMarks,
-                        quotationMarks, column.getName(), quotationMarks));
+                        quotationMarks, column.getUsername(), quotationMarks));
             }
             
             // 添加注释（PostgreSQL需要单独的COMMENT ON COLUMN语句）
@@ -774,7 +774,7 @@ public class TableStructureComparator {
                 sql.append(";\n");
                 sql.append(String.format("COMMENT ON COLUMN %s%s%s.%s%s%s IS '%s'",
                         quotationMarks, tableName, quotationMarks,
-                        quotationMarks, column.getName(), quotationMarks,
+                        quotationMarks, column.getUsername(), quotationMarks,
                         column.getComment()));
             }
             
@@ -801,7 +801,7 @@ public class TableStructureComparator {
         if (column.getComment() != null && !column.getComment().isEmpty()) {
             return String.format("COMMENT ON COLUMN %s%s%s.%s%s%s IS '%s'",
                     quotationMarks, tableName, quotationMarks,
-                    quotationMarks, column.getName(), quotationMarks,
+                    quotationMarks, column.getUsername(), quotationMarks,
                     column.getComment());
         }
         return null; // 没有注释时返回null
@@ -833,7 +833,7 @@ public class TableStructureComparator {
         }
 
         // Getters
-        public String getName() { return name; }
+        public String getUsername() { return name; }
         public String getType() { return type; }
         public int getLength() { return length; }
         public int getPrecision() { return precision; }
