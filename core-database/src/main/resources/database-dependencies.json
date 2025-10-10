@@ -1,0 +1,80 @@
+{
+  "databaseDependencies": {
+    "mysql": {
+      "description": "MySQL数据库支持",
+      "dependencies": [
+        {
+          "groupId": "com.mysql",
+          "artifactId": "mysql-connector-j",
+          "version": "9.2.0"
+        },
+        {
+          "groupId": "io.vertx",
+          "artifactId": "vertx-mysql-client"
+        }
+      ],
+      "required": false
+    },
+    "postgresql": {
+      "description": "PostgreSQL数据库支持",
+      "dependencies": [
+        {
+          "groupId": "org.postgresql",
+          "artifactId": "postgresql",
+          "version": "42.7.3"
+        },
+        {
+          "groupId": "io.vertx",
+          "artifactId": "vertx-pg-client"
+        }
+      ],
+      "required": false
+    },
+    "h2": {
+      "description": "H2数据库支持（用于测试和开发）",
+      "dependencies": [
+        {
+          "groupId": "com.h2database",
+          "artifactId": "h2",
+          "version": "2.2.220"
+        }
+      ],
+      "required": false
+    },
+    "oracle": {
+      "description": "Oracle数据库支持",
+      "dependencies": [
+        {
+          "groupId": "com.oracle.database.jdbc",
+          "artifactId": "ojdbc8",
+          "version": "23.3.0.23.09"
+        }
+      ],
+      "required": false
+    },
+    "sqlserver": {
+      "description": "SQL Server数据库支持",
+      "dependencies": [
+        {
+          "groupId": "com.microsoft.sqlserver",
+          "artifactId": "mssql-jdbc",
+          "version": "12.6.1.jre11"
+        }
+      ],
+      "required": false
+    }
+  },
+  "usage": {
+    "description": "在项目的pom.xml中添加所需的数据库依赖",
+    "examples": [
+      {
+        "database": "mysql",
+        "pom": "<dependency>\n  <groupId>com.mysql</groupId>\n  <artifactId>mysql-connector-j</artifactId>\n  <version>9.2.0</version>\n</dependency>\n<dependency>\n  <groupId>io.vertx</groupId>\n  <artifactId>vertx-mysql-client</artifactId>\n</dependency>"
+      },
+      {
+        "database": "postgresql",
+        "pom": "<dependency>\n  <groupId>org.postgresql</groupId>\n  <artifactId>postgresql</artifactId>\n  <version>42.7.3</version>\n</dependency>\n<dependency>\n  <groupId>io.vertx</groupId>\n  <artifactId>vertx-pg-client</artifactId>\n</dependency>"
+      }
+    ]
+  }
+}

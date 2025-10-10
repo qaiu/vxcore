@@ -1,0 +1,60 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'  # 每周一凌晨1点运行
+  workflow_dispatch:
+
+jobs:
+  dependency-update:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: Check for dependency updates
+      run: mvn versions:display-dependency-updates
+      
+    - name: Check for plugin updates
+      run: mvn versions:display-plugin-updates
+      
+    - name: Update dependencies
+      run: mvn versions:use-latest-versions
+      
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies to latest versions'
+        title: 'chore: update dependencies'
+        body: |
+          ## Dependency Updates
+          
+          This PR updates project dependencies to their latest versions.
+          
+          ### Changes
+          - Updated Maven dependencies
+          - Updated Maven plugins
+          - Updated Java version if applicable
+          
+          ### Testing
+          - [ ] All tests pass
+          - [ ] No breaking changes detected
+          - [ ] Performance benchmarks maintained
+        branch: dependency-update
+        delete-branch: true

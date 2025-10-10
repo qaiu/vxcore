@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <groupId>cn.qaiu</groupId>
+    <artifactId>vxcore-database-plugin</artifactId>
+    <version>1.0.0</version>
+    <name>VXCore Database Plugin</name>
+    <description>Plugin to help add database dependencies to VXCore projects</description>
+    
+    <goalPrefix>vxcore</goalPrefix>
+    
+    <mojos>
+        <mojo>
+            <goal>add-database</goal>
+            <description>Add database dependencies to the project</description>
+            <requiresProject>true</requiresProject>
+            <parameters>
+                <parameter>
+                    <name>database</name>
+                    <type>java.lang.String</type>
+                    <required>true</required>
+                    <description>Database type (mysql, postgresql, h2, oracle, sqlserver)</description>
+                </parameter>
+                <parameter>
+                    <name>outputFile</name>
+                    <type>java.lang.String</type>
+                    <required>false</required>
+                    <defaultValue>dependencies.xml</defaultValue>
+                    <description>Output file for generated dependencies</description>
+                </parameter>
+            </parameters>
+        </mojo>
+        
+        <mojo>
+            <goal>list-databases</goal>
+            <description>List all supported database types</description>
+            <requiresProject>false</requiresProject>
+        </mojo>
+        
+        <mojo>
+            <goal>check-dependencies</goal>
+            <description>Check if database dependencies are available</description>
+            <requiresProject>true</requiresProject>
+            <parameters>
+                <parameter>
+                    <name>database</name>
+                    <type>java.lang.String</type>
+                    <required>false</required>
+                    <description>Database type to check (optional, checks all if not specified)</description>
+                </parameter>
+            </parameters>
+        </mojo>
+    </mojos>
+</plugin>

@@ -1,6 +1,6 @@
 package cn.qaiu.db.dsl.lambda;
 
-import io.vertx.codegen.annotations.DataObject;
+// import io.vertx.codegen.annotations.DataObject; // 未使用
 import io.vertx.core.json.JsonObject;
 
 import java.io.Serializable;

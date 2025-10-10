@@ -2,10 +2,9 @@ package cn.qaiu.db.dsl.test;
 
 import cn.qaiu.db.dsl.core.SqlAuditStatistics;
 import cn.qaiu.db.dsl.core.JooqExecutor;
-import cn.qaiu.example.UserDao;
-import cn.qaiu.example.User;
+import cn.qaiu.example.dao.UserDao;
+import cn.qaiu.example.entity.User;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.junit5.VertxExtension;
@@ -117,11 +116,11 @@ public class SqlAuditTest {
                 LOGGER.info("User updated: {}", updatedUser.isPresent() ? updatedUser.get().getId() : "null");
                 
                 // 查询用户
-                return userDao.findByUsername("testuser");
+                return userDao.findByName("testuser");
             })
-            .compose(userOpt -> {
-                assertTrue(userOpt.isPresent());
-                User user = userOpt.get();
+            .compose(users -> {
+                assertTrue(!users.isEmpty());
+                User user = users.get(0);
                 assertEquals("newpassword123", user.getPassword());
                 
                 // 删除用户
@@ -190,9 +189,9 @@ public class SqlAuditTest {
     void testSlowQueryDetection(VertxTestContext testContext) {
         // 执行一些操作
         userDao.createUser("slowuser", "slow@example.com", "password")
-            .compose(v -> userDao.findByUsername("slowuser"))
-            .compose(userOpt -> {
-                assertTrue(userOpt.isPresent());
+            .compose(v -> userDao.findByName("slowuser"))
+            .compose(users -> {
+                assertTrue(!users.isEmpty());
                 
                 // 打印慢查询统计（阈值1ms，应该能检测到一些查询）
                 SqlAuditStatistics.printSlowQueries(1);

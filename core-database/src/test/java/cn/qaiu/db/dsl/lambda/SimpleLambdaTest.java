@@ -66,6 +66,9 @@ public class SimpleLambdaTest {
     
     @BeforeEach
     void setUpEach() {
+        // 使用H2TestConfig创建标准测试表
+        cn.qaiu.db.test.H2TestConfig.TestTables.createAllTestTables(pool);
+        
         // 清空测试数据
         clearTestData();
         // 插入测试数据

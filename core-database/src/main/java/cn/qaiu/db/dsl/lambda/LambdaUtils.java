@@ -1,6 +1,10 @@
 package cn.qaiu.db.dsl.lambda;
 
+import cn.qaiu.db.ddl.DdlColumn;
+import cn.qaiu.db.dsl.core.FieldNameConverter;
+
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,16 +32,40 @@ public class LambdaUtils {
                 SerializedLambda serializedLambda = (SerializedLambda) method.invoke(column);
                 String methodName = serializedLambda.getImplMethodName();
                 
-                // 处理getter方法名，返回Java字段名（驼峰格式）
+                // 处理getter方法名，获取Java字段名
+                String javaFieldName;
                 if (methodName.startsWith("get")) {
                     String fieldName = methodName.substring(3);
-                    return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+                    javaFieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
                 } else if (methodName.startsWith("is")) {
                     String fieldName = methodName.substring(2);
-                    return Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
+                    javaFieldName = Character.toLowerCase(fieldName.charAt(0)) + fieldName.substring(1);
                 } else {
-                    return methodName;
+                    javaFieldName = methodName;
                 }
+                
+                // 尝试获取对应的Field对象，检查是否有@DdlColumn注解
+                try {
+                    String className = serializedLambda.getImplClass().replace('/', '.');
+                    Class<?> clazz = Class.forName(className);
+                    Field field = clazz.getDeclaredField(javaFieldName);
+                    
+                    // 检查是否有@DdlColumn注解
+                    DdlColumn ddlColumn = field.getAnnotation(DdlColumn.class);
+                    if (ddlColumn != null) {
+                        // 优先使用value字段，如果为空则使用name字段
+                        if (!ddlColumn.value().isEmpty()) {
+                            return ddlColumn.value();
+                        } else if (!ddlColumn.name().isEmpty()) {
+                            return ddlColumn.name();
+                        }
+                    }
+                } catch (Exception e) {
+                    // 如果无法获取Field或注解，继续使用默认转换
+                }
+                
+                // 转换为数据库字段名（下划线格式）
+                return FieldNameConverter.toDatabaseFieldName(javaFieldName);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to extract field name from lambda expression", e);
             }

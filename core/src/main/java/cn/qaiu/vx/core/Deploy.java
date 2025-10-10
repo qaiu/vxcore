@@ -57,32 +57,63 @@ public final class Deploy {
         this.mainThread = Thread.currentThread();
         this.handle = handle;
 
-        if (args.length > 0 && args[0].startsWith("app-")) {
-            // 启动参数dev或者prod
-            path.append("-").append(args[0].replace("app-",""));
-        }
-
+        // 支持新的配置格式：application.yml 或 app-dev.yml
+        String configFile = determineConfigFile(args);
+        
         // 读取yml配置
-        ConfigUtil.readYamlConfig(path.toString(), tempVertx)
+        ConfigUtil.readYamlConfig(configFile, tempVertx)
                 .onSuccess(this::readConf)
                 .onFailure(Throwable::printStackTrace);
         LockSupport.park();
         deployVerticle();
     }
+    
+    /**
+     * 确定配置文件路径
+     * 支持新的 application.yml 格式和旧的 app-dev.yml 格式
+     */
+    private String determineConfigFile(String[] args) {
+        if (args.length > 0) {
+            String arg = args[0];
+            if (arg.startsWith("app-")) {
+                // 旧格式：app-dev, app-prod
+                return arg;
+            } else if (arg.equals("dev") || arg.equals("prod") || arg.equals("test")) {
+                // 新格式：dev, prod, test -> application.yml
+                return "application";
+            } else if (arg.equals("application")) {
+                // 直接指定 application.yml
+                return "application";
+            }
+        }
+        
+        // 默认使用 app.yml（旧格式）
+        return "app";
+    }
 
     private void readConf(JsonObject conf) {
         outLogo(conf);
-        var activeMode = conf.getString("active");
-        if ("dev".equals(activeMode)) {
-            LOGGER.info("---------------> development environment <--------------\n");
-            System.setProperty("vertxweb.environment", "dev");
-        } else {
-            LOGGER.info("---------------> Production environment <--------------\n");
-        }
-        ConfigUtil.readYamlConfig(path + "-" + activeMode, tempVertx).onSuccess(res -> {
-            this.globalConfig = res;
+        
+        // 支持新的配置格式：application.yml 直接使用，无需额外的环境配置文件
+        if (conf.containsKey("server") && conf.containsKey("datasources")) {
+            // 新格式：application.yml
+            LOGGER.info("---------------> Using new application.yml configuration <--------------\n");
+            this.globalConfig = conf;
             LockSupport.unpark(mainThread);
-        });
+        } else {
+            // 旧格式：app.yml + app-dev.yml
+            var activeMode = conf.getString("active");
+            if ("dev".equals(activeMode)) {
+                LOGGER.info("---------------> development environment <--------------\n");
+                System.setProperty("vertxweb.environment", "dev");
+            } else {
+                LOGGER.info("---------------> Production environment <--------------\n");
+            }
+            ConfigUtil.readYamlConfig(path + "-" + activeMode, tempVertx).onSuccess(res -> {
+                this.globalConfig = res;
+                LockSupport.unpark(mainThread);
+            });
+        }
     }
 
     /**
@@ -119,6 +150,73 @@ public final class Deploy {
     private void deployVerticle() {
         tempVertx.close();
         LOGGER.info("配置读取成功");
+        
+        // 支持新的配置格式：application.yml
+        if (globalConfig.containsKey("server") && globalConfig.containsKey("datasources")) {
+            deployWithNewConfig();
+        } else {
+            deployWithOldConfig();
+        }
+    }
+    
+    /**
+     * 使用新配置格式部署（application.yml）
+     */
+    private void deployWithNewConfig() {
+        LOGGER.info("使用新配置格式部署...");
+        
+        // 创建 Vertx 实例
+        var vertxOptions = new VertxOptions();
+        vertxOptions.setAddressResolverOptions(
+                new AddressResolverOptions().
+                        addServer("114.114.114.114").
+                        addServer("114.114.115.115").
+                        addServer("8.8.8.8").
+                        addServer("8.8.4.4"));
+        
+        var vertx = Vertx.vertx(vertxOptions);
+        VertxHolder.init(vertx);
+        
+        // 配置保存在共享数据中
+        var sharedData = vertx.sharedData();
+        LocalMap<String, Object> localMap = sharedData.getLocalMap(LOCAL);
+        localMap.put(GLOBAL_CONFIG, globalConfig);
+        localMap.put(SERVER, globalConfig.getJsonObject("server"));
+        
+        // 执行用户自定义处理
+        var future0 = vertx.createSharedWorkerExecutor("other-handle")
+                .executeBlocking(() -> {
+                    handle.handle(globalConfig);
+                    return "Other handle complete";
+                });
+
+        future0.onSuccess(res -> {
+            LOGGER.info(res);
+            // 部署基础服务
+            var future1 = vertx.deployVerticle(RouterVerticle.class, getWorkDeploymentOptions("Router"));
+            var future2 = vertx.deployVerticle(ServiceVerticle.class, getWorkDeploymentOptions("Service"));
+            
+            // 检查是否需要部署反向代理
+            JsonObject proxyConfig = globalConfig.getJsonObject("proxy");
+            if (proxyConfig != null && proxyConfig.getBoolean("enabled", false)) {
+                var future3 = vertx.deployVerticle(ReverseProxyVerticle.class, getWorkDeploymentOptions("proxy"));
+                Future.all(future1, future2, future3)
+                        .onSuccess(this::deployWorkVerticalSuccess)
+                        .onFailure(this::deployVerticalFailed);
+            } else {
+                Future.all(future1, future2)
+                        .onSuccess(this::deployWorkVerticalSuccess)
+                        .onFailure(this::deployVerticalFailed);
+            }
+        }).onFailure(e -> LOGGER.error("Other handle error", e));
+    }
+    
+    /**
+     * 使用旧配置格式部署（app.yml + app-dev.yml）
+     */
+    private void deployWithOldConfig() {
+        LOGGER.info("使用旧配置格式部署...");
+        
         customConfig = globalConfig.getJsonObject(CUSTOM);
 
         JsonObject vertxConfig = globalConfig.getJsonObject(VERTX);
@@ -227,7 +325,14 @@ public final class Deploy {
      * @return Deployment Options
      */
     private DeploymentOptions getWorkDeploymentOptions(String name) {
-        return getWorkDeploymentOptions(name, customConfig.getInteger(ASYNC_SERVICE_INSTANCES));
+        // 支持新配置格式
+        if (globalConfig.containsKey("server") && globalConfig.containsKey("datasources")) {
+            // 新格式：使用默认配置
+            return getWorkDeploymentOptions(name, 4);
+        } else {
+            // 旧格式：使用 customConfig
+            return getWorkDeploymentOptions(name, customConfig.getInteger(ASYNC_SERVICE_INSTANCES));
+        }
     }
 
     private DeploymentOptions getWorkDeploymentOptions(String name, int ins) {

@@ -42,7 +42,8 @@ public class StringCase {
      * @return 转换后下划线方式命名的字符串(大写)
      */
     public static String toUnderlineUpperCase(String str) {
-        return toUnderlineCase(str).toUpperCase();
+        String result = toUnderlineCase(str);
+        return result != null ? result.toUpperCase() : null;
     }
 
     public static String toCamelCase(String str, boolean isBigCamel) {

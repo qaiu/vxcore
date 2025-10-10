@@ -35,6 +35,12 @@ public abstract class BaseEntity implements Serializable {
     @cn.qaiu.db.ddl.DdlColumn(value = "update_time", type = "TIMESTAMP", nullable = false, defaultValue = "CURRENT_TIMESTAMP", comment = "更新时间")
     protected LocalDateTime updateTime;
     
+    @cn.qaiu.db.ddl.DdlColumn(value = "create_by", type = "BIGINT", nullable = true, comment = "创建人ID")
+    protected Long createBy;
+    
+    @cn.qaiu.db.ddl.DdlColumn(value = "update_by", type = "BIGINT", nullable = true, comment = "更新人ID")
+    protected Long updateBy;
+    
     /**
      * 无参构造函数（Jackson/JSON 反序列化需要）
      */
@@ -70,6 +76,10 @@ public abstract class BaseEntity implements Serializable {
             }
         }
         
+        // 设置创建人和更新人
+        this.createBy = json.getLong("createBy");
+        this.updateBy = json.getLong("updateBy");
+        
         // 确保时间字段不为null
         if (this.createTime == null) {
             this.createTime = LocalDateTime.now();
@@ -88,7 +98,9 @@ public abstract class BaseEntity implements Serializable {
         JsonObject json = new JsonObject()
             .put("id", id)
             .put("createTime", createTime != null ? createTime.toString() : null)
-            .put("updateTime", updateTime != null ? updateTime.toString() : null);
+            .put("updateTime", updateTime != null ? updateTime.toString() : null)
+            .put("createBy", createBy)
+            .put("updateBy", updateBy);
         
         // 子类可以重写此方法添加额外字段
         fillJson(json);
@@ -113,11 +125,29 @@ public abstract class BaseEntity implements Serializable {
     }
     
     /**
+     * 更新记录前调用（自动设置 updateTime 和 updateBy）
+     */
+    public void onUpdate(Long updateBy) {
+        this.updateTime = LocalDateTime.now();
+        this.updateBy = updateBy;
+    }
+    
+    /**
      * 创建记录前调用（自动设置创建时间）
      */
     public void onCreate() {
         this.createTime = LocalDateTime.now();
         this.updateTime = LocalDateTime.now();
+    }
+    
+    /**
+     * 创建记录前调用（自动设置创建时间和创建人）
+     */
+    public void onCreate(Long createBy) {
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+        this.createBy = createBy;
+        this.updateBy = createBy;
     }
     
     /**
@@ -209,6 +239,22 @@ public abstract class BaseEntity implements Serializable {
         this.updateTime = updateTime;
     }
     
+    public Long getCreateBy() {
+        return createBy;
+    }
+    
+    public void setCreateBy(Long createBy) {
+        this.createBy = createBy;
+    }
+    
+    public Long getUpdateBy() {
+        return updateBy;
+    }
+    
+    public void setUpdateBy(Long updateBy) {
+        this.updateBy = updateBy;
+    }
+    
     // ========== Object 方法重写 ==========
     
     @Override
@@ -230,7 +276,9 @@ public abstract class BaseEntity implements Serializable {
         return this.getClass().getSimpleName() + 
                "{id=" + id + 
                ", createTime=" + createTime + 
-               ", updateTime=" + updateTime + '}';
+               ", updateTime=" + updateTime + 
+               ", createBy=" + createBy + 
+               ", updateBy=" + updateBy + '}';
     }
 
     /**

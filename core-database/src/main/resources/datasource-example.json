@@ -1,0 +1,51 @@
+{
+  "datasources": {
+    "default": {
+      "type": "h2",
+      "jdbcUrl": "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE",
+      "user": "sa",
+      "password": "",
+      "max_pool_size": 10,
+      "min_pool_size": 1,
+      "initial_pool_size": 1,
+      "connection_timeout": 30000,
+      "auto_commit": true
+    },
+    "mysql": {
+      "type": "mysql",
+      "jdbcUrl": "jdbc:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=UTC",
+      "user": "root",
+      "password": "password",
+      "driver_class": "com.mysql.cj.jdbc.Driver",
+      "max_pool_size": 20,
+      "min_pool_size": 2,
+      "initial_pool_size": 2,
+      "connection_timeout": 30000,
+      "auto_commit": true
+    },
+    "postgresql": {
+      "type": "postgresql",
+      "jdbcUrl": "jdbc:postgresql://localhost:5432/testdb",
+      "user": "postgres",
+      "password": "password",
+      "driver_class": "org.postgresql.Driver",
+      "max_pool_size": 15,
+      "min_pool_size": 1,
+      "initial_pool_size": 1,
+      "connection_timeout": 30000,
+      "auto_commit": true
+    },
+    "readonly": {
+      "type": "mysql",
+      "jdbcUrl": "jdbc:mysql://readonly-server:3306/testdb?useSSL=false&serverTimezone=UTC",
+      "user": "readonly",
+      "password": "readonly_password",
+      "driver_class": "com.mysql.cj.jdbc.Driver",
+      "max_pool_size": 5,
+      "min_pool_size": 1,
+      "initial_pool_size": 1,
+      "connection_timeout": 30000,
+      "auto_commit": true
+    }
+  }
+}

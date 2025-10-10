@@ -113,9 +113,11 @@ public class DefaultMapper<T> implements EntityMapper<T> {
                     field.setAccessible(true);
                     Object value = field.get(entity);
 
+                    LOGGER.debug("Field: {}, Column: {}, Value: {}", field.getName(), columnName, value);
+                    
                     if (value != null) {
-                        String jsonKey = cn.qaiu.db.dsl.core.FieldNameConverter.toJavaFieldName(columnName);
-                        json.put(jsonKey, convertToJsonValue(value));
+                        // 直接使用数据库字段名，不进行转换
+                        json.put(columnName, convertToJsonValue(value));
                     }
                 }
             }

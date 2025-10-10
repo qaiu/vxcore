@@ -269,4 +269,235 @@ public abstract class AbstractDao<T, ID> implements JooqDao<T, ID> {
     protected DSLContext dsl() {
         return executor.dsl();
     }
+    
+    // =================== 批量操作方法 ===================
+    
+    /**
+     * 批量插入实体
+     * 
+     * @param entities 要插入的实体列表
+     * @return 插入成功的实体数量
+     */
+    public Future<Integer> batchInsert(List<T> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return Future.succeededFuture(0);
+        }
+        
+        try {
+            LOGGER.debug("Batch inserting {} entities to table {}", entities.size(), tableName);
+            
+            // 调用实体的onCreate方法
+            entities.forEach(entity -> {
+                if (entity instanceof cn.qaiu.db.dsl.BaseEntity) {
+                    ((cn.qaiu.db.dsl.BaseEntity) entity).onCreate();
+                }
+            });
+            
+            // 构建批量插入查询
+            List<Query> insertQueries = entities.stream()
+                .map(entity -> {
+                    JsonObject data = entityMapper.toJsonObject(entity);
+                    // 移除主键字段
+                    data.remove(cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(primaryKeyField));
+                    return dslBuilder.buildInsert(tableName, data);
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            // 执行批量插入
+            return executor.executeBatch(insertQueries)
+                .map(results -> {
+                    int successCount = 0;
+                    for (int i = 0; i < results.length; i++) {
+                        if (results[i] > 0) {
+                            successCount++;
+                            // 设置生成的主键（如果有）
+                            if (i < entities.size()) {
+                                setId(entities.get(i), (long) results[i]);
+                            }
+                        }
+                    }
+                    LOGGER.debug("Batch insert completed: {} entities inserted", successCount);
+                    return successCount;
+                });
+        } catch (Exception e) {
+            LOGGER.error("Failed to batch insert entities", e);
+            return Future.failedFuture(e);
+        }
+    }
+    
+    /**
+     * 批量更新实体
+     * 
+     * @param entities 要更新的实体列表
+     * @return 更新成功的实体数量
+     */
+    public Future<Integer> batchUpdate(List<T> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return Future.succeededFuture(0);
+        }
+        
+        try {
+            LOGGER.debug("Batch updating {} entities in table {}", entities.size(), tableName);
+            
+            // 调用实体的onUpdate方法
+            entities.forEach(entity -> {
+                if (entity instanceof cn.qaiu.db.dsl.BaseEntity) {
+                    ((cn.qaiu.db.dsl.BaseEntity) entity).onUpdate();
+                }
+            });
+            
+            // 构建批量更新查询
+            List<Query> updateQueries = entities.stream()
+                .map(entity -> {
+                    ID entityId = getId(entity);
+                    if (entityId == null) {
+                        throw new IllegalArgumentException("Entity ID cannot be null for batch update");
+                    }
+                    
+                    JsonObject data = entityMapper.toJsonObject(entity);
+                    Condition whereCondition = DSL.field(primaryKeyField).eq(entityId);
+                    return dslBuilder.buildUpdate(tableName, data, whereCondition);
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            // 执行批量更新
+            return executor.executeBatch(updateQueries)
+                .map(results -> {
+                    int successCount = 0;
+                    for (int result : results) {
+                        if (result > 0) {
+                            successCount++;
+                        }
+                    }
+                    LOGGER.debug("Batch update completed: {} entities updated", successCount);
+                    return successCount;
+                });
+        } catch (Exception e) {
+            LOGGER.error("Failed to batch update entities", e);
+            return Future.failedFuture(e);
+        }
+    }
+    
+    /**
+     * 批量删除实体
+     * 
+     * @param ids 要删除的ID列表
+     * @return 删除成功的实体数量
+     */
+    public Future<Integer> batchDelete(List<ID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Future.succeededFuture(0);
+        }
+        
+        try {
+            LOGGER.debug("Batch deleting {} entities from table {}", ids.size(), tableName);
+            
+            // 构建批量删除查询
+            List<Query> deleteQueries = ids.stream()
+                .map(id -> {
+                    Condition whereCondition = DSL.field(primaryKeyField).eq(id);
+                    return dslBuilder.buildDelete(tableName, whereCondition);
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            // 执行批量删除
+            return executor.executeBatch(deleteQueries)
+                .map(results -> {
+                    int successCount = 0;
+                    for (int result : results) {
+                        if (result > 0) {
+                            successCount++;
+                        }
+                    }
+                    LOGGER.debug("Batch delete completed: {} entities deleted", successCount);
+                    return successCount;
+                });
+        } catch (Exception e) {
+            LOGGER.error("Failed to batch delete entities", e);
+            return Future.failedFuture(e);
+        }
+    }
+    
+    /**
+     * 批量删除实体（根据条件）
+     * 
+     * @param condition 删除条件
+     * @return 删除成功的实体数量
+     */
+    public Future<Integer> batchDeleteByCondition(Condition condition) {
+        if (condition == null) {
+            return Future.failedFuture(new IllegalArgumentException("Condition cannot be null"));
+        }
+        
+        try {
+            LOGGER.debug("Batch deleting entities from table {} with condition", tableName);
+            
+            Query deleteQuery = dslBuilder.buildDelete(tableName, condition);
+            
+            return executor.executeUpdate(deleteQuery)
+                .map(rowCount -> {
+                    LOGGER.debug("Batch delete by condition completed: {} entities deleted", rowCount);
+                    return rowCount;
+                });
+        } catch (Exception e) {
+            LOGGER.error("Failed to batch delete entities by condition", e);
+            return Future.failedFuture(e);
+        }
+    }
+    
+    /**
+     * 批量插入或更新实体（UPSERT）
+     * 如果实体ID存在则更新，否则插入
+     * 
+     * @param entities 要插入或更新的实体列表
+     * @return 操作成功的实体数量
+     */
+    public Future<Integer> batchUpsert(List<T> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return Future.succeededFuture(0);
+        }
+        
+        try {
+            LOGGER.debug("Batch upserting {} entities in table {}", entities.size(), tableName);
+            
+            // 分离需要插入和更新的实体
+            List<T> toInsert = new java.util.ArrayList<>();
+            List<T> toUpdate = new java.util.ArrayList<>();
+            
+            for (T entity : entities) {
+                ID entityId = getId(entity);
+                if (entityId == null) {
+                    toInsert.add(entity);
+                } else {
+                    // 检查实体是否存在
+                    exists(entityId)
+                        .onSuccess(exists -> {
+                            if (exists) {
+                                toUpdate.add(entity);
+                            } else {
+                                toInsert.add(entity);
+                            }
+                        });
+                }
+            }
+            
+            // 执行批量插入和更新
+            Future<Integer> insertFuture = batchInsert(toInsert);
+            Future<Integer> updateFuture = batchUpdate(toUpdate);
+            
+            return Future.all(insertFuture, updateFuture)
+                .map(compositeFuture -> {
+                    Integer insertCount = insertFuture.result();
+                    Integer updateCount = updateFuture.result();
+                    int totalCount = (insertCount != null ? insertCount : 0) + 
+                                   (updateCount != null ? updateCount : 0);
+                    LOGGER.debug("Batch upsert completed: {} inserted, {} updated, total: {}", 
+                               insertCount, updateCount, totalCount);
+                    return totalCount;
+                });
+        } catch (Exception e) {
+            LOGGER.error("Failed to batch upsert entities", e);
+            return Future.failedFuture(e);
+        }
+    }
 }

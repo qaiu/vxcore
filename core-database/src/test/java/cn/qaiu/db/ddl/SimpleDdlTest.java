@@ -47,14 +47,11 @@ public class SimpleDdlTest {
 
         VertxHolder.init(vertx);
 
-        // 创建H2数据库连接 - 使用MySQL模式
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
-        JDBCConnectOptions connectOptions = new JDBCConnectOptions()
-                .setJdbcUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_ON_EXIT=FALSE")
-                .setUser("sa")
-                .setPassword("");
-
-        pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
+        // 创建H2数据库连接 - 使用统一配置
+        pool = cn.qaiu.db.test.H2TestConfig.createH2Pool(vertx);
+        
+        // 清理测试表，确保测试隔离
+        cn.qaiu.db.test.H2TestConfig.cleanupTestTables(pool);
         
         testContext.completeNow();
     }

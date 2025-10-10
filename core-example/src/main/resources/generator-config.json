@@ -1,0 +1,184 @@
+{
+  "tables": [
+    {
+      "tableName": "user",
+      "description": "用户表",
+      "columns": [
+        {
+          "columnName": "id",
+          "columnType": "BIGINT",
+          "columnSize": 20,
+          "nullable": false,
+          "primaryKey": true,
+          "autoIncrement": true,
+          "comment": "用户ID"
+        },
+        {
+          "columnName": "username",
+          "columnType": "VARCHAR",
+          "columnSize": 50,
+          "nullable": false,
+          "unique": true,
+          "comment": "用户名"
+        },
+        {
+          "columnName": "email",
+          "columnType": "VARCHAR",
+          "columnSize": 100,
+          "nullable": false,
+          "comment": "邮箱"
+        },
+        {
+          "columnName": "password",
+          "columnType": "VARCHAR",
+          "columnSize": 255,
+          "nullable": false,
+          "comment": "密码"
+        },
+        {
+          "columnName": "phone",
+          "columnType": "VARCHAR",
+          "columnSize": 20,
+          "nullable": true,
+          "comment": "手机号"
+        },
+        {
+          "columnName": "status",
+          "columnType": "INT",
+          "columnSize": 1,
+          "nullable": false,
+          "defaultValue": "1",
+          "comment": "状态：1-正常，0-禁用"
+        },
+        {
+          "columnName": "created_at",
+          "columnType": "TIMESTAMP",
+          "nullable": false,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "comment": "创建时间"
+        },
+        {
+          "columnName": "updated_at",
+          "columnType": "TIMESTAMP",
+          "nullable": true,
+          "comment": "更新时间"
+        }
+      ],
+      "indexes": [
+        {
+          "indexName": "idx_username",
+          "unique": true,
+          "columns": ["username"]
+        },
+        {
+          "indexName": "idx_email",
+          "unique": true,
+          "columns": ["email"]
+        },
+        {
+          "indexName": "idx_status",
+          "unique": false,
+          "columns": ["status"]
+        }
+      ]
+    },
+    {
+      "tableName": "product",
+      "description": "产品表",
+      "columns": [
+        {
+          "columnName": "id",
+          "columnType": "BIGINT",
+          "columnSize": 20,
+          "nullable": false,
+          "primaryKey": true,
+          "autoIncrement": true,
+          "comment": "产品ID"
+        },
+        {
+          "columnName": "name",
+          "columnType": "VARCHAR",
+          "columnSize": 100,
+          "nullable": false,
+          "comment": "产品名称"
+        },
+        {
+          "columnName": "description",
+          "columnType": "TEXT",
+          "nullable": true,
+          "comment": "产品描述"
+        },
+        {
+          "columnName": "price",
+          "columnType": "DECIMAL",
+          "columnSize": 10,
+          "decimalDigits": 2,
+          "nullable": false,
+          "comment": "价格"
+        },
+        {
+          "columnName": "stock",
+          "columnType": "INT",
+          "columnSize": 11,
+          "nullable": false,
+          "defaultValue": "0",
+          "comment": "库存数量"
+        },
+        {
+          "columnName": "category_id",
+          "columnType": "BIGINT",
+          "columnSize": 20,
+          "nullable": true,
+          "comment": "分类ID"
+        },
+        {
+          "columnName": "status",
+          "columnType": "INT",
+          "columnSize": 1,
+          "nullable": false,
+          "defaultValue": "1",
+          "comment": "状态：1-上架，0-下架"
+        },
+        {
+          "columnName": "created_at",
+          "columnType": "TIMESTAMP",
+          "nullable": false,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "comment": "创建时间"
+        },
+        {
+          "columnName": "updated_at",
+          "columnType": "TIMESTAMP",
+          "nullable": true,
+          "comment": "更新时间"
+        }
+      ],
+      "indexes": [
+        {
+          "indexName": "idx_name",
+          "unique": false,
+          "columns": ["name"]
+        },
+        {
+          "indexName": "idx_category",
+          "unique": false,
+          "columns": ["category_id"]
+        },
+        {
+          "indexName": "idx_status",
+          "unique": false,
+          "columns": ["status"]
+        }
+      ],
+      "foreignKeys": [
+        {
+          "fkName": "fk_product_category",
+          "tableName": "product",
+          "columnName": "category_id",
+          "referencedTableName": "category",
+          "referencedColumnName": "id"
+        }
+      ]
+    }
+  ]
+}

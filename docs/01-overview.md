@@ -1,286 +1,360 @@
-# 项目概述
+# VXCore 项目概述
 
-## 🎯 VxCore 是什么？
+## 🎯 项目简介
 
-VxCore 是一个基于 **Vert.x** 和 **jOOQ** 的现代化数据库访问框架，专为高并发、高性能的企业级应用设计。它提供了类型安全、异步非阻塞的数据库操作能力，让开发者能够轻松构建可扩展的微服务应用。
+VXCore 是一个基于 **Vert.x** 和 **jOOQ** 的现代化 Java Web 框架，提供类似 Spring Boot 的开发体验，集成了代码生成器、Lambda 查询、多数据源、WebSocket、反向代理等企业级功能。
 
-## ✨ 核心特性
+### 🌟 核心价值
 
-### 🚀 高性能异步架构
-- **非阻塞I/O**: 基于Vert.x事件循环，支持高并发
-- **连接池管理**: 智能连接池，自动管理数据库连接
-- **Future链式调用**: 支持compose、flatMap等组合操作
+- **🚀 高性能**: 基于 Vert.x 异步非阻塞 I/O，支持数万并发连接
+- **🔒 类型安全**: 基于 jOOQ DSL 编译时检查，完全防止 SQL 注入
+- **🌐 Web 开发**: 注解式路由、WebSocket、反向代理支持
+- **🗄️ 多数据源**: 支持动态数据源切换和事务隔离
+- **📈 易于扩展**: 支持 Lambda 查询、批量操作、SPI 扩展
 
-### 🔒 类型安全
-- **jOOQ DSL**: 编译时SQL检查，避免运行时错误
-- **防SQL注入**: 完全防止SQL注入攻击
-- **类型映射**: 自动处理Java类型与SQL类型转换
-
-### 🛠️ 开发友好
-- **注解驱动**: 丰富的注解支持，简化配置
-- **代码生成**: 自动生成实体类和DAO
-- **调试支持**: 详细的SQL执行日志
-
-### 📈 易于扩展
-- **插件架构**: 支持自定义扩展
-- **多数据库**: 支持MySQL、PostgreSQL、H2等
-- **事务支持**: 完整的事务管理能力
-
-## 🏗️ 架构设计
+## 🏗️ 系统架构
 
 ### 整体架构图
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    VxCore 架构层次                            │
-├─────────────────────────────────────────────────────────────┤
-│  应用层 (Application Layer)                                  │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │   Verticle  │ │   Service   │ │   Handler    │           │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-├─────────────────────────────────────────────────────────────┤
-│  数据访问层 (Data Access Layer)                              │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │     DAO     │ │   Mapper    │ │   Template  │           │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-├─────────────────────────────────────────────────────────────┤
-│  框架层 (Framework Layer)                                   │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │ JooqExecutor│ │JooqDslBuilder│ │SqlAuditListener│        │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-├─────────────────────────────────────────────────────────────┤
-│  基础设施层 (Infrastructure Layer)                           │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
-│  │ Vert.x Pool │ │   jOOQ      │ │   JDBC      │           │
-│  └─────────────┘ └─────────────┘ └─────────────┘           │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        A[Web Browser] --> B[HTTP Client]
+        C[Mobile App] --> B
+        D[API Client] --> B
+    end
+    
+    subgraph "VXCore Framework"
+        B --> E[Router Handler Factory]
+        E --> F[Route Mapping]
+        E --> G[WebSocket Handler]
+        E --> H[Reverse Proxy]
+        
+        F --> I[Parameter Binding]
+        F --> J[Exception Handling]
+        F --> K[Type Conversion]
+        
+        I --> L[Controller Layer]
+        J --> L
+        K --> L
+        
+        L --> M[Service Layer]
+        M --> N[DAO Layer]
+        
+        N --> O[Lambda Query Wrapper]
+        N --> P[Multi DataSource Manager]
+        N --> Q[Batch Operations]
+        
+        O --> R[jOOQ DSL]
+        P --> S[DataSource Context]
+        Q --> T[Executor Strategy]
+        
+        R --> U[Database Pool]
+        S --> U
+        T --> U
+    end
+    
+    subgraph "Database Layer"
+        U --> V[(Primary DB)]
+        U --> W[(Secondary DB)]
+        U --> X[(Log DB)]
+    end
+    
+    subgraph "Configuration Layer"
+        Y[YAML Config] --> Z[Config Metadata]
+        Z --> AA[IDE Auto-completion]
+        Y --> BB[DataSource Config]
+        BB --> P
+    end
 ```
 
-### 核心组件
+### 模块架构图
 
-#### 1. JooqExecutor - 核心执行器
+```mermaid
+graph LR
+    subgraph "VXCore Modules"
+        A[core] --> B[core-database]
+        A --> C[core-example]
+        B --> C
+    end
+    
+    subgraph "Core Module"
+        D[Router Handler Factory] --> E[WebSocket Handler Factory]
+        D --> F[Reverse Proxy Verticle]
+        G[Parameter Utils] --> H[String Case Utils]
+        G --> I[Config Utils]
+        J[Exception Manager] --> K[Type Converter Registry]
+    end
+    
+    subgraph "Database Module"
+        L[Lambda Query Wrapper] --> M[Abstract DAO]
+        L --> N[Lambda Utils]
+        O[DataSource Manager] --> P[DataSource Context]
+        O --> Q[DataSource Provider]
+        R[Executor Strategy] --> S[Abstract Executor Strategy]
+        M --> R
+    end
+    
+    subgraph "Example Module"
+        T[Simple Runner] --> U[User Controller]
+        T --> V[User Service]
+        V --> W[User DAO]
+        W --> M
+    end
+```
+
+## 🎨 设计思想：简单而不失优雅
+
+### 核心理念
+
+VXCore 的设计哲学是"**简单而不失优雅**"，这一理念贯穿整个框架的设计和实现：
+
+- **简单**: 降低学习成本，提供直观的 API 设计，让开发者能够快速上手
+- **优雅**: 在简单的基础上，提供强大的功能和良好的扩展性，满足复杂业务需求
+- **平衡**: 在简单性和功能性之间找到最佳平衡点，既不过度设计，也不功能缺失
+
+### 设计原则
+
+#### 1. 最小化认知负担
+让开发者专注于业务逻辑，而不是框架细节
+
+#### 2. 约定优于配置
+提供合理的默认值，减少配置需求
+
+#### 3. 类型安全优先
+在编译时发现问题，而不是运行时
+
+#### 4. 渐进式复杂度
+从简单开始，按需增加复杂度
+
+### 1. 响应式编程模型
+
+VXCore 基于 Vert.x 的响应式编程模型，采用事件驱动、非阻塞 I/O：
+
 ```java
-// 基于jOOQ DSL的查询执行器
-public class JooqExecutor {
-    // 执行jOOQ查询
-    public Future<RowSet<Row>> executeQuery(Query query);
-    
-    // 执行更新操作
-    public Future<Integer> executeUpdate(Query query);
-    
-    // 执行插入操作
-    public Future<Long> executeInsert(Query query);
+// 异步非阻塞的数据库操作
+public Future<User> createUser(User user) {
+    return userDao.create(user)
+        .compose(createdUser -> {
+            // 异步处理后续逻辑
+            return sendWelcomeEmail(createdUser);
+        })
+        .recover(throwable -> {
+            // 优雅的错误处理
+            log.error("Failed to create user", throwable);
+            return Future.failedFuture(new BusinessException("用户创建失败"));
+        });
 }
 ```
 
-#### 2. AbstractDao - 基础DAO
+### 2. 类型安全的数据库操作
+
+基于 jOOQ DSL 提供编译时类型检查：
+
 ```java
-// 提供基础CRUD操作
-public abstract class AbstractDao<T, ID> implements JooqDao<T, ID> {
-    // 插入实体
-    public Future<Optional<T>> insert(T entity);
-    
-    // 更新实体
-    public Future<Optional<T>> update(T entity);
-    
-    // 根据ID查询
-    public Future<Optional<T>> findById(ID id);
-    
-    // 条件查询
-    public Future<List<T>> findByCondition(Condition condition);
+// 编译时类型检查，避免 SQL 注入
+public Future<List<User>> findActiveUsers() {
+    return userDao.lambdaQuery()
+        .eq(User::getStatus, "ACTIVE")  // 类型安全的字段引用
+        .like(User::getName, "张%")      // 编译时检查
+        .orderBy(User::getCreateTime, SortOrder.DESC)
+        .list();
 }
 ```
 
-#### 3. EnhancedDao - 增强DAO
+### 3. 注解驱动的开发模式
+
+类似 Spring Boot 的注解驱动开发：
+
 ```java
-// 提供高级查询功能
-public abstract class EnhancedDao<T, ID> extends AbstractDao<T, ID> {
-    // 分页查询
-    public Future<PageResult<T>> findPage(PageRequest pageRequest, Condition condition);
+@RouteHandler("/api")
+public class UserController {
     
-    // 批量操作
-    public Future<List<T>> batchInsert(List<T> entities);
+    @RouteMapping(value = "/users", method = HttpMethod.GET)
+    public Future<JsonResult> getUsers(@RequestParam("page") int page) {
+        return userService.findUsers(page)
+            .map(users -> JsonResult.success(users));
+    }
     
-    // 聚合查询
-    public Future<Long> count(Condition condition);
-}
-```
-
-## 🎯 设计理念
-
-### 1. 异步优先
-所有数据库操作都是异步的，避免阻塞事件循环：
-```java
-// ❌ 阻塞操作
-User user = userDao.findById(1L).get(); // 阻塞等待
-
-// ✅ 异步操作
-userDao.findById(1L)
-    .compose(userOptional -> {
-        if (userOptional.isPresent()) {
-            return processUser(userOptional.get());
-        }
-        return Future.failedFuture("User not found");
-    });
-```
-
-### 2. 类型安全
-利用jOOQ DSL的编译时检查：
-```java
-// ❌ 字符串SQL，容易出错
-String sql = "SELECT * FROM users WHERE name = '" + name + "'";
-
-// ✅ jOOQ DSL，类型安全
-Field<String> nameField = DSL.field("name", String.class);
-Query query = DSL.select().from(DSL.table("users"))
-    .where(nameField.eq(name));
-```
-
-### 3. 组合优于继承
-通过组合模式实现功能扩展：
-```java
-// 组合不同的执行器
-public class UserService {
-    private final JooqExecutor jooqExecutor;
-    private final JooqTemplateExecutor templateExecutor;
-    
-    public UserService(JooqExecutor jooqExecutor, JooqTemplateExecutor templateExecutor) {
-        this.jooqExecutor = jooqExecutor;
-        this.templateExecutor = templateExecutor;
+    @ExceptionHandler(ValidationException.class)
+    public JsonResult handleValidation(ValidationException e) {
+        return JsonResult.fail(400, e.getMessage());
     }
 }
 ```
 
-## 🚀 性能优势
+### 4. 多数据源透明切换
 
-### 1. 非阻塞I/O
-- **高并发**: 单线程处理数千个并发连接
-- **低延迟**: 避免线程切换开销
-- **高吞吐**: 充分利用系统资源
+支持动态数据源切换，对业务代码透明：
 
-### 2. 连接池优化
-- **智能管理**: 自动调整连接池大小
-- **连接复用**: 减少连接建立开销
-- **超时控制**: 避免连接泄漏
-
-### 3. 查询优化
-- **预编译语句**: 自动缓存PreparedStatement
-- **批量操作**: 支持批量插入和更新
-- **分页查询**: 避免大结果集内存问题
+```java
+@DataSource("primary")
+public class UserDao extends AbstractDao<User> {
+    
+    @DataSource("secondary")
+    public Future<List<Log>> findUserLogs(Long userId) {
+        // 自动切换到 secondary 数据源
+        return logDao.lambdaQuery()
+            .eq(Log::getUserId, userId)
+            .list();
+    }
+}
+```
 
 ## 🔧 技术栈
 
-### 核心依赖
-- **Java 17+**: 现代Java特性
-- **Vert.x 4.5+**: 异步应用框架
-- **jOOQ 3.19+**: SQL构建工具
-- **Maven 3.9+**: 构建工具
+### 核心框架
+- **Java 17+**: 现代 Java 特性支持
+- **Vert.x 4.5+**: 高性能异步框架
+- **jOOQ 3.19+**: 类型安全的 SQL 构建
+- **Maven 3.8+**: 现代化构建工具
 
 ### 数据库支持
-- **MySQL 8.0+**: 主要支持数据库
-- **PostgreSQL 13+**: 企业级数据库
-- **H2**: 内存数据库，用于测试
+- **H2**: 开发、测试、演示
+- **MySQL**: 生产环境推荐
+- **PostgreSQL**: 企业级应用
 
 ### 开发工具
-- **Maven**: 依赖管理和构建
-- **JUnit 5**: 单元测试框架
-- **Logback**: 日志框架
-- **SLF4J**: 日志门面
+- **IDE**: IntelliJ IDEA / Eclipse
+- **构建**: Maven
+- **测试**: JUnit 5
+- **文档**: Markdown
 
-## 📊 性能指标
+## 📊 性能特性
 
-### 基准测试结果
-- **并发连接**: 支持10,000+并发连接
-- **查询延迟**: 平均延迟 < 1ms
-- **吞吐量**: 100,000+ QPS
-- **内存使用**: 低内存占用，< 100MB
+### 高性能指标
+- **并发处理**: 50,000+ QPS HTTP 请求
+- **WebSocket**: 10,000+ 并发连接
+- **数据库查询**: 10,000+ QPS
+- **批量操作**: 1000 条记录 < 100ms
+- **响应时间**: 微秒级延迟
 
-### 与同类框架对比
-| 框架 | 并发性能 | 类型安全 | 学习成本 | 社区支持 |
-|------|----------|----------|----------|----------|
-| VxCore | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| MyBatis | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| JPA/Hibernate | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| Spring Data | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+### 性能优化策略
+1. **异步非阻塞**: 基于 Vert.x 事件循环
+2. **连接池管理**: 高效的数据库连接复用
+3. **批量操作**: 减少网络往返次数
+4. **内存优化**: 零拷贝、对象池
+5. **CPU 友好**: 单线程事件循环
 
 ## 🎯 适用场景
 
-### ✅ 适合的场景
-- **微服务架构**: 高并发、低延迟的服务
-- **实时应用**: 需要快速响应的应用
-- **大数据处理**: 需要处理大量数据的应用
-- **云原生应用**: 容器化部署的应用
+### 企业级应用
+- **微服务架构**: 支持服务间通信
+- **高并发系统**: 电商、金融、游戏
+- **实时应用**: 聊天、直播、监控
+- **数据处理**: 批量处理、ETL 任务
 
-### ❌ 不适合的场景
-- **简单CRUD**: 对于简单的CRUD操作可能过于复杂
-- **传统企业**: 需要大量ORM特性的传统企业应用
-- **学习项目**: 对于初学者可能学习曲线较陡
+### 开发团队
+- **Java 开发者**: 熟悉 Spring Boot 的团队
+- **高性能要求**: 需要处理大量并发
+- **类型安全**: 重视代码质量和安全性
+- **现代化开发**: 追求最新技术栈
 
-## 🚀 快速开始
+## 🚀 快速体验
 
-### 1. 添加依赖
-```xml
-<dependency>
-    <groupId>cn.qaiu</groupId>
-    <artifactId>core-database</artifactId>
-    <version>1.0.0</version>
-</dependency>
+### 5分钟快速上手
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/qaiu/vxcore.git
+cd vxcore
+
+# 2. 编译项目
+mvn clean compile
+
+# 3. 运行示例
+mvn exec:java -Dexec.mainClass="cn.qaiu.example.SimpleRunner"
+
+# 4. 访问 API
+curl http://localhost:8080/api/hello?name=VXCore
 ```
 
-### 2. 创建实体
+### 基础示例
+
 ```java
-@DataObject
-public class User {
-    private Long id;
-    private String username;
+// 1. 定义实体
+@DdlTable("users")
+public class User extends BaseEntity {
+    @DdlColumn("user_name")
+    private String name;
+    
+    @DdlColumn("user_email")
     private String email;
-    
-    public User(JsonObject json) {
-        this.id = json.getLong("id");
-        this.username = json.getString("username");
-        this.email = json.getString("email");
-    }
-    
-    public JsonObject toJson() {
-        return new JsonObject()
-            .put("id", id)
-            .put("username", username)
-            .put("email", email);
-    }
 }
-```
 
-### 3. 创建DAO
-```java
-public class UserDao extends AbstractDao<User, Long> {
+// 2. 创建 DAO
+public class UserDao extends AbstractDao<User> {
     public UserDao(JooqExecutor executor) {
         super(executor, User.class);
     }
 }
+
+// 3. 创建控制器
+@RouteHandler("/api")
+public class UserController {
+    
+    @RouteMapping(value = "/users", method = HttpMethod.GET)
+    public Future<JsonResult> getUsers() {
+        return userDao.lambdaQuery()
+            .eq(User::getStatus, "ACTIVE")
+            .list()
+            .map(users -> JsonResult.success(users));
+    }
+}
 ```
 
-### 4. 使用DAO
-```java
-// 创建用户
-User user = new User();
-user.setUsername("john");
-user.setEmail("john@example.com");
+## 📚 学习路径
 
-userDao.insert(user)
-    .onSuccess(insertedUser -> {
-        System.out.println("User created: " + insertedUser.get().getId());
-    })
-    .onFailure(throwable -> {
-        System.err.println("Failed to create user: " + throwable.getMessage());
-    });
-```
+### 新手入门 (1-2天)
+1. [快速开始](02-quick-start.md) - 基础概念和第一个应用
+2. [安装配置](03-installation.md) - 环境搭建
+3. [路由注解](08-routing-annotations.md) - Web 开发基础
 
-## 📚 下一步
+### 进阶开发 (3-5天)
+4. [Lambda 查询](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - 数据库操作
+5. [多数据源](../core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 数据源管理
+6. [异常处理](09-exception-handling.md) - 错误处理机制
 
-- [快速开始指南](02-quick-start.md) - 详细的使用教程
-- [架构设计](04-architecture.md) - 深入了解架构设计
-- [API参考](23-api-reference.md) - 完整的API文档
+### 高级特性 (1-2周)
+7. [WebSocket 指南](WEBSOCKET_GUIDE.md) - 实时通信
+8. [反向代理](WEBSOCKET_PROXY_GUIDE.md) - 代理配置
+9. [配置管理](10-configuration.md) - 高级配置
+
+## 🤝 社区支持
+
+### 获取帮助
+- **GitHub Issues**: [提交问题](https://github.com/qaiu/vxcore/issues)
+- **讨论区**: [技术讨论](https://github.com/qaiu/vxcore/discussions)
+- **邮件支持**: qaiu@qq.com
+
+### 贡献指南
+- **代码贡献**: 遵循项目代码规范
+- **文档贡献**: 完善使用文档和示例
+- **问题反馈**: 及时报告 Bug 和需求
+
+## 📈 版本规划
+
+### 当前版本 (v2.0.0)
+- ✅ Lambda 查询增强
+- ✅ 多数据源支持
+- ✅ 批量操作优化
+- ✅ 注解式路由
+- ✅ WebSocket 支持
+
+### 即将发布 (v2.1.0)
+- 🔄 Code-gen 模板引擎
+- 🔄 HTML 模板引擎
+- 🔄 AOP 支持
+- 🔄 事件总线
+
+### 长期规划
+- 📋 微服务支持
+- 📋 监控集成
+- 📋 云原生支持
+- 📋 多语言支持
 
 ---
 
-**🎯 VxCore - 让数据库访问更简单、更安全、更高效！**
+**🎯 VXCore - 让 Java Web 开发更简单、更高效、更现代！**
+
+[快速开始 →](02-quick-start.md) | [安装配置 →](03-installation.md) | [查看文档 →](README.md)

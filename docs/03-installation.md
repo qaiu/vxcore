@@ -1,325 +1,561 @@
-# 安装配置
+# VXCore 安装配置指南
 
-## 📋 环境要求
+本指南将帮助您在不同环境中安装和配置 VXCore 框架。
 
-### 系统要求
-- **操作系统**: Windows 10+, macOS 10.15+, Linux (Ubuntu 18.04+)
-- **Java**: OpenJDK 17+ 或 Oracle JDK 17+
-- **Maven**: 3.9.0+
-- **内存**: 最少 4GB RAM，推荐 8GB+
+## 📋 系统要求
+
+### 最低要求
+- **Java**: 17+ (推荐使用 OpenJDK 17 或更高版本)
+- **Maven**: 3.8+ (推荐使用 3.9+)
+- **内存**: 最少 2GB RAM
 - **磁盘**: 最少 1GB 可用空间
 
-### 开发工具推荐
-- **IDE**: IntelliJ IDEA 2023+, Eclipse 2023+, VS Code
-- **数据库**: MySQL 8.0+, PostgreSQL 13+, H2 (用于测试)
-- **版本控制**: Git 2.30+
+### 推荐配置
+- **Java**: OpenJDK 21 LTS
+- **Maven**: 3.9.5+
+- **内存**: 4GB+ RAM
+- **磁盘**: 5GB+ 可用空间
+- **IDE**: IntelliJ IDEA 2023.3+ 或 Eclipse 2023-12+
 
-## 🔧 Java环境配置
+## 🖥️ 操作系统支持
 
-### 1. 安装Java 17+
+### 支持的操作系统
+- **Windows**: Windows 10/11 (64-bit)
+- **macOS**: macOS 10.15+ (Intel/Apple Silicon)
+- **Linux**: Ubuntu 20.04+, CentOS 8+, RHEL 8+
 
-#### Windows
-```bash
-# 使用Chocolatey安装
-choco install openjdk17
+### 架构支持
+- **x86_64**: Intel/AMD 64-bit
+- **ARM64**: Apple Silicon, ARM64 Linux
 
-# 或下载Oracle JDK
-# 访问 https://www.oracle.com/java/technologies/downloads/
+## ☕ Java 环境安装
+
+### Windows 安装
+
+#### 方法一：使用 Chocolatey
+```powershell
+# 安装 Chocolatey (如果未安装)
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+# 安装 OpenJDK 21
+choco install openjdk21
+
+# 验证安装
+java -version
 ```
 
-#### macOS
+#### 方法二：手动安装
+1. 访问 [Adoptium](https://adoptium.net/)
+2. 下载 OpenJDK 21 LTS for Windows x64
+3. 运行安装程序
+4. 设置环境变量：
+   ```cmd
+   setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-21.x.x-hotspot"
+   setx PATH "%PATH%;%JAVA_HOME%\bin"
+   ```
+
+### macOS 安装
+
+#### 方法一：使用 Homebrew
 ```bash
-# 使用Homebrew安装
-brew install openjdk@17
+# 安装 Homebrew (如果未安装)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 安装 OpenJDK 21
+brew install openjdk@21
 
 # 设置环境变量
-echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"' >> ~/.zshrc
+echo 'export JAVA_HOME="/opt/homebrew/opt/openjdk@21"' >> ~/.zshrc
 source ~/.zshrc
-```
 
-#### Linux (Ubuntu/Debian)
-```bash
-# 安装OpenJDK 17
-sudo apt update
-sudo apt install openjdk-17-jdk
-
-# 设置默认Java版本
-sudo update-alternatives --config java
-```
-
-### 2. 验证Java安装
-```bash
+# 验证安装
 java -version
-# 应该显示类似: openjdk version "17.0.x" 2023-xx-xx
-
-javac -version
-# 应该显示: javac 17.0.x
 ```
 
-### 3. 设置JAVA_HOME
+#### 方法二：使用 SDKMAN
 ```bash
-# Windows
-set JAVA_HOME=C:\Program Files\Java\jdk-17
+# 安装 SDKMAN
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-# macOS/Linux
-export JAVA_HOME=/opt/homebrew/opt/openjdk@17
-export PATH=$JAVA_HOME/bin:$PATH
+# 安装 OpenJDK 21
+sdk install java 21.0.1-tem
+
+# 验证安装
+java -version
 ```
 
-## 📦 Maven配置
+### Linux 安装
 
-### 1. 安装Maven
-
-#### Windows
+#### Ubuntu/Debian
 ```bash
-# 使用Chocolatey
+# 更新包列表
+sudo apt update
+
+# 安装 OpenJDK 21
+sudo apt install openjdk-21-jdk
+
+# 设置默认 Java 版本
+sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-21-openjdk-amd64/bin/java 1
+sudo update-alternatives --config java
+
+# 验证安装
+java -version
+```
+
+#### CentOS/RHEL/Fedora
+```bash
+# 安装 OpenJDK 21
+sudo dnf install java-21-openjdk-devel
+
+# 设置环境变量
+echo 'export JAVA_HOME="/usr/lib/jvm/java-21-openjdk"' >> ~/.bashrc
+echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# 验证安装
+java -version
+```
+
+## 🔧 Maven 安装
+
+### Windows 安装
+```powershell
+# 使用 Chocolatey
 choco install maven
 
-# 或手动下载
-# 访问 https://maven.apache.org/download.cgi
-```
-
-#### macOS
-```bash
-# 使用Homebrew
-brew install maven
-```
-
-#### Linux
-```bash
-# Ubuntu/Debian
-sudo apt install maven
-
-# CentOS/RHEL
-sudo yum install maven
-```
-
-### 2. 验证Maven安装
-```bash
+# 验证安装
 mvn -version
-# 应该显示Maven版本和Java版本信息
 ```
 
-### 3. Maven配置优化
-
-#### 创建Maven设置文件
-```xml
-<!-- ~/.m2/settings.xml -->
-<?xml version="1.0" encoding="UTF-8"?>
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
-          http://maven.apache.org/xsd/settings-1.0.0.xsd">
-  
-  <!-- 本地仓库路径 -->
-  <localRepository>${user.home}/.m2/repository</localRepository>
-  
-  <!-- 镜像配置 -->
-  <mirrors>
-    <mirror>
-      <id>aliyun</id>
-      <mirrorOf>central</mirrorOf>
-      <name>Aliyun Maven</name>
-      <url>https://maven.aliyun.com/repository/central</url>
-    </mirror>
-  </mirrors>
-  
-  <!-- 配置文件 -->
-  <profiles>
-    <profile>
-      <id>jdk-17</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-        <jdk>17</jdk>
-      </activation>
-      <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.compilerVersion>17</maven.compiler.compilerVersion>
-      </properties>
-    </profile>
-  </profiles>
-</settings>
-```
-
-## 🗄️ 数据库配置
-
-### 1. MySQL配置
-
-#### 安装MySQL
+### macOS 安装
 ```bash
-# macOS
-brew install mysql
-brew services start mysql
+# 使用 Homebrew
+brew install maven
 
-# Ubuntu/Debian
-sudo apt install mysql-server
-sudo systemctl start mysql
-
-# CentOS/RHEL
-sudo yum install mysql-server
-sudo systemctl start mysqld
+# 验证安装
+mvn -version
 ```
 
-#### 创建数据库和用户
-```sql
--- 连接到MySQL
-mysql -u root -p
+### Linux 安装
 
--- 创建数据库
-CREATE DATABASE vxcore_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- 创建用户
-CREATE USER 'vxcore'@'localhost' IDENTIFIED BY 'vxcore123';
-GRANT ALL PRIVILEGES ON vxcore_test.* TO 'vxcore'@'localhost';
-FLUSH PRIVILEGES;
-
--- 退出
-EXIT;
-```
-
-#### 测试连接
+#### Ubuntu/Debian
 ```bash
-mysql -u vxcore -p vxcore_test
+sudo apt install maven
+mvn -version
 ```
 
-### 2. PostgreSQL配置
-
-#### 安装PostgreSQL
+#### CentOS/RHEL/Fedora
 ```bash
-# macOS
-brew install postgresql
-brew services start postgresql
-
-# Ubuntu/Debian
-sudo apt install postgresql postgresql-contrib
-sudo systemctl start postgresql
-
-# CentOS/RHEL
-sudo yum install postgresql-server postgresql-contrib
-sudo postgresql-setup initdb
-sudo systemctl start postgresql
+sudo dnf install maven
+mvn -version
 ```
 
-#### 创建数据库和用户
-```sql
--- 切换到postgres用户
-sudo -u postgres psql
+## 📦 VXCore 安装
 
--- 创建用户
-CREATE USER vxcore WITH PASSWORD 'vxcore123';
+### 方法一：从源码构建
 
--- 创建数据库
-CREATE DATABASE vxcore_test OWNER vxcore;
-
--- 授权
-GRANT ALL PRIVILEGES ON DATABASE vxcore_test TO vxcore;
-
--- 退出
-\q
-```
-
-### 3. H2数据库（测试用）
-
-H2是内存数据库，无需额外安装，Maven会自动下载依赖。
-
-## 🔧 项目配置
-
-### 1. 克隆项目
+#### 1. 克隆项目
 ```bash
 git clone https://github.com/qaiu/vxcore.git
 cd vxcore
 ```
 
-### 2. 配置数据库连接
-
-#### 开发环境配置
-```properties
-# core-database/src/main/resources/app.properties
-# MySQL配置
-db.url=jdbc:mysql://localhost:3306/vxcore_test?useSSL=false&serverTimezone=UTC
-db.driver=com.mysql.cj.jdbc.Driver
-db.username=vxcore
-db.password=vxcore123
-
-# PostgreSQL配置
-# db.url=jdbc:postgresql://localhost:5432/vxcore_test
-# db.driver=org.postgresql.Driver
-# db.username=vxcore
-# db.password=vxcore123
-
-# H2配置（测试用）
-# db.url=jdbc:h2:mem:testdb
-# db.driver=org.h2.Driver
-# db.username=sa
-# db.password=
-
-# 连接池配置
-db.pool.max_size=20
-db.pool.min_size=5
-db.pool.max_wait_time=30000
-db.pool.max_lifetime=1800000
-```
-
-#### 测试环境配置
-```properties
-# core-database/src/test/resources/test.properties
-# H2内存数据库配置
-db.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-db.driver=org.h2.Driver
-db.username=sa
-db.password=
-
-# 连接池配置
-db.pool.max_size=10
-db.pool.min_size=2
-db.pool.max_wait_time=10000
-db.pool.max_lifetime=600000
-```
-
-### 3. 编译项目
+#### 2. 编译项目
 ```bash
 # 编译整个项目
 mvn clean compile
 
-# 编译特定模块
-cd core-database
-mvn clean compile
+# 运行测试
+mvn test
+
+# 打包项目
+mvn clean package
+```
+
+#### 3. 安装到本地仓库
+```bash
+mvn clean install
+```
+
+### 方法二：使用 Maven 依赖
+
+#### 1. 创建新项目
+```bash
+mvn archetype:generate \
+  -DgroupId=com.example \
+  -DartifactId=my-vxcore-app \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false
+```
+
+#### 2. 添加 VXCore 依赖
+编辑 `pom.xml` 文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.example</groupId>
+    <artifactId>my-vxcore-app</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <vxcore.version>2.0.0</vxcore.version>
+        <vertx.version>4.5.2</vertx.version>
+        <jooq.version>3.19.2</jooq.version>
+    </properties>
+    
+    <dependencies>
+        <!-- VXCore Core Module -->
+        <dependency>
+            <groupId>cn.qaiu</groupId>
+            <artifactId>vxcore-core</artifactId>
+            <version>${vxcore.version}</version>
+        </dependency>
+        
+        <!-- VXCore Database Module -->
+        <dependency>
+            <groupId>cn.qaiu</groupId>
+            <artifactId>vxcore-database</artifactId>
+            <version>${vxcore.version}</version>
+        </dependency>
+        
+        <!-- Vert.x Core -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+        
+        <!-- Vert.x Web -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+        
+        <!-- Vert.x JDBC Client -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-jdbc-client</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+        
+        <!-- jOOQ -->
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+        
+        <!-- H2 Database (开发测试用) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+        </dependency>
+        
+        <!-- MySQL Driver (生产环境) -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+        
+        <!-- PostgreSQL Driver (生产环境) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.1</version>
+        </dependency>
+        
+        <!-- 测试依赖 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>5.10.1</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-junit5</artifactId>
+            <version>${vertx.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.2</version>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.example.MainApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+## 🗄️ 数据库配置
+
+### H2 数据库 (开发测试)
+
+#### 内存数据库
+```yaml
+# application.yml
+datasources:
+  primary:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: ""
+    driver: org.h2.Driver
+    maxPoolSize: 10
+    minPoolSize: 2
+```
+
+#### 文件数据库
+```yaml
+# application.yml
+datasources:
+  primary:
+    url: jdbc:h2:file:./data/testdb
+    username: sa
+    password: ""
+    driver: org.h2.Driver
+    maxPoolSize: 10
+    minPoolSize: 2
+```
+
+### MySQL 数据库
+
+#### 安装 MySQL
+```bash
+# Ubuntu/Debian
+sudo apt install mysql-server
+
+# CentOS/RHEL/Fedora
+sudo dnf install mysql-server
+
+# macOS
+brew install mysql
+
+# Windows
+# 下载 MySQL Installer from https://dev.mysql.com/downloads/installer/
+```
+
+#### 配置 MySQL
+```sql
+-- 创建数据库
+CREATE DATABASE vxcore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 创建用户
+CREATE USER 'vxcore_user'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON vxcore_db.* TO 'vxcore_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+#### 应用配置
+```yaml
+# application.yml
+datasources:
+  primary:
+    url: jdbc:mysql://localhost:3306/vxcore_db?useSSL=false&serverTimezone=UTC&characterEncoding=utf8
+    username: vxcore_user
+    password: password
+    driver: com.mysql.cj.jdbc.Driver
+    maxPoolSize: 20
+    minPoolSize: 5
+    connectionTimeout: 30000
+```
+
+### PostgreSQL 数据库
+
+#### 安装 PostgreSQL
+```bash
+# Ubuntu/Debian
+sudo apt install postgresql postgresql-contrib
+
+# CentOS/RHEL/Fedora
+sudo dnf install postgresql postgresql-server
+
+# macOS
+brew install postgresql
+
+# Windows
+# 下载 PostgreSQL Installer from https://www.postgresql.org/download/windows/
+```
+
+#### 配置 PostgreSQL
+```sql
+-- 创建数据库
+CREATE DATABASE vxcore_db;
+
+-- 创建用户
+CREATE USER vxcore_user WITH PASSWORD 'password';
+GRANT ALL PRIVILEGES ON DATABASE vxcore_db TO vxcore_user;
+```
+
+#### 应用配置
+```yaml
+# application.yml
+datasources:
+  primary:
+    url: jdbc:postgresql://localhost:5432/vxcore_db
+    username: vxcore_user
+    password: password
+    driver: org.postgresql.Driver
+    maxPoolSize: 20
+    minPoolSize: 5
+    connectionTimeout: 30000
+```
+
+## 🔧 IDE 配置
+
+### IntelliJ IDEA 配置
+
+#### 1. 安装插件
+- **Lombok Plugin**: 支持 Lombok 注解
+- **Maven Helper**: Maven 依赖管理
+- **Vert.x Plugin**: Vert.x 开发支持
+
+#### 2. 项目设置
+1. 打开项目：`File -> Open -> 选择项目目录`
+2. 配置 JDK：`File -> Project Structure -> Project -> Project SDK`
+3. 配置 Maven：`File -> Settings -> Build -> Build Tools -> Maven`
+
+#### 3. 代码风格
+```xml
+<!-- .editorconfig -->
+root = true
+
+[*.java]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+```
+
+### Eclipse 配置
+
+#### 1. 安装插件
+- **Maven Integration for Eclipse**
+- **Vert.x Tools for Eclipse**
+- **Lombok**
+
+#### 2. 项目设置
+1. 导入项目：`File -> Import -> Existing Maven Projects`
+2. 配置 JDK：`Project -> Properties -> Java Build Path -> Libraries`
+3. 配置 Maven：`Window -> Preferences -> Maven`
+
+## 🧪 验证安装
+
+### 1. 创建测试项目
+```bash
+# 创建测试目录
+mkdir vxcore-test
+cd vxcore-test
+
+# 创建 Maven 项目
+mvn archetype:generate \
+  -DgroupId=com.test \
+  -DartifactId=vxcore-test \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false
+```
+
+### 2. 添加依赖
+按照上面的 `pom.xml` 配置添加 VXCore 依赖。
+
+### 3. 创建测试类
+```java
+package com.test;
+
+import cn.qaiu.vx.core.util.StringCase;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class VXCoreTest {
+    
+    @Test
+    public void testStringCase() {
+        // 测试驼峰转下划线
+        String result = StringCase.toUnderlineCase("userName");
+        assertEquals("user_name", result);
+        
+        // 测试下划线转驼峰
+        String result2 = StringCase.toCamelCase("user_name");
+        assertEquals("userName", result2);
+    }
+}
 ```
 
 ### 4. 运行测试
 ```bash
-# 运行所有测试
 mvn test
-
-# 运行特定测试
-mvn test -Dtest=UserDaoTest
-
-# 跳过测试编译
-mvn test -DskipTests=false -Dmaven.test.skip=false
 ```
 
-## 🐛 常见问题
+### 5. 预期输出
+```
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
 
-### 1. Java版本问题
+## 🚨 常见问题
+
+### Java 版本问题
 ```bash
-# 问题：javac: command not found
-# 解决：确保JAVA_HOME设置正确
+# 问题：java: 错误: 无效的源发行版: 17
+# 解决：检查 JAVA_HOME 环境变量
 echo $JAVA_HOME
-export JAVA_HOME=/path/to/your/java
+java -version
 ```
 
-### 2. Maven依赖下载失败
+### Maven 依赖问题
 ```bash
-# 问题：依赖下载超时
-# 解决：配置国内镜像
-# 编辑 ~/.m2/settings.xml，添加阿里云镜像
+# 问题：依赖下载失败
+# 解决：清理本地仓库
+mvn dependency:purge-local-repository
+mvn clean install
 ```
 
-### 3. 数据库连接失败
+### 数据库连接问题
 ```bash
-# 问题：数据库连接被拒绝
-# 解决：检查数据库服务是否启动
+# 问题：数据库连接失败
+# 解决：检查数据库服务状态
 # MySQL
 sudo systemctl status mysql
 
@@ -327,88 +563,38 @@ sudo systemctl status mysql
 sudo systemctl status postgresql
 ```
 
-### 4. 端口占用问题
+### 端口占用问题
 ```bash
-# 问题：端口8080被占用
-# 解决：查找并杀死占用进程
-lsof -i :8080
+# 问题：端口 8080 被占用
+# 解决：查找并终止进程
+# Windows
+netstat -ano | findstr :8080
+taskkill /PID <PID> /F
+
+# Linux/macOS
+lsof -ti:8080
 kill -9 <PID>
-```
-
-## 🔍 验证安装
-
-### 1. 创建验证脚本
-```bash
-#!/bin/bash
-# verify-installation.sh
-
-echo "=== VxCore 安装验证 ==="
-
-# 检查Java
-echo "检查Java版本..."
-java -version
-if [ $? -eq 0 ]; then
-    echo "✅ Java安装成功"
-else
-    echo "❌ Java安装失败"
-    exit 1
-fi
-
-# 检查Maven
-echo "检查Maven版本..."
-mvn -version
-if [ $? -eq 0 ]; then
-    echo "✅ Maven安装成功"
-else
-    echo "❌ Maven安装失败"
-    exit 1
-fi
-
-# 检查Git
-echo "检查Git版本..."
-git --version
-if [ $? -eq 0 ]; then
-    echo "✅ Git安装成功"
-else
-    echo "❌ Git安装失败"
-    exit 1
-fi
-
-# 编译项目
-echo "编译项目..."
-mvn clean compile
-if [ $? -eq 0 ]; then
-    echo "✅ 项目编译成功"
-else
-    echo "❌ 项目编译失败"
-    exit 1
-fi
-
-# 运行测试
-echo "运行测试..."
-mvn test
-if [ $? -eq 0 ]; then
-    echo "✅ 测试运行成功"
-else
-    echo "❌ 测试运行失败"
-    exit 1
-fi
-
-echo "🎉 所有验证通过！VxCore安装成功！"
-```
-
-### 2. 运行验证脚本
-```bash
-chmod +x verify-installation.sh
-./verify-installation.sh
 ```
 
 ## 📚 下一步
 
-- [快速开始](02-quick-start.md) - 运行第一个示例
-- [系统架构](04-architecture.md) - 了解架构设计
-- [DSL框架](07-dsl-framework.md) - 学习jOOQ DSL
+安装完成后，您可以：
+
+1. [快速开始](02-quick-start.md) - 创建第一个应用
+2. [项目概述](01-overview.md) - 了解框架特性
+3. [Lambda 查询指南](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - 学习数据库操作
+4. [多数据源指南](../core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 配置多数据源
+
+## 🆘 获取帮助
+
+如果遇到安装问题：
+
+- [GitHub Issues](https://github.com/qaiu/vxcore/issues) - 提交问题
+- [讨论区](https://github.com/qaiu/vxcore/discussions) - 技术讨论
+- [邮件支持](mailto:qaiu@qq.com) - 直接联系
 
 ---
 
-**🎯 环境配置完成！现在可以开始使用VxCore了！**
+**🎯 安装完成！开始您的 VXCore 之旅！**
+
+[快速开始 →](02-quick-start.md) | [项目概述 →](01-overview.md) | [返回首页 →](index.md)

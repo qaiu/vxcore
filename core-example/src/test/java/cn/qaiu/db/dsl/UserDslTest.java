@@ -1,8 +1,8 @@
 package cn.qaiu.db.dsl;
 
 import cn.qaiu.db.dsl.core.JooqExecutor;
-import cn.qaiu.example.User;
-import cn.qaiu.example.UserDao;
+import cn.qaiu.example.entity.User;
+import cn.qaiu.example.dao.UserDao;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -20,9 +20,6 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -140,16 +137,16 @@ public class UserDslTest {
         userDao.createUser("alice", "alice@example.com", "password123")
                 .compose(user -> {
                     // 然后根据用户名查询
-                    return userDao.findByUsername("alice");
+                    return userDao.findByName("alice");
                 })
-                .onSuccess(userOpt -> {
+                .onSuccess(users -> {
                     testContext.verify(() -> {
-                        assertTrue(userOpt.isPresent());
-                        User user = userOpt.get();
+                        assertTrue(!users.isEmpty());
+                        User user = users.get(0);
                         assertEquals("alice", user.getUsername());
                         assertEquals("alice@example.com", user.getEmail());
                     });
-                    User foundUser = userOpt.get();
+                    User foundUser = users.get(0);
                     LOGGER.info("User found by username: {}, username field: {}", foundUser.getUsername(), foundUser.getUsername());
                     testContext.completeNow();
                 })
@@ -189,12 +186,12 @@ public class UserDslTest {
                     LOGGER.info("Password updated successfully");
                     
                     // 验证更新是否生效
-                    return userDao.findByUsername("passwordTest");
+                    return userDao.findByName("passwordTest");
                 })
-                .onSuccess(userOpt -> {
+                .onSuccess(users -> {
                     testContext.verify(() -> {
-                        assertTrue(userOpt.isPresent());
-                        User user = userOpt.get();
+                        assertTrue(!users.isEmpty());
+                        User user = users.get(0);
                         assertEquals("newpassword123", user.getPassword());
                     });
                     testContext.completeNow();
@@ -241,12 +238,12 @@ public class UserDslTest {
                     });
                     
                     // 验证邮箱验证状态
-                    return userDao.findByUsername("emailTest");
+                    return userDao.findByName("emailTest");
                 })
-                .onSuccess(userOpt -> {
+                .onSuccess(users -> {
                     testContext.verify(() -> {
-                        assertTrue(userOpt.isPresent());
-                        assertTrue(userOpt.get().getEmailVerified());
+                        assertTrue(!users.isEmpty());
+                        assertTrue(users.get(0).getEmailVerified());
                     });
                     LOGGER.info("Email verification completed");
                     testContext.completeNow();

@@ -3,8 +3,8 @@ package cn.qaiu.db.dsl.core;
 import org.jooq.ExecuteContext;
 import org.jooq.ExecuteListener;
 import org.jooq.Query;
-import org.jooq.Record;
-import org.jooq.Result;
+// import org.jooq.Record; // 未使用
+// import org.jooq.Result; // 未使用
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -32,62 +32,13 @@ public class JooqDslBuilder {
         List<String> columns = new ArrayList<>();
         List<Object> values = new ArrayList<>();
         
-        // 按照数据库表结构顺序添加字段（跳过id主键）
-        // 1. username
-        if (data.containsKey("username")) {
-            columns.add("username");
-            values.add(convertJsonValue(data.getValue("username")));
+        // 动态处理所有字段（跳过id主键）
+        for (String key : data.fieldNames()) {
+            if (!"id".equals(key)) {
+                columns.add(key);
+                values.add(convertJsonValue(data.getValue(key)));
+            }
         }
-        
-        // 2. email
-        if (data.containsKey("email")) {
-            columns.add("email");
-            values.add(convertJsonValue(data.getValue("email")));
-        }
-        
-        // 3. password
-        if (data.containsKey("password")) {
-            columns.add("password");
-            values.add(convertJsonValue(data.getValue("password")));
-        }
-        
-        // 4. age
-        if (data.containsKey("age")) {
-            columns.add("age");
-            values.add(convertJsonValue(data.getValue("age")));
-        }
-        
-        // 5. status
-        if (data.containsKey("status")) {
-            columns.add("status");
-            values.add(convertJsonValue(data.getValue("status")));
-        }
-        
-        // 6. balance
-        if (data.containsKey("balance")) {
-            columns.add("balance");
-            values.add(convertJsonValue(data.getValue("balance")));
-        }
-        
-        // 7. email_verified
-        if (data.containsKey("emailVerified")) {
-            columns.add("email_verified");
-            values.add(convertJsonValue(data.getValue("emailVerified")));
-        }
-        
-        // 8. bio
-        if (data.containsKey("bio")) {
-            columns.add("bio");
-            values.add(convertJsonValue(data.getValue("bio")));
-        }
-        
-        // 9. create_time
-        columns.add("create_time");
-        values.add(convertJsonValue(data.getValue("createTime")));
-        
-        // 10. update_time
-        columns.add("update_time");
-        values.add(convertJsonValue(data.getValue("updateTime")));
         
         // 构建 SQL 字符串
         String sql = String.format("INSERT INTO %s (%s) VALUES (%s)", 

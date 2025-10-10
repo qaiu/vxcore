@@ -32,6 +32,11 @@
             <groupId>cn.qaiu</groupId>
             <artifactId>core-database</artifactId>
         </dependency>
+        
+        <dependency>
+            <groupId>cn.qaiu</groupId>
+            <artifactId>core-generator</artifactId>
+        </dependency>
 
         <!-- Vert.x dependencies -->
         <dependency>
@@ -124,6 +129,14 @@
             <version>3.12.0</version>
         </dependency>
 
+        <!-- Lombok dependency -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -178,6 +191,13 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <annotationProcessorPaths>
+                        <!-- Lombok 注解处理器 -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.30</version>
+                        </path>
+                        <!-- Vert.x CodeGen 注解处理器 -->
                         <path>
                             <groupId>io.vertx</groupId>
                             <artifactId>vertx-codegen</artifactId>
@@ -270,8 +290,20 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>cn.qaiu.example.LambdaQuickStartDemo</mainClass>
+                    <mainClass>cn.qaiu.example.AppMain</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>run-code-generator-demo</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>cn.qaiu.example.generator.SimpleCodeGeneratorRunner</mainClass>
+                            <classpathScope>compile</classpathScope>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

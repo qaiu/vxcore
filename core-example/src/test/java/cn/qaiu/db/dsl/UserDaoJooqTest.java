@@ -1,8 +1,8 @@
 package cn.qaiu.db.dsl;
 
 import cn.qaiu.db.dsl.core.JooqExecutor;
-import cn.qaiu.example.User;
-import cn.qaiu.example.UserDao;
+import cn.qaiu.example.dao.UserDao;
+import cn.qaiu.example.entity.User;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -169,12 +169,12 @@ public class UserDaoJooqTest {
         CountDownLatch latch = new CountDownLatch(1);
         
         userDao.createUser("usernameuser", "username@example.com", "password123")
-                .compose(createdUser -> userDao.findByUsername("usernameuser"))
+                .compose(createdUser -> userDao.findByName("usernameuser"))
                 .onComplete(ar -> {
                     if (ar.succeeded()) {
-                        Optional<User> userOpt = ar.result();
-                        assertTrue(userOpt.isPresent(), "User should be found by username");
-                        User user = userOpt.get();
+                        List<User> users = ar.result();
+                        assertTrue(!users.isEmpty(), "User should be found by username");
+                        User user = users.get(0);
                         assertEquals("usernameuser", user.getUsername());
                         assertEquals("username@example.com", user.getEmail());
                         logger.info("✅ User found by username: {}", user.getUsername());
@@ -222,10 +222,10 @@ public class UserDaoJooqTest {
                 .compose(v -> userDao.createUser("inactive", "inactive@example.com", "password123"))
                 .compose(v -> {
                     // 设置一个用户为非活跃状态
-                    return userDao.findByUsername("inactive")
-                            .compose(userOpt -> {
-                                if (userOpt.isPresent()) {
-                                    return userDao.updateUserStatus(userOpt.get().getId(), User.UserStatus.INACTIVE);
+                    return userDao.findByName("inactive")
+                            .compose(users -> {
+                                if (!users.isEmpty()) {
+                                    return userDao.updateUserStatus(users.get(0).getId(), User.UserStatus.INACTIVE);
                                 }
                                 return Future.succeededFuture(false);
                             });

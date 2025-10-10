@@ -1,0 +1,56 @@
+# VXCore Example Application Configuration
+# 示例应用配置文件
+
+# 服务器配置
+server:
+  host: "0.0.0.0"
+  port: 8080
+  timeout: 30000
+  # 网关前缀
+  gateway-prefix: "/api"
+
+# 数据库配置
+datasources:
+  # 主数据源
+  primary:
+    url: "jdbc:h2:mem:example_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE"
+    driver: "org.h2.Driver"
+    username: "sa"
+    password: ""
+    max-pool-size: 10
+    min-pool-size: 2
+    
+  # 从数据源（示例）
+  secondary:
+    url: "jdbc:h2:mem:secondary_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE"
+    driver: "org.h2.Driver"
+    username: "sa"
+    password: ""
+    max-pool-size: 5
+    min-pool-size: 1
+
+# 反向代理配置
+proxy:
+  enabled: false
+  routes:
+    - path: "/proxy/*"
+      target: "http://localhost:3000"
+      type: "http"
+    - path: "/ws/*"
+      target: "ws://localhost:3000"
+      type: "websocket"
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    cn.qaiu: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 应用信息
+app:
+  name: "VXCore Example"
+  version: "1.0.0"
+  description: "VXCore框架示例应用"

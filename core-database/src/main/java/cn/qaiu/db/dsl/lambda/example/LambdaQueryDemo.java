@@ -1,20 +1,20 @@
 package cn.qaiu.db.dsl.lambda.example;
 
 import cn.qaiu.db.dsl.core.JooqExecutor;
-import cn.qaiu.db.dsl.lambda.LambdaPageResult;
-import cn.qaiu.db.dsl.lambda.LambdaQueryWrapper;
-import cn.qaiu.db.dsl.lambda.LambdaUtils;
-import cn.qaiu.db.pool.JDBCPoolInit;
+// import cn.qaiu.db.dsl.lambda.LambdaPageResult; // 未使用
+// import cn.qaiu.db.dsl.lambda.LambdaQueryWrapper; // 未使用
+// import cn.qaiu.db.dsl.lambda.LambdaUtils; // 未使用
+// import cn.qaiu.db.pool.JDBCPoolInit; // 未使用
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
+// import io.vertx.core.json.JsonObject; // 未使用
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
+// import java.util.Arrays; // 未使用
+// import java.util.List; // 未使用
 
 /**
  * Lambda查询功能演示

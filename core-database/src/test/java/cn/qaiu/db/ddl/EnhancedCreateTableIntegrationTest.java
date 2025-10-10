@@ -47,14 +47,11 @@ public class EnhancedCreateTableIntegrationTest {
 
         VertxHolder.init(vertx);
 
-        // 创建H2数据库连接 - 使用MySQL模式
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
-        JDBCConnectOptions connectOptions = new JDBCConnectOptions()
-                .setJdbcUrl("jdbc:h2:tcp://127.0.0.1:9092/./db/data_h2;MODE=MySQL;DATABASE_TO_LOWER=FALSE;DB_CLOSE_ON_EXIT=FALSE")
-                .setUser("h2db")
-                .setPassword("123456");
-
-        pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
+        // 创建H2数据库连接 - 使用统一配置
+        pool = cn.qaiu.db.test.H2TestConfig.createH2Pool(vertx);
+        
+        // 清理测试表，确保测试隔离
+        cn.qaiu.db.test.H2TestConfig.cleanupTestTables(pool);
         
         // 清理所有测试表，确保每个测试从干净状态开始
         System.out.println("开始清理测试表...");

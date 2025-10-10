@@ -1,9 +1,7 @@
 package cn.qaiu.db.dsl;
 
-import cn.qaiu.example.User;
+import cn.qaiu.example.entity.User;
 import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxTestContext;
-import io.vertx.sqlclient.Row;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

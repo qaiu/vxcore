@@ -1,0 +1,56 @@
+{
+  "tables": [
+    {
+      "name": "test_user",
+      "comment": "测试用户表",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT",
+          "javaType": "Long",
+          "primaryKey": true,
+          "nullable": false,
+          "comment": "主键ID"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR",
+          "javaType": "String",
+          "length": 100,
+          "nullable": false,
+          "comment": "用户名"
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR",
+          "javaType": "String",
+          "length": 255,
+          "nullable": true,
+          "comment": "邮箱"
+        },
+        {
+          "name": "age",
+          "type": "INTEGER",
+          "javaType": "Integer",
+          "nullable": true,
+          "comment": "年龄"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP",
+          "javaType": "LocalDateTime",
+          "nullable": false,
+          "comment": "创建时间"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_user_email",
+          "unique": true,
+          "columns": ["email"]
+        }
+      ],
+      "foreignKeys": []
+    }
+  ]
+}

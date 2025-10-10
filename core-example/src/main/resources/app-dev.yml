@@ -1,0 +1,84 @@
+# 服务配置
+server:
+  port: 6400
+  contextPath: /
+  # 使用数据库
+  enableDatabase: true
+#  # 服务域名或者IP 生成二维码链接时需要
+#  domainName: https://lz.qaiu.top
+#  # 预览服务URL
+#  previewURL: https://lz.qaiu.top/view/preview.html?src=
+#  # 微信中间页URL
+#  vxUrl: https://lz.qaiu.top/vx/go.html?src=
+  # 服务域名或者IP 生成二维码链接时需要
+  domainName: http://127.0.0.1:6401
+  # 预览服务URL
+  previewURL: http://127.0.0.1:6401/view/preview.html?src=
+
+# 反向代理服务器配置路径(不用加后缀)，如果不需前端页面这里可以不配置
+proxyConf: server-proxy
+
+# vertx核心线程配置(一般无需改的), 为0表示eventLoopPoolSize将会采用默认配置(CPU核心*2) workerPoolSize将会采用默认20
+vertx:
+  eventLoopPoolSize: 0
+  workerPoolSize: 0
+
+# vertx-service配置(一般无需改的)
+custom:
+  # 异步服务线程数
+  asyncServiceInstances: 4
+  # server路由(controller层)所在包路径
+  baseLocations: cn.qaiu
+  # 路由处理默认超时时间(毫秒)
+  routeTimeOut: 15000
+  # 拦截器匹配规则
+  ignoresReg:
+    - /v2/statisticsInfo
+    - .*/test.*$
+
+  # 参数注入的实体类包路径匹配正则 (防止同名类引发歧义)
+  entityPackagesReg:
+    - ^cn\.qaiu\.lz\.web\.model\..*
+    - ^cn\.qaiu\.lz\.web\.admin\.model\..*
+
+
+# 数据源配置
+dataSource:
+  provider_class: io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider
+  jdbcUrl: jdbc:h2:file:./db/nfdData33;MODE=MySQL;DATABASE_TO_UPPER=FALSE
+  driverClassName: org.h2.Driver
+  username: root
+  password: '123456'
+#  jdbcUrl: jdbc:mysql://localhost:3306/nfd_data_new
+#  driverClassName: com.mysql.cj.jdbc.Driver
+#  user: root
+#  password: qaiu@2024..
+#  provider_class: io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider  # 可选，通常默认是 HikariCP
+
+
+# 防止接口被滥用相关配置，修改此配置可能会影响已经生成的二维码或者链接的可用性
+# 支持reference防盗链验证，需要绑定服务器ip
+server-auth:
+  # reference防盗链验证配置，支持重写域名(防盗链)，默认取server.domainName配置
+  ref-enable: false
+  # 强制reference验证，不允许空reference
+  ref-force-enable: false
+  # 重写的域名，默认取server.domainName配置
+  overwrite-domain: lz.qaiu.top
+  # api路径混淆加密，如果不需要这里可以不配置
+  apiKey: lz2024qaiu
+  # 需要认证的路径匹配规则
+  jwt-enable: true
+  jwt-auth-reg:
+#    - /d/.*
+#    - /json/.*
+    - /admin/.*
+#    - /v2/preview
+  jwt-ignores-reg:
+    - /v2/getPanList
+    - /admin/api/captcha/image      # 验证码
+    - /admin/api/auth/login         # 登录
+    - /admin/api/auth/refresh       # 刷新token
+    - /admin/api/auth/logout        # 登出
+    - /admin/api/install/.*         # 安装检查
+

@@ -1,6 +1,8 @@
 package cn.qaiu.vx.core.verticle;
 
 import cn.qaiu.vx.core.util.*;
+import cn.qaiu.vx.core.proxy.WebSocketProxyHandler;
+import cn.qaiu.vx.core.proxy.WebSocketProxyConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -23,6 +25,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <p>反向代理服务</p>
@@ -124,6 +128,11 @@ public class ReverseProxyVerticle extends AbstractVerticle {
         if (proxyConf.containsKey("static")) {
             handleStatic(proxyConf.getJsonObject("static"), proxyRouter);
         }
+        
+        // WebSocket proxy
+        if (proxyConf.containsKey("sock")) {
+            handleWebSocketProxy(proxyConf.getJsonArray("sock"), proxyRouter);
+        }
 
         // Send page404 page
         proxyRouter.errorHandler(404, ctx -> {
@@ -132,10 +141,71 @@ public class ReverseProxyVerticle extends AbstractVerticle {
 
         HttpServer server = getHttpsServer(proxyConf);
         server.requestHandler(proxyRouter);
+        
+        // 添加WebSocket支持
+        server.webSocketHandler(webSocket -> {
+            handleWebSocketUpgrade(webSocket, proxyConf);
+        });
 
         Integer port = proxyConf.getInteger("listen");
         LOGGER.info("proxy server start on {} port", port);
         server.listen(port);
+    }
+    
+    /**
+     * 处理WebSocket代理配置
+     */
+    private void handleWebSocketProxy(JsonArray sockConfigs, Router proxyRouter) {
+        List<WebSocketProxyConfig> webSocketConfigs = new ArrayList<>();
+        
+        sockConfigs.stream().map(e -> (JsonObject) e).forEach(sockConfig -> {
+            WebSocketProxyConfig config = WebSocketProxyConfig.fromJson(sockConfig);
+            webSocketConfigs.add(config);
+            LOGGER.info("WebSocket proxy config: {}", config);
+        });
+        
+        // 存储配置供WebSocket处理器使用
+        vertx.sharedData().getLocalMap("websocket-proxy-configs").put("configs", webSocketConfigs);
+    }
+    
+    /**
+     * 处理WebSocket升级请求
+     */
+    private void handleWebSocketUpgrade(io.vertx.core.http.ServerWebSocket webSocket, JsonObject proxyConf) {
+        String requestPath = webSocket.path();
+        LOGGER.debug("WebSocket upgrade request: {}", requestPath);
+        
+        // 获取WebSocket代理配置
+        @SuppressWarnings("unchecked")
+        List<WebSocketProxyConfig> configs = (List<WebSocketProxyConfig>) 
+                vertx.sharedData().getLocalMap("websocket-proxy-configs").get("configs");
+        
+        if (configs == null || configs.isEmpty()) {
+            LOGGER.warn("No WebSocket proxy config found for path: {}", requestPath);
+            webSocket.close((short) 1002, "No proxy configuration");
+            return;
+        }
+        
+        // 查找匹配的配置
+        WebSocketProxyConfig matchedConfig = null;
+        for (WebSocketProxyConfig config : configs) {
+            if (config.isEnabled() && config.matches(requestPath)) {
+                matchedConfig = config;
+                break;
+            }
+        }
+        
+        if (matchedConfig == null) {
+            LOGGER.warn("No matching WebSocket proxy config for path: {}", requestPath);
+            webSocket.close((short) 1002, "No matching proxy configuration");
+            return;
+        }
+        
+        LOGGER.info("WebSocket proxy match found: {} -> {}", requestPath, matchedConfig.getOrigin());
+        
+        // 创建WebSocket代理处理器
+        WebSocketProxyHandler proxyHandler = new WebSocketProxyHandler(vertx);
+        proxyHandler.handleWebSocketProxy(webSocket, matchedConfig.getOrigin(), matchedConfig.getTargetPath());
     }
 
     private HttpServer getHttpsServer(JsonObject proxyConf) {

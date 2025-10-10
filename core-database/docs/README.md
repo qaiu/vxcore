@@ -1,15 +1,28 @@
-# 🎯 jOOQ + Vert.x DSL 数据库访问框架 - 完全实现
+# 🎯 VXCore Database Module - 现代化数据库访问框架
 
 ## 概述
 
-这是一个基于 **jOOQ DSL** 和 **Vert.x SQL Client** 的现代数据库访问框架，提供类型安全、高性能、异步的数据库操作。
+VXCore Database 模块是一个基于 **jOOQ DSL** 和 **Vert.x SQL Client** 的现代化数据库访问框架，提供类型安全、高性能、异步的数据库操作。
 
-## 🚀 新特性
+## 🚀 核心特性
 
-### ✅ 完全基于 jOOQ DSL
-- **真正的 jOOQ DSL 查询构建**：不生成代码或表类，使用动态 Field 和 Name 对象
-- **类型安全的 SQL 构建**：利用 jOOQ DSL 编译时检查，避免 SQL 注入和语法错误
-- **灵活的查询组合**：支持复杂的 WHERE、ORDER BY、GROUP BY 等查询条件
+### ✅ Lambda 查询增强
+- **类似 MyBatis-Plus 的 Lambda 表达式**：支持 `User::getName` 类型安全的字段引用
+- **Join 查询支持**：leftJoin、innerJoin、rightJoin、fullJoin
+- **聚合查询**：groupBy、having、selectCount、selectSum、selectAvg 等
+- **子查询支持**：exists、notExists、inSubQuery、notInSubQuery
+
+### ✅ 多数据源支持
+- **动态数据源切换**：支持运行时切换不同数据源
+- **事务隔离**：每个数据源独立的事务管理
+- **配置化**：支持 YAML 配置多数据源
+- **注解支持**：`@DataSource` 注解指定数据源
+
+### ✅ 批量操作优化
+- **高性能批量操作**：batchInsert、batchUpdate、batchDelete
+- **批量 UPSERT**：支持批量插入或更新
+- **连接池优化**：使用连接池提升批量操作性能
+- **事务一致性**：保证批量操作的事务完整性
 
 ### ⚡ Vert.x 异步执行
 - **非阻塞数据库操作**：基于 Vert.x SQL Client 4.5+
@@ -20,180 +33,304 @@
 ## 📁 项目结构
 
 ```
-core-database/src/main/java/cn/qaiu/db/dsl/
-├── core/                           # 核心框架组件
-│   ├── JooqExecutor.java          # jOOQ DSL 执行器 - 核心！
-│   └── JooqSqlBuilder.java         # jOOQ SQL 构建器
-├── templates/                       # 模板执行器
-│   └── JooqTemplateExecutor.java   # SQL 模板执行器
-├── common/                          # 常用工具
-│   ├── PageRequest.java            # 分页请求对象
-│   ├── PageResult.java             # 分页结果对象
-│   └── QueryCondition.java        # 复杂查询条件
-├── dao/                           # DAO 接口
-│   ├── JooqDao.java               # 基础 DAO 接口
-│   └── EnhancedDao.java           # 增强 DAO 基类
-├── mapper/                        # 实体映射器
-│   ├── EntityMapper.java          # 映射器接口
-│   └── DefaultMapper.java         # 默认映射器实现
-├── example/                       # 使用示例
-│   ├── User.java                  # User 实体
-│   ├── JooqUserDao.java          # User DAO - 真实的 jOOQ DSL！
-│   ├── JooqExampleVerticle.java  # 使用示例
-│   └── TemplateExampleVerticle.java # 模板示例
-└── README.md
+core-database/src/main/java/cn/qaiu/db/
+├── dsl/                           # DSL 框架
+│   ├── lambda/                    # Lambda 查询
+│   │   ├── LambdaQueryWrapper.java    # Lambda 查询包装器
+│   │   ├── LambdaDao.java            # Lambda DAO 接口
+│   │   ├── LambdaUtils.java          # Lambda 工具类
+│   │   └── SFunction.java            # Lambda 函数接口
+│   ├── core/                      # 核心组件
+│   │   ├── AbstractDao.java          # 抽象 DAO 基类
+│   │   ├── JooqExecutor.java         # jOOQ 执行器
+│   │   └── executor/                # 执行器策略
+│   │       ├── ExecutorStrategy.java
+│   │       └── AbstractExecutorStrategy.java
+│   └── common/                    # 通用工具
+│       ├── PageRequest.java          # 分页请求
+│       ├── PageResult.java           # 分页结果
+│       └── FieldNameConverter.java   # 字段名转换器
+├── datasource/                    # 多数据源支持
+│   ├── DataSource.java             # 数据源注解
+│   ├── DataSourceProvider.java     # 数据源提供者
+│   ├── DataSourceConfig.java       # 数据源配置
+│   ├── DataSourceManager.java      # 数据源管理器
+│   ├── DataSourceContext.java      # 数据源上下文
+│   └── DataSourceConfigLoader.java # 配置加载器
+├── spi/                           # SPI 扩展
+│   ├── DatabaseDriver.java         # 数据库驱动接口
+│   └── DialectProvider.java        # 方言提供者
+└── docs/                          # 文档
+    ├── README.md                   # 模块说明
+    ├── lambda/                     # Lambda 查询文档
+    ├── MULTI_DATASOURCE_GUIDE.md   # 多数据源指南
+    └── PARALLEL_DEVELOPMENT_SUMMARY.md # 开发总结
 ```
 
 ## 🔧 快速开始
 
 ### Maven 依赖
 
-确保 `pom.xml` 包含以下依赖：
-
 ```xml
 <dependency>
-    <groupId>org.jooq</groupId>
-    <artifactId>jooq</artifactId>
-    <version>3.19.2</version>
-</dependency>
-<dependency>
-    <groupId>io.vertx</groupId>
-    <artifactId>vertx-sql-client</artifactId>
-    <version>4.5.2</version>
-</dependency>
-<dependency>
-    <groupId>io.vertx</groupId>
-    <artifactId>vertx-mysql-client</artifactId>
-    <version>4.5.2</version>
+    <groupId>cn.qaiu</groupId>
+    <artifactId>vxcore-database</artifactId>
+    <version>2.0.0</version>
 </dependency>
 ```
 
 ### 1. 定义实体类
 
 ```java
-@DataObject
-public class User {
-    private Long id;
-    @DdlColumn(name = "user_name")
-    private String username;
+@DdlTable("users")
+public class User extends BaseEntity {
+    @DdlColumn("user_name")
+    private String name;
+    
+    @DdlColumn("user_email")
     private String email;
-    @DdlColumn(name = "pwd")
-    private String password;
-    private String bio;
-    @DdlColumn(name = "ut")
-    private LocalDateTime updateTime;
-    @DdlColumn(name = "ct")
-    private LocalDateTime createTime;
     
-    // 必需的 Vert.x CodeGen 构造函数
-    public User(JsonObject json) {
-        // ... 映射逻辑
-    }
+    @DdlColumn("user_status")
+    private String status;
     
-    public JsonObject toJson() {
-        // ... 映射逻辑
-    }
+    // getters and setters
 }
 ```
 
 ### 2. 创建 DAO
 
 ```java
-public class JooqUserDao extends JooqDaoImpl<User, Long> {
+public class UserDao extends AbstractDao<User> {
     
-    public JooqUserDao(JooqExecutor executor) {
+    public UserDao(JooqExecutor executor) {
         super(executor, User.class);
     }
     
-    // 自定义查询方法 - 使用真正的 jOOQ DSL！
+    // Lambda 查询示例
     public Future<List<User>> findActiveUsers() {
-        Field<String> userNameField = DSL.field("username", String.class);
-        Field<String> statusField = DSL.field("status", String.class);
-        
-        Condition condition = userNameField.isNotNull()
-            .and(statusField.eq("ACTIVE"));
-        
-        return findByCondition(condition);
+        return lambdaQuery()
+            .eq(User::getStatus, "ACTIVE")
+            .like(User::getName, "张%")
+            .orderBy(User::getCreateTime, SortOrder.DESC)
+            .list();
     }
     
-    // 分页查询示例
-    public Future<PageResult> findUsers(PageRequest pageRequest) {
-        return findPage(pageRequest, null);
+    // Join 查询示例
+    public Future<List<User>> findUsersWithOrders() {
+        return lambdaQuery()
+            .leftJoin(Order.class, (user, order) -> 
+                user.getId().eq(order.getUserId()))
+            .eq(User::getStatus, "ACTIVE")
+            .list();
+    }
+    
+    // 聚合查询示例
+    public Future<List<Map<String, Object>>> getUserStats() {
+        return lambdaQuery()
+            .select(User::getStatus, DSL.count())
+            .groupBy(User::getStatus)
+            .having(DSL.count().gt(10))
+            .list();
     }
 }
 ```
 
-### 3. 在 Verticle 中使用
+### 3. 多数据源配置
+
+```yaml
+# application.yml
+datasources:
+  primary:
+    url: jdbc:mysql://localhost:3306/main_db
+    username: root
+    password: password
+    driver: com.mysql.cj.jdbc.Driver
+  secondary:
+    url: jdbc:postgresql://localhost:5432/log_db
+    username: postgres
+    password: password
+    driver: org.postgresql.Driver
+```
+
+```java
+@DataSource("primary")
+public class UserDao extends AbstractDao<User> {
+    
+    @DataSource("secondary")
+    public Future<List<Log>> findUserLogs(Long userId) {
+        return logDao.lambdaQuery()
+            .eq(Log::getUserId, userId)
+            .list();
+    }
+}
+```
+
+### 4. 批量操作示例
+
+```java
+public class UserService {
+    
+    public Future<List<User>> batchCreateUsers(List<User> users) {
+        return userDao.batchInsert(users);
+    }
+    
+    public Future<List<User>> batchUpdateUsers(List<User> users) {
+        return userDao.batchUpdate(users);
+    }
+    
+    public Future<Boolean> batchDeleteUsers(List<Long> userIds) {
+        return userDao.batchDelete(userIds);
+    }
+    
+    public Future<List<User>> batchUpsertUsers(List<User> users) {
+        return userDao.batchUpsert(users);
+    }
+}
+```
+
+### 5. 在 Verticle 中使用
 
 ```java
 public class UserVerticle extends AbstractVerticle {
-    private JooqExecutor jooqExecutor;
-    private JooqUserDao userDao;
+    private UserDao userDao;
     
     @Override
     public void start(Promise<Void> startPromise) {
-        // 创建 SQL Client Pool
-        SqlConnectOptions connectOptions = new SqlConnectOptions()
-            .setHost("localhost")
-            .setPort(5432)
-            .setDatabase("mydb")
-            .setUser("user")
-            .setPassword("password");
-        
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(10);
-        Pool pool = Pool.pool(vertx, connectOptions, poolOptions);
-        
-        // 创建 jOOQ 执行器
-        jooqExecutor = new JooqExecutor(pool);
-        userDao = new JooqUserDao(jooqExecutor);
-        
-        startPromise.complete();
+        // 初始化数据源
+        DataSourceConfigLoader.loadFromFile("application.yml")
+            .compose(configs -> {
+                // 注册数据源
+                DataSourceManager.registerDataSources(configs);
+                
+                // 创建 DAO
+                JooqExecutor executor = DataSourceManager.getExecutor("primary");
+                userDao = new UserDao(executor);
+                
+                return Future.succeededFuture();
+            })
+            .onComplete(startPromise);
     }
     
     // 业务方法示例
-    private Future<User> createUser(String username, String email) {
+    private Future<User> createUser(String name, String email) {
         User user = new User();
-        user.setUsername(username);
+        user.setName(name);
         user.setEmail(email);
+        user.setStatus("ACTIVE");
         
-        return userDao.insert(user)
-            .map(Optional::get); // 确保插入成功
+        return userDao.create(user);
     }
     
     private Future<List<User>> searchUsers(String keyword) {
-        Field<String> nameField = DSL.field("username", String.class);
-        Field<String> emailField = DSL.field("email", String.class);
-        
-        Condition searchCondition = nameField.likeIgnoreCase("%" + keyword + "%")
-            .or(emailField.likeIgnoreCase("%" + keyword + "%"));
-        
-        return userDao.findByCondition(searchCondition);
+        return userDao.lambdaQuery()
+            .like(User::getName, "%" + keyword + "%")
+            .or()
+            .like(User::getEmail, "%" + keyword + "%")
+            .list();
     }
 }
 ```
 
 ## 🎯 核心特性详解
 
-### 1. 真正的 jOOQ DSL
+### 1. Lambda 查询增强
 
 ```java
-// 不是生成类，使用动态 Field 和 Name 对象
-Name userTable = DSL.name("dsl_user");
-Field<Long> idField = DSL.field("id", Long.class);
-Field<String> nameField = DSL.field("user_name", String.class);
+// 类型安全的字段引用
+public Future<List<User>> findActiveUsers() {
+    return userDao.lambdaQuery()
+        .eq(User::getStatus, "ACTIVE")
+        .like(User::getName, "张%")
+        .orderBy(User::getCreateTime, SortOrder.DESC)
+        .list();
+}
 
-// 构建复杂的 SQL 查询
-Query complexQuery = jooqExecutor.dsl()
-    .select(userTable.asterisk())
-    .from(userTable)
-    .where(nameField.like("%张%"))
-    .and(idField.gt(1000L))
-    .orderBy(idField.desc())
-    .offset(0)
-    .limit(10);
+// Join 查询
+public Future<List<User>> findUsersWithOrders() {
+    return userDao.lambdaQuery()
+        .leftJoin(Order.class, (user, order) -> 
+            user.getId().eq(order.getUserId()))
+        .eq(User::getStatus, "ACTIVE")
+        .list();
+}
+
+// 聚合查询
+public Future<List<Map<String, Object>>> getUserStats() {
+    return userDao.lambdaQuery()
+        .select(User::getStatus, DSL.count())
+        .groupBy(User::getStatus)
+        .having(DSL.count().gt(10))
+        .list();
+}
+
+// 子查询
+public Future<List<User>> findUsersWithOrders() {
+    return userDao.lambdaQuery()
+        .exists(Order.class, (order) -> 
+            order.getUserId().eq(User::getId))
+        .list();
+}
 ```
 
-### 2. 异步非阻塞操作
+### 2. 多数据源支持
+
+```java
+// 配置多数据源
+@ConfigurationProperties(prefix = "datasources")
+public class DataSourceConfigs {
+    private Map<String, DataSourceConfig> configs;
+}
+
+// 使用注解切换数据源
+@DataSource("primary")
+public class UserDao extends AbstractDao<User> {
+    
+    @DataSource("secondary")
+    public Future<List<Log>> findUserLogs(Long userId) {
+        return logDao.lambdaQuery()
+            .eq(Log::getUserId, userId)
+            .list();
+    }
+}
+
+// 动态切换数据源
+public Future<List<User>> findUsersFromSecondary() {
+    DataSourceContext.setDataSourceName("secondary");
+    try {
+        return userDao.findAll();
+    } finally {
+        DataSourceContext.clearDataSourceName();
+    }
+}
+```
+
+### 3. 批量操作优化
+
+```java
+// 高性能批量插入
+public Future<List<User>> batchCreateUsers(List<User> users) {
+    return userDao.batchInsert(users)
+        .onSuccess(result -> log.info("批量插入 {} 条用户记录", result.size()))
+        .onFailure(throwable -> log.error("批量插入失败", throwable));
+}
+
+// 批量更新
+public Future<List<User>> batchUpdateUsers(List<User> users) {
+    return userDao.batchUpdate(users);
+}
+
+// 批量删除
+public Future<Boolean> batchDeleteUsers(List<Long> userIds) {
+    return userDao.batchDelete(userIds);
+}
+
+// 批量 UPSERT
+public Future<List<User>> batchUpsertUsers(List<User> users) {
+    return userDao.batchUpsert(users);
+}
+```
+
+### 4. 异步非阻塞操作
 
 ```java
 // 所有操作都返回 Future，支持链式调用
@@ -215,11 +352,8 @@ public Future<User> getUserWithProfile(Long userId) {
             return Future.failedFuture("User not found");
         });
 }
-```
 
-### 3. 事务支持
-
-```java
+// 事务支持
 public Future<Void> createUserWithProfile(User user, UserProfile profile) {
     return userDao.executor.pool().getConnection()
         .compose(conn -> {
@@ -242,41 +376,18 @@ public Future<Void> createUserWithProfile(User user, UserProfile profile) {
 }
 ```
 
-### 4. 高级查询功能
-
-```java
-// 分页查询
-public Future<PageResult<User>> getUsersWithPagination(int page, int size) {
-    PageRequest pageRequest = new PageRequest(page, size, "create_time", SortOrder.DESC);
-    return userDao.findPage(pageRequest, null);
-}
-
-// 动态查询条件
-public Future<List<User>> findUsersByRole(UserRole role) {
-    QueryCondition condition = QueryCondition.or(
-        QueryCondition.equals("role", role),
-        QueryCondition.equals("status", "ACTIVE")
-    );
-    return userDao.findByQueryCondition(condition);
-}
-
-// 批量操作
-public Future<List<User>> createUsers(List<User> users) {
-    return userDao.batchInsert(users);
-}
-```
-
 ## 📋 CRUD 操作
 
 ### 增 (Create)
 
 ```java
 User user = new User();
-user.setUsername("john_doe");
+user.setName("john_doe");
 user.setEmail("john@example.com");
+user.setStatus("ACTIVE");
 
 // 插入单个用户
-Future<Optional<User>> insertResult = userDao.insert(user);
+Future<User> insertResult = userDao.create(user);
 
 // 批量插入用户
 Future<List<User>> batchInsertResult = userDao.batchInsert(userList);
@@ -291,13 +402,13 @@ Future<Optional<User>> userOptional = userDao.findById(1L);
 // 查询所有用户
 Future<List<User>> allUsers = userDao.findAll();
 
-// 根据条件查询
-Future<List<User>> usersByRole = userDao.findById(
-    DSL.field("role").eq("ADMIN")
-);
+// Lambda 查询
+Future<List<User>> activeUsers = userDao.lambdaQuery()
+    .eq(User::getStatus, "ACTIVE")
+    .list();
 
 // 分页查询
-Future<List<User>> pageUsers = userDao.findPage(pageRequest, null);
+Future<PageResult<User>> pageUsers = userDao.findPage(pageRequest, null);
 ```
 
 ### 改 (Update)
@@ -307,7 +418,7 @@ User user = userOptional.get();
 user.setEmail("newemail@example.com");
 
 // 更新单个用户
-Future<Optional<User>> updateResult = userDao.update(user);
+Future<User> updateResult = userDao.update(user);
 
 // 批量更新用户
 Future<List<User>> batchUpdateResult = userDao.batchUpdate(userList);
@@ -321,40 +432,80 @@ Future<Boolean> deleteResult = userDao.delete(1L);
 
 // 批量删除
 Future<Boolean> batchDeleteResult = userDao.batchDelete(Arrays.asList(1L, 2L, 3L));
+
+// 条件删除
+Future<Boolean> conditionDeleteResult = userDao.batchDeleteByCondition(
+    DSL.field("status").eq("INACTIVE")
+);
 ```
 
 ## 🔧 配置
 
-### Pool 配置
+### 多数据源配置
 
-```java
-SqlConnectOptions connectOptions = new SqlConnectOptions()
-    .setPort(5432)
-    .setHost("localhost")
-    .setDatabase("mydb")
-    .setUser("root")
-    .setPassword("password");
-
-PoolOptions poolOptions = new PoolOptions()
-   .setMaxSize(15)              // 最大连接数
-    .setMinSize(5)              // 最小连接数
-    .setMaxWaitQueueSize(10)    // 等待队列最大长度
-    .setMaxWaitTime(100)        // 连接获取超时(ms)
-    .setEvictionInterval(0)     // 回收间隔(ms)
-    .setCachePreparedStatements(true); // 缓存PreparedStatement
-
-Pool pool = Pool.pool(vertx, connectOptions, poolOptions);
+```yaml
+# application.yml
+datasources:
+  primary:
+    url: jdbc:mysql://localhost:3306/main_db
+    username: root
+    password: password
+    driver: com.mysql.cj.jdbc.Driver
+    maxPoolSize: 20
+    minPoolSize: 5
+    connectionTimeout: 30000
+  secondary:
+    url: jdbc:postgresql://localhost:5432/log_db
+    username: postgres
+    password: password
+    driver: org.postgresql.Driver
+    maxPoolSize: 10
+    minPoolSize: 2
+    connectionTimeout: 30000
+  h2:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: ""
+    driver: org.h2.Driver
+    maxPoolSize: 5
+    minPoolSize: 1
 ```
 
-### Logger 配置
+### 数据源配置类
 
 ```java
-// 配置 Logback
-public class DatabaseConfig {
-    public static void configureLogging() {
-        System.setProperty("日志级别", "DEBUG");
-        System.setProperty("显示时间", "true");
-        System.setProperty("数据源名称", "DATABASE_DS");
+@ConfigurationProperties(prefix = "datasources")
+public class DataSourceConfigs {
+    private Map<String, DataSourceConfig> configs;
+    
+    // getters and setters
+}
+
+public class DataSourceConfig {
+    private String url;
+    private String username;
+    private String password;
+    private String driver;
+    private int maxPoolSize = 20;
+    private int minPoolSize = 5;
+    private long connectionTimeout = 30000;
+    
+    // getters and setters
+}
+```
+
+### 连接池配置
+
+```java
+public class PoolConfig {
+    public static PoolOptions createPoolOptions(DataSourceConfig config) {
+        return new PoolOptions()
+            .setMaxSize(config.getMaxPoolSize())
+            .setMinSize(config.getMinPoolSize())
+            .setMaxWaitQueueSize(10)
+            .setMaxWaitTime(config.getConnectionTimeout())
+            .setEvictionInterval(0)
+            .setCachePreparedStatements(true);
     }
 }
 ```
@@ -380,38 +531,45 @@ CREATE TABLE users (
 - **自动转换**：框架自动处理驼峰转下划线
 - **手动指定**：使用 `@DdlColumn(name = "...")` 指定列名
 
-## 📝 实体类要求
-
-### Vert.x CodeGen 风格
-
-实体类必须实现 Vert.x CodeGen 风格：
+### 字段名转换器
 
 ```java
-@DataObject
-public class User {
-    // 1. 数据库字段属性
-    private Long id;
-    private String username;
+public class FieldNameConverter {
+    
+    /**
+     * Java字段名转数据库字段名
+     */
+    public static String toDatabaseField(String javaField) {
+        return StringCase.toUnderlineCase(javaField);
+    }
+    
+    /**
+     * 数据库字段名转Java字段名
+     */
+    public static String toJavaField(String databaseField) {
+        return StringCase.toCamelCase(databaseField);
+    }
+}
+```
+
+## 📝 实体类要求
+
+### 实体类定义
+
+```java
+@DdlTable("users")
+public class User extends BaseEntity {
+    
+    @DdlColumn("user_name")
+    private String name;
+    
+    @DdlColumn("user_email")
     private String email;
     
-    // 2. 必需的构造函数
-    public User(JsonObject json) {
-        this.id = json.getLong("id");
-        this.username = json.getString("username");
-        this.email = json.getString("email");
-    }
+    @DdlColumn("user_status")
+    private String status;
     
-    // 3. 必需的toJson方法
-    public JsonObject toJson() {
-        return new JsonObject()
-            .put("id", id)
-            .put("username", username)
-            .put("email", email);
-    }
-    
-    // 4. DDL注解（可选）
-    @DdlColumn(name = "user_name")
-    private String username;
+    // getters and setters
 }
 ```
 
@@ -420,54 +578,78 @@ public class User {
 框架提供 `BaseEntity` 基类，自动处理实体映射：
 
 ```java
-@DataObject
-public class User extends BaseEntity {
-    // 框架自动处理 id, createTime, updateTime 映射
+public abstract class BaseEntity {
+    private Long id;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+    
+    // 生命周期回调
+    @PrePersist
+    public void onCreate() {
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    public void onUpdate() {
+        this.updateTime = LocalDateTime.now();
+    }
+    
+    // getters and setters
 }
 ```
 
-## 🔍 SQL 模板 API
-
-框架提供模板 API，支持原生 SQL 执行：
+### DDL 注解
 
 ```java
-JooqTemplateExecutor templateExecutor = new JooqTemplateExecutor(pool);
-
-// 执行 SQL 模板
-String sqlTemplate = "SELECT * FROM users WHERE role = :role AND status = :status";
-Map<String, Object> params = new HashMap<>();
-params.put("role", "ADMIN");
-params.put("status", "ACTIVE");
-
-Future<List<JsonObject>> results = templateExecutor.query(sqlTemplate, params);
-
-// jOOQ Query 转换为模板
-Condition condition = DSL.field("role").eq("USER").and(DSL.field("status").eq("ACTIVE"));
-Query jooqQuery = jooqExecutor.dsl().selectFrom(DSL.table("users")).where(condition);
-
-TemplateQueryInfo templateInfo = templateExecutor.toTemplateInfo(jooqQuery);
-Future<List<JsonObject>> convertedResults = templateExecutor
-    .query(templateInfo.getSqlTemplate(), templateInfo.getParameters());
+@DdlTable("users")
+public class User extends BaseEntity {
+    
+    // 使用 value 作为 name 的别名
+    @DdlColumn(value = "user_name")
+    private String name;
+    
+    // 自动转换为下划线命名
+    private String email; // 对应 email 列
+    
+    // 手动指定列名
+    @DdlColumn(name = "user_status")
+    private String status;
+}
 ```
 
-## 📚 最佳实践
+## 📚 详细文档
+
+### 核心文档
+- [Lambda查询指南](lambda/LAMBDA_QUERY_GUIDE.md) - Lambda查询详解
+- [多数据源指南](MULTI_DATASOURCE_GUIDE.md) - 多数据源配置和使用
+- [并行开发总结](PARALLEL_DEVELOPMENT_SUMMARY.md) - 开发总结
+
+### API 参考
+- [Lambda查询API](lambda/API_REFERENCE.md) - Lambda查询API参考
+- [多数据源API](MULTI_DATASOURCE_IMPLEMENTATION_SUMMARY.md) - 多数据源API参考
+
+## 🚀 最佳实践
 
 ### 1. 实体类设计
 
 ```java
-@DataObject
-@Table(value = "users")
+@DdlTable("users")
 public class User extends BaseEntity {
-    @DdlColumn(name = "user_name")
-    private String username;
     
-    @DdlColumn(name = "email_addr") 
+    @DdlColumn("user_name")
+    private String name;
+    
+    @DdlColumn("user_email") 
     private String email;
     
     private String bio;
     private BigDecimal balance;
-    @DdlColumn(name = "is_active")
+    
+    @DdlColumn("is_active")
     private Boolean active; // 推荐使用Boolean而非boolean
+    
+    // getters and setters
 }
 ```
 
@@ -475,39 +657,35 @@ public class User extends BaseEntity {
 
 ```java
 @Slf4j
-public class UserDao extends JooqDaoImpl<User, Long> {
+public class UserDao extends AbstractDao<User> {
 
     public UserDao(JooqExecutor executor) {
         super(executor, User.class);
     }
 
     public Future<Optional<User>> findByEmail(String email) {
-        Field<String> emailField = DSL.field("email", String.class);
-        Condition condition = emailField.eq(email);
-
-        return findByCondition(condition)
-            .map(users -> users.stream().findFirst());
+        return lambdaQuery()
+            .eq(User::getEmail, email)
+            .first();
     }
 
     public Future<List<User>> findActiveUsers(int limit) {
-        Field<Boolean> activeField = DSL.field("is_active", Boolean.class);
-        Condition condition = activeField.eq(true);
-
-        return findByCondition(condition)
-            .map(users -> users.stream().limit(limit).collect(Collectors.toList()));
+        return lambdaQuery()
+            .eq(User::getActive, true)
+            .limit(limit)
+            .list();
     }
     
     public Future<PageResult<User>> findUsersWithPagination(PageRequest pageRequest, String keyword) {
-        Condition condition = DSL.noCondition();
+        LambdaQueryWrapper<User> wrapper = lambdaQuery();
         
         if (keyword != null && !keyword.trim().isEmpty()) {
-            Field<String> nameField = DSL.field("username", String.class);
-            Field<String> emailField = DSL.field("email", String.class);
-            condition = nameField.likeIgnoreCase("%" + keyword + "%")
-                .or(emailField.likeIgnoreCase("%" + keyword + "%"));
+            wrapper.like(User::getName, "%" + keyword + "%")
+                .or()
+                .like(User::getEmail, "%" + keyword + "%");
         }
 
-        return this.findPage(pageRequest, condition);
+        return wrapper.findPage(pageRequest);
     }
 }
 ```
@@ -515,6 +693,7 @@ public class UserDao extends JooqDaoImpl<User, Long> {
 ### 3. 服务层设计
 
 ```java
+@Service
 public class UserService {
     private final UserDao userDao;
     
@@ -524,7 +703,7 @@ public class UserService {
     
     public Future<User> createUser(CreateUserRequest request) {
         // 验证用户名不为空
-        if (request.username == null || request.username.trim().isEmpty()) {
+        if (request.name == null || request.name.trim().isEmpty()) {
             return Future.failedFuture(new ValidationException("用户名不能为空"));
         }
         
@@ -540,11 +719,11 @@ public class UserService {
                 }
                 
                 User newUser = new User();
-                newUser.setUsername(request.username);
+                newUser.setName(request.name);
                 newUser.setEmail(request.email);
+                newUser.setActive(true);
                 
-                return userDao.insert(newUser)
-                    .map(Optional::get);
+                return userDao.create(newUser);
             });
     }
     
@@ -634,28 +813,32 @@ public class DatabaseConfig {
 
 ## 📝 更新记录
 
-### v2.0.0 - 完全基于 jOOQ DSL (当前版本)
+### v2.0.0 - Lambda查询增强 (当前版本)
 
 #### ✅ 主要变化
 
-1. **真正的 jOOQ DSL 实现**
-   - 新增 `JooqExecutor` - 完全的 jOOQ DSL 执行器
-   - 新增 `JooqSqlBuilder` - 优化的 SQL 构建器
-   - 废弃旧的伪 jOOQ 实现
+1. **Lambda查询增强**
+   - 新增 `LambdaQueryWrapper` - 支持类似MyBatis-Plus的Lambda表达式
+   - 新增 Join查询支持 - leftJoin、innerJoin、rightJoin、fullJoin
+   - 新增聚合查询 - groupBy、having、selectCount、selectSum等
+   - 新增子查询支持 - exists、notExists、inSubQuery等
 
-2. **增强的 DAO 能力**
-   - 新增 `EnhancedDao` - 支持分页、批量操作等高级功能
-   - 新增 `PageRequest` 和 `PageResult` - 分页支持
-   - 新增 `QueryCondition` - 复杂查询条件
+2. **多数据源支持**
+   - 新增 `DataSourceManager` - 数据源管理器
+   - 新增 `DataSourceContext` - 线程本地数据源上下文
+   - 新增 `@DataSource` 注解 - 数据源切换注解
+   - 新增 `DataSourceConfigLoader` - 配置加载器
 
-3. **模板系统**
-   - 新增 `JooqTemplateExecutor` - SQL 模板执行器
-   - 支持原生的 JOOQ Query 与模板之间的转换
+3. **批量操作优化**
+   - 新增 `batchInsert` - 批量插入
+   - 新增 `batchUpdate` - 批量更新
+   - 新增 `batchDelete` - 批量删除
+   - 新增 `batchUpsert` - 批量插入或更新
 
-4. **完整的注解系统**
-   - 新增 `@JooqTable` - 灵活的 jOOQ 表注解
-   - 新增 `@JooqColumn` - 灵活的 jOOQ 列注解
-   - 完全兼容现有的 `@DdlTable` 和 `@DdlColumn`
+4. **执行器策略模式**
+   - 新增 `ExecutorStrategy` 接口 - 执行器策略
+   - 新增 `AbstractExecutorStrategy` - 抽象执行器策略
+   - 支持不同数据库类型的执行器
 
 #### 👍 优势
 
@@ -669,23 +852,26 @@ public class DatabaseConfig {
 
 | 功能 | v1.0 (旧版) | v2.0 (当前) |
 |------|-------------|-------------|
-| SQL构建 | ❌ 字符串拼接 | ✅ jOOQ DSL |
-| 类型安全 | ❌ 无编译检查 | ✅ 编译时检查 |
-| SQL注入 | ⚠️ 潜在风险 | ✅ 完全防护 |
-| 性能 | ⚠️ 反射开销 | ✅ 零反射 |
-| 代码复用 | ❌ 重复代码 | ✅ 高度复用 |
-| 维护性 | ❌ 难维护 | ✅ 易维护 |
+| Lambda查询 | ❌ 不支持 | ✅ 完整支持 |
+| Join查询 | ❌ 不支持 | ✅ 完整支持 |
+| 聚合查询 | ❌ 不支持 | ✅ 完整支持 |
+| 子查询 | ❌ 不支持 | ✅ 完整支持 |
+| 多数据源 | ❌ 不支持 | ✅ 完整支持 |
+| 批量操作 | ❌ 不支持 | ✅ 完整支持 |
+| 类型安全 | ⚠️ 部分支持 | ✅ 完全支持 |
+| 性能 | ⚠️ 一般 | ✅ 优秀 |
 
 ## 📞 技术支持
 
 如果您在使用过程中遇到问题，可以：
 
-1. **查看示例代码**: `example/JooqExampleVerticle.java`, `dao/jooq/JooqUserDao.java`
+1. **查看示例代码**: `core-example/` 目录
 2. **运行测试**: `mvn test` 查看运行结果
 3. **检查日志**: 框架提供详细的 SQL 执行日志
+4. **查看文档**: `docs/` 目录下的详细文档
 
 ---
 
-**🎯 这是一个企业级、生产就绪的数据库访问框架！**
+**🎯 VXCore Database - 现代化、高性能、类型安全的数据库访问框架！**
 
-基于真正的 jOOQ DSL 实现，提供类型安全、高性能、易于维护的数据库访问解决方案。适合在高并发、高可靠性的企业应用中使用。
+基于 jOOQ DSL 和 Vert.x 实现，提供 Lambda 查询、多数据源支持、批量操作等企业级功能。适合在高并发、高可靠性的企业应用中使用。
