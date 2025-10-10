@@ -44,7 +44,7 @@ public class DefaultEntityMapper<T extends BaseEntity> implements EntityMapper<T
             this.jsonConstructor = entityClass.getConstructor(JsonObject.class);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException(
-                "Entity class " + entityClass.getUsername() + 
+                "Entity class " + entityClass.getName() + 
                 " must have a constructor that takes JsonObject", e);
         }
         
@@ -73,7 +73,7 @@ public class DefaultEntityMapper<T extends BaseEntity> implements EntityMapper<T
         List<Method> setterList = new ArrayList<>();
         
         for (Method method : methods) {
-            String methodName = method.getUsername();
+            String methodName = method.getName();
             if (methodName.startsWith("set") && 
                 methodName.length() > 3 && 
                 method.getParameterCount() == 1) {
@@ -122,7 +122,7 @@ public class DefaultEntityMapper<T extends BaseEntity> implements EntityMapper<T
             
             for (Field<?> field : record.fields()) {
                 Object value = record.get(field);
-                String fieldName = field.getUsername();
+                String fieldName = field.getName();
                 
                 // 数据类型转换
                 Object convertedValue = convertValue(value);

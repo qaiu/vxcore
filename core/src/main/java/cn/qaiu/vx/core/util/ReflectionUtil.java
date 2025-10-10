@@ -94,8 +94,8 @@ public final class ReflectionUtil {
         Map<String, Pair<Annotation[], CtClass>> paramMap = new LinkedHashMap<>();
         try {
             ClassPool pool = ClassPool.getDefault();
-            CtClass ctClass = pool.get(method.getDeclaringClass().getUsername());
-            CtMethod cm = ctClass.getDeclaredMethod(method.getUsername());
+            CtClass ctClass = pool.get(method.getDeclaringClass().getName());
+            CtMethod cm = ctClass.getDeclaredMethod(method.getName());
             Annotation[][] parameterAnnotations = method.getParameterAnnotations();
             MethodInfo methodInfo = cm.getMethodInfo();
             CtClass[] parameterTypes = cm.getParameterTypes();
@@ -137,9 +137,9 @@ public final class ReflectionUtil {
         if (StringUtils.isEmpty(fmt)) {
             fmt = "yyyy-MM-dd";
         }
-        String name = ctClass.getUsername();
+        String name = ctClass.getName();
         if (ctClass.isArray()) {
-            name = ctClass.getUsername().substring(0, ctClass.getUsername().length() - 2);
+            name = ctClass.getName().substring(0, ctClass.getName().length() - 2);
         }
         switch (name) {
             case "java.lang.Boolean":
@@ -215,10 +215,10 @@ public final class ReflectionUtil {
      * @return bool
      */
     public static boolean isBasicType(CtClass ctClass) {
-        if (ctClass.isPrimitive() || "java.util.Date".equals(ctClass.getUsername())) {
+        if (ctClass.isPrimitive() || "java.util.Date".equals(ctClass.getName())) {
             return true;
         }
-        return ctClass.getUsername().matches("^java\\.lang\\.((Boolean)|(Character)|(Byte)|(Short)|(Integer)|(Long)|" +
+        return ctClass.getName().matches("^java\\.lang\\.((Boolean)|(Character)|(Byte)|(Short)|(Integer)|(Long)|" +
                 "(Float)|(Double)|(String))$");
     }
 
@@ -230,7 +230,7 @@ public final class ReflectionUtil {
     public static boolean isBasicTypeArray(CtClass ctClass) {
         if (!ctClass.isArray()) {
             return false;
-        } else return (ctClass.getUsername().matches("^(boolen|char|byte|short|int|long|float|double|String)\\[]$"));
+        } else return (ctClass.getName().matches("^(boolen|char|byte|short|int|long|float|double|String)\\[]$"));
     }
 
     /**

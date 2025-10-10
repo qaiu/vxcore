@@ -36,9 +36,9 @@ public class EntityMapperTest {
         Class<User> entityClass = entityMapper.getEntityClass();
         
         assertEquals(User.class, entityClass);
-        assertEquals("cn.qaiu.example.User", entityClass.getUsername());
+        assertEquals("cn.qaiu.example.User", entityClass.getName());
         
-        LOGGER.info("EntityClass test passed: {}", entityClass.getUsername());
+        LOGGER.info("EntityClass test passed: {}", entityClass.getName());
     }
 
     @Test

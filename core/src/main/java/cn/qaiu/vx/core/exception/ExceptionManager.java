@@ -232,7 +232,7 @@ public class ExceptionManager {
                 
                 return false;
             } catch (Throwable e) {
-                LOGGER.error("Error in exception handler method: {}", handlerMethod.getUsername(), e);
+                LOGGER.error("Error in exception handler method: {}", handlerMethod.getName(), e);
                 return false;
             }
         }

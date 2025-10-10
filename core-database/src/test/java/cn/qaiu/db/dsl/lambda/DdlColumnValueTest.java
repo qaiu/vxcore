@@ -134,11 +134,11 @@ public class DdlColumnValueTest {
         productDao.findByCode("IPHONE15PRO")
                 .onSuccess(product -> {
                     assertTrue(product.isPresent());
-                    assertEquals("iPhone 15 Pro", product.get().getUsername());
+                    assertEquals("iPhone 15 Pro", product.get().getName());
                     assertEquals("IPHONE15PRO", product.get().getCode());
                     assertEquals(new BigDecimal("999.99"), product.get().getPrice());
                     assertTrue(product.get().getActive());
-                    logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getUsername());
+                    logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getName());
                 })
                 .onFailure(error -> fail("DdlColumn value字段映射测试失败: " + error.getMessage()));
     }
@@ -153,7 +153,7 @@ public class DdlColumnValueTest {
                 .onSuccess(product -> {
                     assertTrue(product.isPresent());
                     assertEquals("IPHONE15PRO", product.get().getCode());
-                    logger.info("✓ 等值查询测试通过: {}", product.get().getUsername());
+                    logger.info("✓ 等值查询测试通过: {}", product.get().getName());
                 })
                 .onFailure(error -> fail("等值查询失败: " + error.getMessage()));
         
@@ -209,7 +209,7 @@ public class DdlColumnValueTest {
         productDao.findByNameLike("iPhone")
                 .onSuccess(products -> {
                     assertEquals(1, products.size());
-                    assertEquals("iPhone 15 Pro", products.get(0).getUsername());
+                    assertEquals("iPhone 15 Pro", products.get(0).getName());
                     assertTrue(products.get(0).getActive());
                     logger.info("✓ LIKE查询测试通过: 找到 {} 个产品", products.size());
                 })
@@ -336,7 +336,7 @@ public class DdlColumnValueTest {
                     assertTrue(products.size() >= 1);
                     products.forEach(product -> {
                         assertNotNull(product.getId());
-                        assertNotNull(product.getUsername());
+                        assertNotNull(product.getName());
                         assertNotNull(product.getCode());
                         assertNotNull(product.getPrice());
                         assertNotNull(product.getActive());

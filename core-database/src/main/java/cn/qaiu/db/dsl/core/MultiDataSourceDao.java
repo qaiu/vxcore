@@ -59,11 +59,11 @@ public abstract class MultiDataSourceDao {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             for (StackTraceElement element : stackTrace) {
-                if (element.getClassName().equals(this.getClass().getUsername())) {
+                if (element.getClassName().equals(this.getClass().getName())) {
                     String methodName = element.getMethodName();
                     Method[] methods = this.getClass().getDeclaredMethods();
                     for (Method method : methods) {
-                        if (method.getUsername().equals(methodName)) {
+                        if (method.getName().equals(methodName)) {
                             DataSource annotation = method.getAnnotation(DataSource.class);
                             if (annotation != null) {
                                 return annotation.value();

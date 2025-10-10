@@ -34,10 +34,10 @@ public class MySQLExecutorStrategy extends AbstractExecutorStrategy {
     @Override
     public boolean supports(Pool pool) {
         boolean supported = pool instanceof MySQLPool || 
-                           pool.getClass().getUsername().contains("MySQLPool");
+                           pool.getClass().getName().contains("MySQLPool");
         
         if (supported) {
-            LOGGER.debug("MySQL executor strategy supports pool: {}", pool.getClass().getUsername());
+            LOGGER.debug("MySQL executor strategy supports pool: {}", pool.getClass().getName());
         }
         
         return supported;

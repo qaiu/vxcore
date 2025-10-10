@@ -319,7 +319,7 @@ public class UserDaoJooqTest {
                     if (ar.succeeded()) {
                         List<User> users = ar.result();
                         assertEquals(1, users.size(), "Should find 1 user with balance >= 500.00");
-                        assertEquals("rich", users.get(0).getUsername(), "Should find the rich user");
+                        assertEquals("rich", users.get(0).getName(), "Should find the rich user");
                         logger.info("✅ Found {} users with balance >= 500.00", users.size());
                     } else {
                         fail("Failed to find users by min balance: " + ar.cause());
@@ -403,7 +403,7 @@ public class UserDaoJooqTest {
                     if (ar.succeeded()) {
                         List<User> users = ar.result();
                         assertEquals(1, users.size(), "Should find exactly 1 user");
-                        assertEquals("jooquser", users.get(0).getUsername(), "Username should match");
+                        assertEquals("jooquser", users.get(0).getName(), "Username should match");
                         logger.info("✅ Complex jOOQ DSL query executed successfully");
                         logger.info("🎯 jOOQ DSL Integration test completed!");
                     } else {

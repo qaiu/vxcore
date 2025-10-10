@@ -40,7 +40,7 @@ public class MethodMatcher {
         int score = 0;
         
         for (Parameter parameter : parameters) {
-            String paramName = parameter.getUsername();
+            String paramName = parameter.getName();
             Class<?> paramType = parameter.getType();
             
             // 跳过特殊类型参数
@@ -124,7 +124,7 @@ public class MethodMatcher {
         Parameter[] parameters = method.getParameters();
         
         for (Parameter parameter : parameters) {
-            String paramName = parameter.getUsername();
+            String paramName = parameter.getName();
             Class<?> paramType = parameter.getType();
             
             // 跳过特殊类型参数

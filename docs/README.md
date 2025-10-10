@@ -11,14 +11,13 @@
 
 ### 🏗️ 架构设计
 - [系统架构](04-architecture.md) - 整体架构设计
-- [核心组件](05-components.md) - 核心组件详解
-- [数据流设计](06-data-flow.md) - 数据流转和生命周期
+- [开发指南](05-developer-guide.md) - 开发者指南和核心组件详解
 
 ### 💻 开发指南
-- [DSL框架](07-dsl-framework.md) - jOOQ DSL框架使用指南
 - [Lambda查询](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - Lambda查询详解
 - [多数据源](../core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 多数据源配置和使用
 - [路由注解](08-routing-annotations.md) - 路由注解使用指南
+- [项目结构](../core-database/docs/PROJECT_STRUCTURE.md) - 数据库模块项目结构
 
 ### 🌐 Web开发
 - [WebSocket指南](WEBSOCKET_GUIDE.md) - WebSocket开发指南
@@ -27,32 +26,35 @@
 - [配置管理](10-configuration.md) - 配置管理详解
 
 ### 🔧 高级特性
-- [异步编程](11-async-programming.md) - Vert.x异步编程模式
-- [事务管理](12-transaction-management.md) - 事务处理最佳实践
-- [性能优化](13-performance-optimization.md) - 性能调优指南
-- [SPI扩展](14-spi-extension.md) - SPI扩展机制
+- [异步编程](11-async-programming.md) - Vert.x异步编程模式 (待完成)
+- [事务管理](12-transaction-management.md) - 事务处理最佳实践 (待完成)
+- [性能优化](13-performance-optimization.md) - 性能调优指南 (待完成)
+- [SPI扩展](14-spi-extension.md) - SPI扩展机制 (待完成)
+- [代码生成器](12-code-generator.md) - 代码生成器使用指南
+- [集成测试](INTEGRATION_TEST_GUIDE.md) - 集成测试指南
+- [Git工作流](29-git-workflow.md) - Git工作流规范
 
 ### 🧪 测试指南
-- [测试环境](15-testing-environment.md) - 测试环境搭建
-- [单元测试](16-unit-testing.md) - 单元测试编写指南
-- [集成测试](17-integration-testing.md) - 集成测试策略
-- [测试最佳实践](18-testing-best-practices.md) - 测试最佳实践
+- [测试环境](15-testing-environment.md) - 测试环境搭建 (待完成)
+- [单元测试](16-unit-testing.md) - 单元测试编写指南 (待完成)
+- [集成测试](INTEGRATION_TEST_GUIDE.md) - 集成测试策略
+- [测试最佳实践](18-testing-best-practices.md) - 测试最佳实践 (待完成)
 
 ### 📊 运维部署
-- [部署指南](19-deployment.md) - 生产环境部署
-- [监控日志](20-monitoring-logging.md) - 监控和日志配置
-- [故障排查](21-troubleshooting.md) - 常见问题排查
-- [性能监控](22-performance-monitoring.md) - 性能监控指标
+- [部署指南](19-deployment.md) - 生产环境部署 (待完成)
+- [监控日志](20-monitoring-logging.md) - 监控和日志配置 (待完成)
+- [故障排查](21-troubleshooting.md) - 常见问题排查 (待完成)
+- [性能监控](22-performance-monitoring.md) - 性能监控指标 (待完成)
 
 ### 📖 API参考
-- [API文档](23-api-reference.md) - 完整API参考
-- [配置参数](24-configuration.md) - 配置参数详解
-- [注解参考](25-annotations.md) - 注解使用说明
+- [API文档](23-api-reference.md) - 完整API参考 (待完成)
+- [配置参数](10-configuration.md) - 配置参数详解
+- [注解参考](25-annotations.md) - 注解使用说明 (待完成)
 
 ### 🔄 更新记录
-- [版本历史](26-version-history.md) - 版本更新记录
-- [迁移指南](27-migration-guide.md) - 版本迁移指南
-- [路线图](28-roadmap.md) - 未来发展规划
+- [版本历史](26-version-history.md) - 版本更新记录 (待完成)
+- [迁移指南](27-migration-guide.md) - 版本迁移指南 (待完成)
+- [路线图](28-roadmap.md) - 未来发展规划 (待完成)
 - [Git工作流](29-git-workflow.md) - Git工作流规范
 - [优化计划](VXCORE_OPTIMIZATION_PLAN.md) - 项目优化实施计划
 

@@ -568,7 +568,7 @@ class DatabaseOperationFlowIntegrationTest {
                     .onSuccess(updatedUser -> {
                         testContext.verify(() -> {
                             assertNotNull(updatedUser, "更新的用户不应为空");
-                            assertEquals("updatedserviceuser", updatedUser.get().getUsername(), "用户名应该已更新");
+                            assertEquals("updatedserviceuser", updatedUser.get().getName(), "用户名应该已更新");
                             assertEquals(30, updatedUser.get().getAge(), "年龄应该已更新");
                             LOGGER.info("✅ Service update user test passed: {}", updatedUser.get().getId());
                         });

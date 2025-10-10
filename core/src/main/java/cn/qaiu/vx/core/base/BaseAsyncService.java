@@ -18,7 +18,7 @@ public interface BaseAsyncService {
      * @throws ClassNotFoundException 接口不存在
      */
     default String getAddress() throws ClassNotFoundException {
-        return getAsyncInterfaceClass().getUsername();
+        return getAsyncInterfaceClass().getName();
     }
 
     /**
@@ -32,7 +32,7 @@ public interface BaseAsyncService {
                 clz-> Arrays.asList(clz.getInterfaces()).contains(BaseAsyncService.class)
         ).findFirst().orElse(null));
         if (clazz == null) {
-            throw new ClassNotFoundException("No interface found: \""+this.getClass().getUsername()+"\" need to implement interface");
+            throw new ClassNotFoundException("No interface found: \""+this.getClass().getName()+"\" need to implement interface");
         }
         return clazz;
     }

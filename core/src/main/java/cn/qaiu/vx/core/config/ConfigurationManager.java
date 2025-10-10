@@ -39,7 +39,7 @@ public class ConfigurationManager {
      * @return 配置对象
      */
     public <T> T getConfig(Class<T> configClass) {
-        String cacheKey = configClass.getUsername();
+        String cacheKey = configClass.getName();
         
         // 检查缓存
         if (configCache.containsKey(cacheKey)) {

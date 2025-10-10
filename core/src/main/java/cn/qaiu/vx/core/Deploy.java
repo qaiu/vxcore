@@ -293,7 +293,7 @@ public final class Deploy {
      * @param throwable Exception信息
      */
     private void deployVerticalFailed(Throwable throwable) {
-        LOGGER.error(throwable.getClass().getUsername() + ": " + throwable.getMessage());
+        LOGGER.error(throwable.getClass().getName() + ": " + throwable.getMessage());
         System.exit(-1);
     }
 

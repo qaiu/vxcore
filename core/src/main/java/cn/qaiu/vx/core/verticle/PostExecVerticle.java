@@ -50,12 +50,12 @@ public class PostExecVerticle extends AbstractVerticle {
         if (appRunImplementations != null && !appRunImplementations.isEmpty()) {
             appRunImplementations.forEach(appRun -> {
                 try {
-                    LOGGER.info("执行 AppRun 实现: {}", appRun.getClass().getUsername());
+                    LOGGER.info("执行 AppRun 实现: {}", appRun.getClass().getName());
                     JsonObject globalConfig = SharedDataUtil.getJsonConfig("globalConfig");
                     appRun.execute(globalConfig);
-                    LOGGER.info("AppRun 实现 {} 执行完成", appRun.getClass().getUsername());
+                    LOGGER.info("AppRun 实现 {} 执行完成", appRun.getClass().getName());
                 } catch (Exception e) {
-                    LOGGER.error("执行 AppRun 实现 {} 时发生错误",appRun.getClass().getUsername(), e);
+                    LOGGER.error("执行 AppRun 实现 {} 时发生错误",appRun.getClass().getName(), e);
                 }
             });
         } else {

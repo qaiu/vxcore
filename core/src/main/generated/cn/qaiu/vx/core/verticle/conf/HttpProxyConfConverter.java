@@ -66,8 +66,8 @@ public class HttpProxyConfConverter {
     if (obj.getTimeout() != null) {
       json.put("timeout", obj.getTimeout());
     }
-    if (obj.getUsername() != null) {
-      json.put("username", obj.getUsername());
+    if (obj.getName() != null) {
+      json.put("username", obj.getName());
     }
   }
 }
