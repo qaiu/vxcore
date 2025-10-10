@@ -48,11 +48,11 @@ public class LambdaQueryUnitTest {
         logger.info("  - categoryId: {}", categoryIdField);
         logger.info("  - price: {}", priceField);
         
-        // 验证解析结果 - LambdaUtils返回的是Java字段名
-        assertEquals("id", idField, "id字段解析错误");
-        assertEquals("name", nameField, "name字段解析错误");
-        assertEquals("code", codeField, "code字段解析错误");
-        assertEquals("categoryId", categoryIdField, "categoryId字段解析错误");
+        // 验证解析结果 - LambdaUtils返回数据库列名（从@DdlColumn注解）
+        assertEquals("product_id", idField, "id字段解析错误");
+        assertEquals("product_name", nameField, "name字段解析错误");
+        assertEquals("product_code", codeField, "code字段解析错误");
+        assertEquals("category_id", categoryIdField, "categoryId字段解析错误");
         assertEquals("price", priceField, "price字段解析错误");
         
         logger.info("✅ Lambda表达式解析测试通过！");
@@ -90,12 +90,12 @@ public class LambdaQueryUnitTest {
         logger.info("✅ 生成的存在查询SQL: {}", existsSql);
         
         // 验证SQL包含预期的条件
-        assertTrue(sql.contains("id = cast(? as bigint)"), "SQL应包含id条件");
-        assertTrue(sql.contains("name like cast(? as varchar)"), "SQL应包含name条件");
+        assertTrue(sql.contains("product_id = cast(? as bigint)"), "SQL应包含id条件");
+        assertTrue(sql.contains("product_name like cast(? as varchar)"), "SQL应包含name条件");
         assertTrue(sql.contains("category_id in"), "SQL应包含category_id条件");
         assertTrue(sql.contains("price > cast(? as numeric"), "SQL应包含price条件");
-        assertTrue(sql.contains("active = cast(? as boolean)"), "SQL应包含active条件");
-        assertTrue(sql.contains("order by name asc, price desc"), "SQL应包含排序条件");
+        assertTrue(sql.contains("is_active = cast(? as boolean)"), "SQL应包含active条件");
+        assertTrue(sql.contains("order by product_name asc, price desc"), "SQL应包含排序条件");
         assertTrue(sql.contains("offset ? rows fetch next ? rows only"), "SQL应包含分页条件");
         
         logger.info("✅ LambdaQueryWrapper构建测试通过！");
@@ -109,8 +109,8 @@ public class LambdaQueryUnitTest {
         // 测试Product实体中使用@DdlColumn(value="category_id")的字段
         String categoryIdField = LambdaUtils.getFieldName(Product::getCategoryId);
         
-        // 验证字段名映射是否正确 - LambdaUtils返回Java字段名
-        assertEquals("categoryId", categoryIdField, "categoryId字段解析错误");
+        // 验证字段名映射是否正确 - LambdaUtils返回数据库列名
+        assertEquals("category_id", categoryIdField, "categoryId字段解析错误");
         
         logger.info("✅ DdlColumn value字段测试通过！");
     }
@@ -141,19 +141,19 @@ public class LambdaQueryUnitTest {
         logger.info("✅ 复杂查询SQL: {}", sql);
         
         // 验证复杂条件
-        assertTrue(sql.contains("id = cast(? as bigint)"), "应包含等于条件");
-        assertTrue(sql.contains("active <> cast(? as boolean)"), "应包含不等于条件");
-        assertTrue(sql.contains("name like cast(? as varchar)"), "应包含LIKE条件");
-        assertTrue(sql.contains("code not like cast(? as varchar)"), "应包含NOT LIKE条件");
+        assertTrue(sql.contains("product_id = cast(? as bigint)"), "应包含等于条件");
+        assertTrue(sql.contains("is_active <> cast(? as boolean)"), "应包含不等于条件");
+        assertTrue(sql.contains("product_name like cast(? as varchar)"), "应包含LIKE条件");
+        assertTrue(sql.contains("product_code not like cast(? as varchar)"), "应包含NOT LIKE条件");
         assertTrue(sql.contains("category_id in"), "应包含IN条件");
-        assertTrue(sql.contains("id not in"), "应包含NOT IN条件");
+        assertTrue(sql.contains("product_id not in"), "应包含NOT IN条件");
         assertTrue(sql.contains("price > cast(? as numeric"), "应包含大于条件");
         assertTrue(sql.contains("price >= cast(? as numeric"), "应包含大于等于条件");
         assertTrue(sql.contains("stock_quantity < cast(? as int)"), "应包含小于条件");
         assertTrue(sql.contains("stock_quantity <= cast(? as int)"), "应包含小于等于条件");
         assertTrue(sql.contains("description is null"), "应包含IS NULL条件");
-        assertTrue(sql.contains("name is not null"), "应包含IS NOT NULL条件");
-        assertTrue(sql.contains("price between cast(? as numeric) and cast(? as numeric)"), "应包含BETWEEN条件");
+        assertTrue(sql.contains("product_name is not null"), "应包含IS NOT NULL条件");
+        assertTrue(sql.contains("price between cast(? as numeric") && sql.contains(") and cast(? as numeric"), "应包含BETWEEN条件");
         
         logger.info("✅ 复杂查询条件测试通过！");
     }

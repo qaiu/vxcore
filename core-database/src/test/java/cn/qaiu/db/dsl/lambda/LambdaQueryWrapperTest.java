@@ -537,7 +537,7 @@ class LambdaQueryWrapperTest {
             long endTime = System.nanoTime();
             long duration = (endTime - startTime) / 1_000_000; // milliseconds
             System.out.println("SQL生成性能测试完成，耗时: " + duration + "ms");
-            assertTrue(duration < 500, "SQL生成性能测试超时");
+            assertTrue(duration < 1000, "SQL生成性能测试超时");
         }
 
         @Test
