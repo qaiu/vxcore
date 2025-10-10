@@ -118,7 +118,7 @@ public class UserDslTest {
                 .onSuccess(user -> {
                     testContext.verify(() -> {
                         assertNotNull(user);
-                        assertEquals("testuser", user.getName());
+                        assertEquals("testuser", user.getUsername());
                         assertEquals("test@example.com", user.getEmail());
                         assertEquals(User.UserStatus.ACTIVE, user.getStatus());
                         assertNotNull(user.getId());
@@ -143,11 +143,11 @@ public class UserDslTest {
                     testContext.verify(() -> {
                         assertTrue(!users.isEmpty());
                         User user = users.get(0);
-                        assertEquals("alice", user.getName());
+                        assertEquals("alice", user.getUsername());
                         assertEquals("alice@example.com", user.getEmail());
                     });
                     User foundUser = users.get(0);
-                    LOGGER.info("User found by username: {}, username field: {}", foundUser.getName(), foundUser.getName());
+                    LOGGER.info("User found by username: {}, username field: {}", foundUser.getUsername(), foundUser.getUsername());
                     testContext.completeNow();
                 })
                 .onFailure(testContext::failNow);
@@ -162,7 +162,7 @@ public class UserDslTest {
                     testContext.verify(() -> {
                         assertTrue(userOpt.isPresent());
                         User user = userOpt.get();
-                        assertEquals("bob", user.getName());
+                        assertEquals("bob", user.getUsername());
                         assertEquals("bob@example.com", user.getEmail());
                     });
                     LOGGER.info("User found by email: {}", userOpt.get().getName());
@@ -358,7 +358,7 @@ public class UserDslTest {
         // 测试从 JSON 构造
         User fromJson = new User(json);
         testContext.verify(() -> {
-            assertEquals(user.getName(), fromJson.getName());
+            assertEquals(user.getUsername(), fromJson.getUsername());
             assertEquals(user.getEmail(), fromJson.getEmail());
             assertEquals(user.getBio(), fromJson.getBio());
         });

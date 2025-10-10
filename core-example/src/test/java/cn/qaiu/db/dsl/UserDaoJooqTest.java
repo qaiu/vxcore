@@ -124,7 +124,7 @@ public class UserDaoJooqTest {
                         User user = ar.result();
                         assertNotNull(user, "User should not be null");
                         assertNotNull(user.getId(), "User ID should not be null");
-                        assertEquals("testuser", user.getName());
+                        assertEquals("testuser", user.getUsername());
                         assertEquals("test@example.com", user.getEmail());
                         assertEquals(User.UserStatus.ACTIVE, user.getStatus());
                         assertEquals(new BigDecimal("100.00"), user.getBalance());
@@ -151,7 +151,7 @@ public class UserDaoJooqTest {
                         Optional<User> userOpt = ar.result();
                         assertTrue(userOpt.isPresent(), "User should be found");
                         User user = userOpt.get();
-                        assertEquals("finduser", user.getName());
+                        assertEquals("finduser", user.getUsername());
                         assertEquals("find@example.com", user.getEmail());
                         logger.info("✅ User found by ID: {}", user.getId());
                     } else {
@@ -175,9 +175,9 @@ public class UserDaoJooqTest {
                         List<User> users = ar.result();
                         assertTrue(!users.isEmpty(), "User should be found by username");
                         User user = users.get(0);
-                        assertEquals("usernameuser", user.getName());
+                        assertEquals("usernameuser", user.getUsername());
                         assertEquals("username@example.com", user.getEmail());
-                        logger.info("✅ User found by username: {}", user.getName());
+                        logger.info("✅ User found by username: {}", user.getUsername());
                     } else {
                         fail("Failed to find user by username: " + ar.cause());
                     }
@@ -199,7 +199,7 @@ public class UserDaoJooqTest {
                         Optional<User> userOpt = ar.result();
                         assertTrue(userOpt.isPresent(), "User should be found by email");
                         User user = userOpt.get();
-                        assertEquals("emailuser", user.getName());
+                        assertEquals("emailuser", user.getUsername());
                         assertEquals("email@example.com", user.getEmail());
                         logger.info("✅ User found by email: {}", user.getEmail());
                     } else {

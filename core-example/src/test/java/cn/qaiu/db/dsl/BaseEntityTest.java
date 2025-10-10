@@ -46,7 +46,7 @@ public class BaseEntityTest {
         
         assertNotNull(user.getId());
         assertEquals(Long.valueOf(100), user.getId());
-        assertEquals("testuser", user.getName());
+        assertEquals("testuser", user.getUsername());
         assertEquals("test@example.com", user.getEmail());
         
         LOGGER.info("User created from JSON: {}", user);
@@ -246,7 +246,7 @@ public class BaseEntityTest {
         // 空 JSON 对象应该创建用户但不抛异常
         assertNotNull(user1);
         assertNull(user1.getId());
-        assertNull(user1.getName());
+        assertNull(user1.getUsername());
         
         JsonObject nullStringJson = new JsonObject()
             .put("username", (String) null)
@@ -256,7 +256,7 @@ public class BaseEntityTest {
         User user2 = new User(nullStringJson);
         
         // null 字符串和空字符串应该被正确处理
-        assertNull(user2.getName());
+        assertNull(user2.getUsername());
         assertEquals("", user2.getEmail());
         assertNull(user2.getId());
         

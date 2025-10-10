@@ -106,7 +106,7 @@ public class SqlAuditTest {
             .compose(userOpt -> {
                 assertTrue(userOpt.isPresent());
                 User user = userOpt.get();
-                assertEquals("testuser", user.getName());
+                assertEquals("testuser", user.getUsername());
                 
                 // 更新用户
                 user.setPassword("newpassword123");
