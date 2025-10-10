@@ -55,7 +55,7 @@ public class ConfigurationPropertyBinder {
             return;
         }
         
-        String propertyName = getPropertyName(field.getUsername(), annotation.value(), prefix);
+        String propertyName = getPropertyName(field.getName(), annotation.value(), prefix);
         Object value = getConfigValue(configData, propertyName);
         
         if (value != null) {
@@ -63,9 +63,9 @@ public class ConfigurationPropertyBinder {
                 field.setAccessible(true);
                 Object convertedValue = convertValue(value, field.getType());
                 field.set(configObject, convertedValue);
-                LOGGER.debug("Bound property {} to field {}", propertyName, field.getUsername());
+                LOGGER.debug("Bound property {} to field {}", propertyName, field.getName());
             } catch (Exception e) {
-                LOGGER.error("Failed to bind property {} to field {}", propertyName, field.getUsername(), e);
+                LOGGER.error("Failed to bind property {} to field {}", propertyName, field.getName(), e);
             }
         } else if (annotation.required()) {
             LOGGER.warn("Required property {} not found in configuration", propertyName);
@@ -81,16 +81,16 @@ public class ConfigurationPropertyBinder {
             return;
         }
         
-        String propertyName = getPropertyName(method.getUsername(), annotation.value(), prefix);
+        String propertyName = getPropertyName(method.getName(), annotation.value(), prefix);
         Object value = getConfigValue(configData, propertyName);
         
         if (value != null) {
             try {
                 Object convertedValue = convertValue(value, method.getParameterTypes()[0]);
                 ReflectionUtil.invokeWithArguments(method, configObject, convertedValue);
-                LOGGER.debug("Bound property {} to method {}", propertyName, method.getUsername());
+                LOGGER.debug("Bound property {} to method {}", propertyName, method.getName());
             } catch (Throwable e) {
-                LOGGER.error("Failed to bind property {} to method {}", propertyName, method.getUsername(), e);
+                LOGGER.error("Failed to bind property {} to method {}", propertyName, method.getName(), e);
             }
         } else if (annotation.required()) {
             LOGGER.warn("Required property {} not found in configuration", propertyName);

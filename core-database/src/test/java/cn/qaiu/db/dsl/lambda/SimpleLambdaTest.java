@@ -135,11 +135,11 @@ public class SimpleLambdaTest {
         productDao.findByCode("IPHONE15PRO")
                 .onSuccess(product -> {
                     assertTrue(product.isPresent());
-                    assertEquals("iPhone 15 Pro", product.get().getUsername());
+                    assertEquals("iPhone 15 Pro", product.get().getName());
                     assertEquals("IPHONE15PRO", product.get().getCode());
                     assertEquals(new BigDecimal("999.99"), product.get().getPrice());
                     assertTrue(product.get().getActive());
-                    logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getUsername());
+                    logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getName());
                 })
                 .onFailure(error -> fail("DdlColumn value字段映射测试失败: " + error.getMessage()));
     }
@@ -154,7 +154,7 @@ public class SimpleLambdaTest {
                 .onSuccess(product -> {
                     assertTrue(product.isPresent());
                     assertEquals("IPHONE15PRO", product.get().getCode());
-                    logger.info("✓ 等值查询测试通过: {}", product.get().getUsername());
+                    logger.info("✓ 等值查询测试通过: {}", product.get().getName());
                 })
                 .onFailure(error -> fail("等值查询失败: " + error.getMessage()));
         

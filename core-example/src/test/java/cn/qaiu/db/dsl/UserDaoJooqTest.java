@@ -124,7 +124,7 @@ public class UserDaoJooqTest {
                         User user = ar.result();
                         assertNotNull(user, "User should not be null");
                         assertNotNull(user.getId(), "User ID should not be null");
-                        assertEquals("testuser", user.getUsername());
+                        assertEquals("testuser", user.getName());
                         assertEquals("test@example.com", user.getEmail());
                         assertEquals(User.UserStatus.ACTIVE, user.getStatus());
                         assertEquals(new BigDecimal("100.00"), user.getBalance());
@@ -151,7 +151,7 @@ public class UserDaoJooqTest {
                         Optional<User> userOpt = ar.result();
                         assertTrue(userOpt.isPresent(), "User should be found");
                         User user = userOpt.get();
-                        assertEquals("finduser", user.getUsername());
+                        assertEquals("finduser", user.getName());
                         assertEquals("find@example.com", user.getEmail());
                         logger.info("✅ User found by ID: {}", user.getId());
                     } else {
@@ -175,9 +175,9 @@ public class UserDaoJooqTest {
                         List<User> users = ar.result();
                         assertTrue(!users.isEmpty(), "User should be found by username");
                         User user = users.get(0);
-                        assertEquals("usernameuser", user.getUsername());
+                        assertEquals("usernameuser", user.getName());
                         assertEquals("username@example.com", user.getEmail());
-                        logger.info("✅ User found by username: {}", user.getUsername());
+                        logger.info("✅ User found by username: {}", user.getName());
                     } else {
                         fail("Failed to find user by username: " + ar.cause());
                     }
@@ -199,7 +199,7 @@ public class UserDaoJooqTest {
                         Optional<User> userOpt = ar.result();
                         assertTrue(userOpt.isPresent(), "User should be found by email");
                         User user = userOpt.get();
-                        assertEquals("emailuser", user.getUsername());
+                        assertEquals("emailuser", user.getName());
                         assertEquals("email@example.com", user.getEmail());
                         logger.info("✅ User found by email: {}", user.getEmail());
                     } else {
@@ -319,7 +319,7 @@ public class UserDaoJooqTest {
                     if (ar.succeeded()) {
                         List<User> users = ar.result();
                         assertEquals(1, users.size(), "Should find 1 user with balance >= 500.00");
-                        assertEquals("rich", users.get(0).getUsername(), "Should find the rich user");
+                        assertEquals("rich", users.get(0).getName(), "Should find the rich user");
                         logger.info("✅ Found {} users with balance >= 500.00", users.size());
                     } else {
                         fail("Failed to find users by min balance: " + ar.cause());
@@ -403,7 +403,7 @@ public class UserDaoJooqTest {
                     if (ar.succeeded()) {
                         List<User> users = ar.result();
                         assertEquals(1, users.size(), "Should find exactly 1 user");
-                        assertEquals("jooquser", users.get(0).getUsername(), "Username should match");
+                        assertEquals("jooquser", users.get(0).getName(), "Username should match");
                         logger.info("✅ Complex jOOQ DSL query executed successfully");
                         logger.info("🎯 jOOQ DSL Integration test completed!");
                     } else {

@@ -78,7 +78,7 @@ class DatabaseOperationFlowIntegrationTest {
                         testContext.verify(() -> {
                             assertNotNull(savedUser, "保存的用户不应为空");
                             assertNotNull(savedUser.getId(), "用户ID不应为空");
-                            assertEquals("testuser", savedUser.getUsername(), "用户名应该正确");
+                            assertEquals("testuser", savedUser.getName(), "用户名应该正确");
                             assertEquals("testuser@example.com", savedUser.getEmail(), "邮箱应该正确");
                             assertEquals(25, savedUser.getAge(), "年龄应该正确");
                             assertEquals(User.UserStatus.ACTIVE, savedUser.getStatus(), "状态应该正确");
@@ -111,7 +111,7 @@ class DatabaseOperationFlowIntegrationTest {
                         testContext.verify(() -> {
                             assertTrue(foundUser.isPresent(), "应该找到用户");
                             User user1 = foundUser.get();
-                            assertEquals("finduser", user1.getUsername(), "用户名应该正确");
+                            assertEquals("finduser", user1.getName(), "用户名应该正确");
                             assertEquals("finduser@example.com", user1.getEmail(), "邮箱应该正确");
                             assertEquals(30, user1.getAge(), "年龄应该正确");
                             LOGGER.info("✅ Find user test passed: {}", user1.getId());
@@ -150,7 +150,7 @@ class DatabaseOperationFlowIntegrationTest {
                         testContext.verify(() -> {
                             assertTrue(foundUser.isPresent(), "应该找到用户");
                             User user1 = foundUser.get();
-                            assertEquals("updateduser", user1.getUsername(), "用户名应该已更新");
+                            assertEquals("updateduser", user1.getName(), "用户名应该已更新");
                             assertEquals("updated@example.com", user1.getEmail(), "邮箱应该已更新");
                             assertEquals(35, user1.getAge(), "年龄应该已更新");
                             LOGGER.info("✅ Update user test passed: {}", user1.getId());
@@ -502,12 +502,12 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
                     .onSuccess(createdUser -> {
                         testContext.verify(() -> {
                             assertNotNull(createdUser, "创建的用户不应为空");
                             assertNotNull(createdUser.getId(), "用户ID不应为空");
-                            assertEquals("serviceuser", createdUser.getUsername(), "用户名应该正确");
+                            assertEquals("serviceuser", createdUser.getName(), "用户名应该正确");
                             LOGGER.info("✅ Service create user test passed: {}", createdUser.getId());
                         });
                         testContext.completeNow();
@@ -528,7 +528,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
                     .compose(createdUser -> {
                         // 通过服务层查询用户
                         return userService.findById(createdUser.getId());
@@ -537,7 +537,7 @@ class DatabaseOperationFlowIntegrationTest {
                         testContext.verify(() -> {
                             assertTrue(foundUser.isPresent(), "应该找到用户");
                             User user1 = foundUser.get();
-                            assertEquals("servicefinduser", user1.getUsername(), "用户名应该正确");
+                            assertEquals("servicefinduser", user1.getName(), "用户名应该正确");
                             LOGGER.info("✅ Service find user test passed: {}", user1.getId());
                         });
                         testContext.completeNow();
@@ -558,7 +558,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
                     .compose(createdUser -> {
                         // 更新用户信息
                         createdUser.setUsername("updatedserviceuser");
@@ -568,7 +568,7 @@ class DatabaseOperationFlowIntegrationTest {
                     .onSuccess(updatedUser -> {
                         testContext.verify(() -> {
                             assertNotNull(updatedUser, "更新的用户不应为空");
-                            assertEquals("updatedserviceuser", updatedUser.get().getUsername(), "用户名应该已更新");
+                            assertEquals("updatedserviceuser", updatedUser.get().getName(), "用户名应该已更新");
                             assertEquals(30, updatedUser.get().getAge(), "年龄应该已更新");
                             LOGGER.info("✅ Service update user test passed: {}", updatedUser.get().getId());
                         });
@@ -590,7 +590,7 @@ class DatabaseOperationFlowIntegrationTest {
             user.setAge(25);
             user.setStatus(User.UserStatus.ACTIVE);
             
-            userService.createUser(user.getUsername(), user.getEmail(), user.getPassword())
+            userService.createUser(user.getName(), user.getEmail(), user.getPassword())
                     .compose(createdUser -> {
                         // 删除用户
                         return userService.deleteUser(createdUser.getId());

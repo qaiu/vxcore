@@ -135,13 +135,13 @@ public class LambdaQueryDemo {
         return productDao.findByCode("IPHONE15PRO")
                 .compose(product -> {
                     if (product.isPresent()) {
-                        logger.info("📱 根据产品代码查询: {}", product.get().getUsername());
+                        logger.info("📱 根据产品代码查询: {}", product.get().getName());
                     }
                     return productDao.findByCategoryId(1L);
                 })
                 .compose(products -> {
                     logger.info("📂 分类1的产品数量: {}", products.size());
-                    products.forEach(p -> logger.info("   - {}", p.getUsername()));
+                    products.forEach(p -> logger.info("   - {}", p.getName()));
                     return productDao.findActiveProducts();
                 })
                 .compose(products -> {
@@ -157,17 +157,17 @@ public class LambdaQueryDemo {
         return productDao.findByPriceRange(new BigDecimal("500.00"), new BigDecimal("1500.00"))
                 .compose(products -> {
                     logger.info("💰 价格在500-1500之间的产品: {}", products.size());
-                    products.forEach(p -> logger.info("   - {}: ${}", p.getUsername(), p.getPrice()));
+                    products.forEach(p -> logger.info("   - {}: ${}", p.getName(), p.getPrice()));
                     return productDao.findLowStockProducts(30);
                 })
                 .compose(products -> {
                     logger.info("📦 库存不足30的产品: {}", products.size());
-                    products.forEach(p -> logger.info("   - {}: 库存{}", p.getUsername(), p.getStockQuantity()));
+                    products.forEach(p -> logger.info("   - {}: 库存{}", p.getName(), p.getStockQuantity()));
                     return productDao.findByNameLike("iPhone");
                 })
                 .compose(products -> {
                     logger.info("🔍 名称包含'iPhone'的产品: {}", products.size());
-                    products.forEach(p -> logger.info("   - {}", p.getUsername()));
+                    products.forEach(p -> logger.info("   - {}", p.getName()));
                     return io.vertx.core.Future.succeededFuture();
                 });
     }
@@ -182,7 +182,7 @@ public class LambdaQueryDemo {
                     logger.info("   总数: {}, 当前页: {}, 页大小: {}", 
                             pageResult.getTotal(), pageResult.getCurrent(), pageResult.getSize());
                     pageResult.getRecords().forEach(p -> 
-                            logger.info("   - {} (分类: {})", p.getUsername(), p.getCategoryId()));
+                            logger.info("   - {} (分类: {})", p.getName(), p.getCategoryId()));
                     return io.vertx.core.Future.succeededFuture();
                 });
     }
@@ -215,7 +215,7 @@ public class LambdaQueryDemo {
                     logger.info("🎯 产品基本信息查询结果: {}", products.size());
                     products.forEach(p -> {
                         logger.info("   - ID: {}, 名称: {}, 代码: {}, 价格: ${}, 活跃: {}", 
-                                p.getId(), p.getUsername(), p.getCode(), p.getPrice(), p.getActive());
+                                p.getId(), p.getName(), p.getCode(), p.getPrice(), p.getActive());
                     });
                     return io.vertx.core.Future.succeededFuture();
                 });

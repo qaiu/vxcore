@@ -43,7 +43,7 @@ public class MultiDataSourceTest {
         config.setUsername("sa");
         config.setPassword("");
         
-        assertEquals("test", config.getUsername());
+        assertEquals("test", config.getName());
         assertEquals("h2", config.getType());
         assertEquals("jdbc:h2:mem:testdb", config.getUrl());
         
@@ -66,7 +66,7 @@ public class MultiDataSourceTest {
         
         DataSourceConfig config = DataSourceConfig.fromJsonObject("test", jsonConfig);
         
-        assertEquals("test", config.getUsername());
+        assertEquals("test", config.getName());
         assertEquals("h2", config.getType());
         assertEquals("jdbc:h2:mem:testdb", config.getUrl());
         assertEquals(10, config.getMaxPoolSize());

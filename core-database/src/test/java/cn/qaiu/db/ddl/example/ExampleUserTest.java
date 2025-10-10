@@ -98,7 +98,7 @@ public class ExampleUserTest {
         ExampleUser user1 = new ExampleUser();
         assertNotNull(user1);
         assertNull(user1.getId());
-        assertNull(user1.getUsername());
+        assertNull(user1.getName());
 
         // 测试JsonObject构造函数
         JsonObject json = new JsonObject()
@@ -116,7 +116,7 @@ public class ExampleUserTest {
         ExampleUser user2 = new ExampleUser(json);
         assertNotNull(user2);
         assertEquals(Long.valueOf(1L), user2.getId());
-        assertEquals("testuser", user2.getUsername());
+        assertEquals("testuser", user2.getName());
         assertEquals("test@example.com", user2.getEmail());
         assertEquals("password123", user2.getPassword());
         assertEquals(Integer.valueOf(25), user2.getAge());
@@ -142,7 +142,7 @@ public class ExampleUserTest {
 
         // 测试username
         user.setUsername("testuser");
-        assertEquals("testuser", user.getUsername());
+        assertEquals("testuser", user.getName());
 
         // 测试email
         user.setEmail("test@example.com");
@@ -244,7 +244,7 @@ public class ExampleUserTest {
         ExampleUser user = new ExampleUser(json);
         assertNotNull(user);
         assertNull(user.getId());
-        assertNull(user.getUsername());
+        assertNull(user.getName());
         assertNull(user.getEmail());
         assertNull(user.getPassword());
         assertNull(user.getAge());

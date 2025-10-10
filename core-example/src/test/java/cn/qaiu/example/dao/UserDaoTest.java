@@ -78,7 +78,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(user -> {
                         assertNotNull(user);
                         assertNotNull(user.getId());
-                        assertEquals("testuser", user.getUsername());
+                        assertEquals("testuser", user.getName());
                         assertEquals("test@example.com", user.getEmail());
                         assertEquals("password123", user.getPassword());
                         assertEquals(User.UserStatus.ACTIVE, user.getStatus());
@@ -96,7 +96,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(optional -> {
                         assertTrue(optional.isPresent());
                         User user = optional.get();
-                        assertEquals("testuser", user.getUsername());
+                        assertEquals("testuser", user.getName());
                         assertEquals("test@example.com", user.getEmail());
                         testContext.completeNow();
                     }));
@@ -148,7 +148,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(users -> {
                         assertTrue(!users.isEmpty());
                         User user = users.get(0);
-                        assertEquals("testuser", user.getUsername());
+                        assertEquals("testuser", user.getName());
                         testContext.completeNow();
                     }));
         }
@@ -200,7 +200,7 @@ class UserDaoTest {
                     .compose(v -> userDao.findByAgeRange(20, 30))
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
-                        assertEquals("user1", users.get(0).getUsername());
+                        assertEquals("user1", users.get(0).getName());
                         testContext.completeNow();
                     }));
         }
@@ -225,7 +225,7 @@ class UserDaoTest {
                     .compose(v -> userDao.findByMinBalance(new BigDecimal("100.00")))
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
-                        assertEquals("user2", users.get(0).getUsername());
+                        assertEquals("user2", users.get(0).getName());
                         testContext.completeNow();
                     }));
         }
@@ -311,7 +311,7 @@ class UserDaoTest {
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
                         User foundUser = users.get(0);
-                        assertEquals("testuser", foundUser.getUsername());
+                        assertEquals("testuser", foundUser.getName());
                         assertEquals(25, foundUser.getAge());
                         testContext.completeNow();
                     }));
@@ -342,7 +342,7 @@ class UserDaoTest {
                             .list())
                     .onComplete(testContext.succeeding(users -> {
                         assertEquals(1, users.size());
-                        assertEquals("user2", users.get(0).getUsername());
+                        assertEquals("user2", users.get(0).getName());
                         testContext.completeNow();
                     }));
         }

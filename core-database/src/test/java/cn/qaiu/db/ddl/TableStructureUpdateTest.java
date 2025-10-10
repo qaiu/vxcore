@@ -261,7 +261,7 @@ public class TableStructureUpdateTest {
             if (!first) {
                 sql.append(",\n");
             }
-            sql.append("  ").append(column.getUsername()).append(" ").append(column.getType());
+            sql.append("  ").append(column.getName()).append(" ").append(column.getType());
             
             // 添加长度
             if ("VARCHAR".equals(column.getType()) && column.getLength() > 0) {

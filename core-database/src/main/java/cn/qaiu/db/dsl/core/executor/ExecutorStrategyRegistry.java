@@ -120,7 +120,7 @@ public class ExecutorStrategyRegistry {
             }
         }
         
-        throw new IllegalArgumentException("No executor strategy found for pool: " + pool.getClass().getUsername());
+        throw new IllegalArgumentException("No executor strategy found for pool: " + pool.getClass().getName());
     }
     
     /**

@@ -10,7 +10,7 @@ import io.vertx.serviceproxy.ServiceProxyBuilder;
 public final class AsyncServiceUtil {
 
     public static <T> T getAsyncServiceInstance(Class<T> asClazz, Vertx vertx) {
-        String address = asClazz.getUsername();
+        String address = asClazz.getName();
         return new ServiceProxyBuilder(vertx).setAddress(address).build(asClazz);
     }
 

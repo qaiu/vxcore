@@ -22,7 +22,7 @@ public class JDBCPoolInit {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JDBCPoolInit.class);
 
-    private static final String providerClass = io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider.class.getUsername();
+    private static final String providerClass = io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider.class.getName();
 
     private JDBCPool pool = null;
     JsonObject dbConfig;

@@ -587,7 +587,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
      */
     private String getFmt(Annotation[] parameterAnnotations, CtClass v) {
         String fmt = "";
-        if (Date.class.getUsername().equals(v.getUsername())) {
+        if (Date.class.getName().equals(v.getName())) {
             for (Annotation annotation : parameterAnnotations) {
                 if (annotation instanceof DateFormat) {
                     fmt = ((DateFormat) annotation).value();

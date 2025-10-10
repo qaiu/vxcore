@@ -38,7 +38,7 @@ public class ConfigurationMetadataGenerator {
         private String group;
         
         // Getters and setters
-        public String getUsername() { return name; }
+        public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         
         public String getDescription() { return description; }
@@ -167,7 +167,7 @@ public class ConfigurationMetadataGenerator {
         // 获取属性名
         String propertyName = annotation.value();
         if (propertyName.isEmpty()) {
-            propertyName = field.getUsername();
+            propertyName = field.getName();
         }
         metadata.setName(propertyName);
         
@@ -199,7 +199,7 @@ public class ConfigurationMetadataGenerator {
         String propertyName = annotation.value();
         if (propertyName.isEmpty()) {
             // 从方法名推断属性名
-            String methodName = method.getUsername();
+            String methodName = method.getName();
             if (methodName.startsWith("get") || methodName.startsWith("set")) {
                 propertyName = methodName.substring(3);
                 propertyName = Character.toLowerCase(propertyName.charAt(0)) + propertyName.substring(1);
@@ -272,7 +272,7 @@ public class ConfigurationMetadataGenerator {
                     }
                 }
                 
-                classProperties.put(property.getUsername(), propertySchema);
+                classProperties.put(property.getName(), propertySchema);
             }
             
             classSchema.put("properties", classProperties);

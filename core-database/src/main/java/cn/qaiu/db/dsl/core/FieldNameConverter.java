@@ -33,7 +33,7 @@ public class FieldNameConverter {
         }
         
         // 默认使用字段名的驼峰转下划线（符合数据库字段命名规范）
-        return StringCase.toUnderlineCase(field.getUsername());
+        return StringCase.toUnderlineCase(field.getName());
     }
     
     /**
