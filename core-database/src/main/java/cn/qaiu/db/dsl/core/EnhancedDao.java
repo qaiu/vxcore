@@ -7,8 +7,11 @@ import cn.qaiu.db.dsl.interfaces.JooqDao;
 import cn.qaiu.db.dsl.mapper.EntityMapper;
 import cn.qaiu.db.dsl.mapper.DefaultMapper;
 import cn.qaiu.vx.core.util.StringCase;
+import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.impl.VertxHandler;
+
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -812,7 +815,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     private JooqExecutor initializeExecutor() {
         try {
             cn.qaiu.db.datasource.DataSourceManager manager = 
-                    cn.qaiu.db.datasource.DataSourceManager.getInstance(null);
+                    cn.qaiu.db.datasource.DataSourceManager.getInstance(VertxHolder.getVertxInstance());
             JooqExecutor executor = manager.getExecutor(dataSourceName);
             
             if (executor == null) {

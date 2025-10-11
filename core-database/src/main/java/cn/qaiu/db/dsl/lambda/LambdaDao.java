@@ -31,11 +31,18 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
     }
     
     /**
+     * 无参构造函数 - 支持自动获取JooqExecutor
+     */
+    public LambdaDao() {
+        super();
+    }
+    
+    /**
      * 创建Lambda查询包装器
      */
     public LambdaQueryWrapper<T> lambdaQuery() {
         Table<?> table = DSL.table(tableName);
-        return new LambdaQueryWrapper<>(executor.dsl(), table, entityClass);
+        return new LambdaQueryWrapper<>(getExecutor().dsl(), table, entityClass);
     }
     
     /**
@@ -43,7 +50,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
      */
     public Future<List<T>> lambdaList(LambdaQueryWrapper<T> wrapper) {
         Query select = wrapper.buildSelect();
-        return executor.executeQuery(select)
+        return getExecutor().executeQuery(select)
                 .map(rows -> {
                     // 手动映射行数据到实体对象
                     List<T> result = new java.util.ArrayList<>();
@@ -68,7 +75,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
      */
     public Future<Long> lambdaCount(LambdaQueryWrapper<T> wrapper) {
         Query countSelect = wrapper.buildCount();
-        return executor.executeQuery(countSelect)
+        return getExecutor().executeQuery(countSelect)
                 .map(rows -> {
                     if (rows.size() > 0) {
                         return rows.iterator().next().getLong(0);
@@ -82,7 +89,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
      */
     public Future<Boolean> lambdaExists(LambdaQueryWrapper<T> wrapper) {
         Query existsSelect = wrapper.buildExists();
-        return executor.executeQuery(existsSelect)
+        return getExecutor().executeQuery(existsSelect)
                 .map(rows -> rows.size() > 0);
     }
     
@@ -115,11 +122,11 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
             return Future.failedFuture("Delete operation without condition is not allowed");
         }
         
-        DeleteConditionStep<?> delete = executor.dsl()
+        DeleteConditionStep<?> delete = getExecutor().dsl()
                 .deleteFrom(DSL.table(DSL.name(tableName)))
                 .where(condition);
         
-        return executor.executeUpdate(delete);
+        return getExecutor().executeUpdate(delete);
     }
     
     /**
@@ -143,7 +150,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
         updateData.remove("createTime");
         updateData.remove("updateTime");
         
-        UpdateSetFirstStep<?> update = executor.dsl()
+        UpdateSetFirstStep<?> update = getExecutor().dsl()
                 .update(DSL.table(DSL.name(tableName)));
         
         UpdateSetMoreStep<?> setStep = null;
@@ -166,7 +173,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
         
         UpdateConditionStep<?> whereStep = setStep.where(condition);
         
-        return executor.executeUpdate(whereStep)
+        return getExecutor().executeUpdate(whereStep)
                 .map(result -> result);
     }
     
@@ -364,7 +371,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
         
         Query query = DSL.query(sql, values.toArray());
         
-        return executor.executeUpdate(query)
+        return getExecutor().executeUpdate(query)
                 .compose(updateCount -> {
                     // 重新查询获取最新数据
                     Object primaryKeyValue = entityData.getValue(primaryKeyField);

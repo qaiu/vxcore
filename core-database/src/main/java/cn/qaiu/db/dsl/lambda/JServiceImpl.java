@@ -34,6 +34,13 @@ public abstract class JServiceImpl<T, ID> extends LambdaDao<T, ID> implements JS
         super(executor, entityClass);
     }
 
+    /**
+     * 无参构造函数 - 支持自动获取JooqExecutor
+     */
+    public JServiceImpl() {
+        super();
+    }
+
     // =================== 基础CRUD方法实现 ===================
 
     @Override

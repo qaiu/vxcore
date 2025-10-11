@@ -66,7 +66,7 @@ public class SimpleExampleApplication extends AbstractVerticle {
 
         // 创建DAO
         userDao = new UserDao(executor);
-        userService = new UserServiceImpl(executor);
+        userService = new UserServiceImpl();
 
         // 初始化数据库表
         initializeDatabase()
