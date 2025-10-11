@@ -15,8 +15,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * @author <a href="https://qaiu.top">QAIU</a>
- * @date 2023/10/14 9:07
+ * Jackson配置类
+ * 
+ * @author QAIU
  */
 public class JacksonConfig {
 

@@ -62,7 +62,7 @@ public class CommonUtil {
      *
      * @param host host
      * @param port port
-     * @throws UnknownHostException
+     * @return 是否被使用
      */
     public static boolean isPortUsing(String host, int port) {
         boolean flag = false;

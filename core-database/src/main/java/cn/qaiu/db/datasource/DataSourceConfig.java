@@ -167,6 +167,10 @@ public class DataSourceConfig {
     
     /**
      * 从JsonObject创建配置
+     * 
+     * @param name 数据源名称
+     * @param config 配置对象
+     * @return 数据源配置
      */
     public static DataSourceConfig fromJsonObject(String name, JsonObject config) {
         DataSourceConfig dsConfig = new DataSourceConfig();

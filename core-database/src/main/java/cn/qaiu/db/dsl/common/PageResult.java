@@ -239,7 +239,7 @@ public class PageResult implements Serializable {
     /**
      * 转换为实体列表（需要在调用方进行类型转换）
      * 
-     * @return List<JsonObject>形式的数据列表
+     * @return List形式的数据列表
      */
     public List<JsonObject> getDataAsList() {
         return data.getList();

@@ -1,8 +1,9 @@
 package cn.qaiu.db.pool;
 
 /**
- * @author <a href="https://qaiu.top">QAIU</a>
- * @date 2023/10/10 14:05
+ * JDBC工具类
+ * 
+ * @author QAIU
  */
 public class JDBCUtil {
     public static JDBCType getJDBCType(String deviceName) {

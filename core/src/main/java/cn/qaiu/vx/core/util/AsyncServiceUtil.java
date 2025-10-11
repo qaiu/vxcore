@@ -4,8 +4,9 @@ import io.vertx.core.Vertx;
 import io.vertx.serviceproxy.ServiceProxyBuilder;
 
 /**
+ * 异步服务工具类
+ * 
  * @author Xu Haidong
- * @date 2018/8/15
  */
 public final class AsyncServiceUtil {
 
