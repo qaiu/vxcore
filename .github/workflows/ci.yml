@@ -26,7 +26,7 @@ jobs:
         cache: maven
     
     - name: 缓存 Maven 依赖
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -50,7 +50,7 @@ jobs:
     
     - name: 上传测试报告
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-reports-java-${{ matrix.java-version }}
         path: |
