@@ -87,9 +87,9 @@ public class DdlColumnTest {
             // 验证默认值
             assertEquals("", annotation.name());
             assertEquals("", annotation.type());
-            assertEquals(0, annotation.length());
-            assertEquals(0, annotation.precision());
-            assertEquals(0, annotation.scale());
+            assertEquals(255, annotation.length());
+            assertEquals(10, annotation.precision());
+            assertEquals(2, annotation.scale());
             assertTrue(annotation.nullable());
             assertEquals("", annotation.defaultValue());
             assertFalse(annotation.defaultValueIsFunction());

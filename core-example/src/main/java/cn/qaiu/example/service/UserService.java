@@ -1,134 +1,88 @@
 package cn.qaiu.example.service;
 
-import cn.qaiu.example.dao.UserDao;
+import cn.qaiu.db.dsl.lambda.JService;
 import cn.qaiu.example.entity.User;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * 用户服务层
- * 演示 VXCore 框架的业务逻辑处理
+ * 用户服务接口
  * 
- * @author QAIU
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
-public class UserService {
-    
-    private final UserDao userDao;
-    
-    public UserService() {
-        this.userDao = new UserDao();
-    }
-    
+public interface UserService extends JService<User, Long> {
+
     /**
-     * 创建用户
+     * 查找活跃用户
+     * 
+     * @return 活跃用户列表
      */
-    public Future<User> createUser(User user) {
-        return userDao.save(user);
-    }
-    
+    Future<List<User>> findActiveUsers();
+
     /**
-     * 创建用户 - 简化版本（用于测试）
+     * 根据邮箱查找用户
+     * 
+     * @param email 邮箱
+     * @return 用户信息
      */
-    public Future<User> createUser(String name, String email, String password) {
-        return userDao.createUser(name, email, password);
-    }
-    
+    Future<User> findByEmail(String email);
+
     /**
-     * 根据ID获取用户
+     * 根据用户名模糊查询
+     * 
+     * @param keyword 关键词
+     * @return 用户列表
      */
-    public Future<User> getUserById(Long id) {
-        return userDao.getById(id);
-    }
-    
+    Future<List<User>> searchByName(String keyword);
+
     /**
-     * 根据ID查找用户（返回Optional）
+     * 统计用户数量
+     * 
+     * @return 用户总数
      */
-    public Future<Optional<User>> findById(Long id) {
-        return userDao.findById(id);
-    }
-    
+    Future<Long> countUsers();
+
     /**
-     * 根据邮箱获取用户
+     * 检查邮箱是否存在
+     * 
+     * @param email 邮箱
+     * @return 是否存在
      */
-    public Future<User> getUserByEmail(String email) {
-        return userDao.findOneByEmail(email)
-                .map(optional -> optional.orElse(null));
-    }
-    
-    /**
-     * 获取所有活跃用户
-     */
-    public Future<List<User>> getActiveUsers() {
-        return userDao.findActiveUsers();
-    }
-    
-    /**
-     * 根据年龄范围获取用户
-     */
-    public Future<List<User>> getUsersByAgeRange(Integer minAge, Integer maxAge) {
-        return userDao.findByAgeRange(minAge, maxAge);
-    }
-    
-    /**
-     * 更新用户信息
-     */
-    public Future<Optional<User>> updateUser(User user) {
-        return userDao.update(user);
-    }
-    
-    /**
-     * 删除用户
-     */
-    public Future<Boolean> deleteUser(Long id) {
-        return userDao.deleteById(id);
-    }
-    
+    Future<Boolean> existsByEmail(String email);
+
     /**
      * 更新用户余额
+     * 
+     * @param userId 用户ID
+     * @param balance 新余额
+     * @return 是否更新成功
      */
-    public Future<Boolean> updateUserBalance(Long userId, BigDecimal balance) {
-        return userDao.updateBalance(userId, balance);
-    }
-    
+    Future<Boolean> updateUserBalance(Long userId, BigDecimal balance);
+
     /**
      * 验证用户邮箱
+     * 
+     * @param userId 用户ID
+     * @return 是否验证成功
      */
-    public Future<Boolean> verifyUserEmail(Long userId) {
-        return userDao.verifyEmail(userId);
-    }
-    
-    /**
-     * 更新用户状态
-     */
-    public Future<Boolean> updateUserStatus(Long userId, User.UserStatus status) {
-        return userDao.updateStatus(userId, status);
-    }
-    
+    Future<Boolean> verifyUserEmail(Long userId);
+
     /**
      * 获取用户统计信息
+     * 
+     * @return 统计信息
      */
-    public Future<JsonObject> getUserStatistics() {
-        return Future.all(
-                userDao.countByStatus(User.UserStatus.ACTIVE),
-                userDao.countByStatus(User.UserStatus.INACTIVE),
-                userDao.countByStatus(User.UserStatus.SUSPENDED)
-        ).map(result -> {
-            JsonObject stats = new JsonObject();
-            stats.put("active", result.resultAt(0));
-            stats.put("inactive", result.resultAt(1));
-            stats.put("suspended", result.resultAt(2));
-            return stats;
-        });
-    }
-    
+    Future<JsonObject> getUserStatistics();
+
     /**
-     * 获取高余额用户
+     * 根据年龄范围获取用户
+     * 
+     * @param minAge 最小年龄
+     * @param maxAge 最大年龄
+     * @return 用户列表
      */
-    public Future<List<User>> getHighBalanceUsers(BigDecimal minBalance) {
-        return userDao.findByBalanceGreaterThan(minBalance);
-    }
+    Future<List<User>> getUsersByAgeRange(Integer minAge, Integer maxAge);
 }

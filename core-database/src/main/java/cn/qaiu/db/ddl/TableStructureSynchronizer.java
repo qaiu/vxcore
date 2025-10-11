@@ -244,9 +244,11 @@ public class TableStructureSynchronizer {
                 if (message != null && (message.contains("Duplicate key name") || 
                                        message.contains("already exists") ||
                                        message.contains("doesn't exist") ||
+                                       message.contains("not found") ||
                                        message.contains("Timeout trying to lock table") ||
                                        message.contains("Table") && message.contains("not found") ||
-                                       message.contains("Cannot drop last column"))) {
+                                       message.contains("Cannot drop last column") ||
+                                       message.contains("Column") && message.contains("not found"))) {
                     LOGGER.warn("Ignoring expected error: {}", message);
                     promise.complete();
                 } else {

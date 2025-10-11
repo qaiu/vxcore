@@ -38,6 +38,9 @@ public class StringCase {
     }
 
     /**
+     * 将驼峰式命名的字符串转换为下划线方式（大写）。如果转换前的驼峰式命名的字符串为空，则返回空字符串。<br>
+     * 例如：HelloWorld=》HELLO_WORLD
+     *
      * @param str 转换前的驼峰式命名的字符串，也可以为下划线形式
      * @return 转换后下划线方式命名的字符串(大写)
      */
@@ -46,6 +49,13 @@ public class StringCase {
         return result != null ? result.toUpperCase() : null;
     }
 
+    /**
+     * 将下划线方式命名的字符串转换为驼峰式
+     *
+     * @param str 转换前的下划线方式命名的字符串
+     * @param isBigCamel 是否为大驼峰式（首字母大写）
+     * @return 转换后的驼峰式命名的字符串
+     */
     public static String toCamelCase(String str, boolean isBigCamel) {
         if (StringUtils.isEmpty(str)) {
             return str;
@@ -85,27 +95,6 @@ public class StringCase {
      */
     public static String toLittleCamelCase(String str) {
         return toCamelCase(str, false);
-    }
-
-    public static void main(String[] args) {
-        // 下划线->驼峰
-        System.out.println(toLittleCamelCase("my_name_qaiu"));
-        System.out.println(toLittleCamelCase(null));
-        System.out.println(toLittleCamelCase("  "));
-        System.out.println(toLittleCamelCase(""));
-        // 大驼峰
-        System.out.println(toBigCamelCase("my_name_qaiu"));
-        System.out.println(toLittleCamelCase("____my_name_qaiu"));
-
-        // 驼峰 ->下划线
-        System.out.println(toUnderlineCase("MyNameQaiu"));
-        System.out.println(toUnderlineCase(null));
-        System.out.println(toUnderlineCase("  "));
-        System.out.println(toUnderlineCase(""));
-        System.out.println(toUnderlineCase("__my_nameQaiu___"));
-        // 大写下划线
-        System.out.println(toUnderlineUpperCase("MyNameQaiu"));
-        System.out.println(toUnderlineUpperCase("__my_nameQaiu___"));
     }
 
 }

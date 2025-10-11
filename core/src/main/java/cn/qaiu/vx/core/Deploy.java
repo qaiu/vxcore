@@ -1,5 +1,6 @@
 package cn.qaiu.vx.core;
 
+import cn.qaiu.vx.core.util.AutoScanPathDetector;
 import cn.qaiu.vx.core.util.CommonUtil;
 import cn.qaiu.vx.core.util.ConfigUtil;
 import cn.qaiu.vx.core.util.VertxHolder;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.management.ManagementFactory;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.LockSupport;
 
@@ -46,6 +48,10 @@ public final class Deploy {
 
     public static Deploy instance() {
         return INSTANCE;
+    }
+    
+    public static void run(String[] args, Handler<JsonObject> handle) {
+        INSTANCE.start(args, handle);;
     }
 
     /**
@@ -91,8 +97,85 @@ public final class Deploy {
         return "app";
     }
 
+    /**
+     * 自动检测扫描路径
+     *
+     * @param conf 配置对象
+     */
+    private void autoDetectScanPaths(JsonObject conf) {
+        try {
+            // 通过堆栈跟踪获取启动类
+            Set<String> autoDetectedPaths = AutoScanPathDetector.detectScanPathsFromStackTrace();
+            
+            // 检查配置中是否已设置baseLocations
+            JsonObject customConfig = conf.getJsonObject(CUSTOM);
+            if (customConfig != null && customConfig.containsKey(BASE_LOCATIONS)) {
+                String configuredPaths = customConfig.getString(BASE_LOCATIONS);
+                LOGGER.info("Using configured baseLocations: {}", configuredPaths);
+                LOGGER.info("Auto-detected paths (not used): {}", AutoScanPathDetector.formatScanPaths(autoDetectedPaths));
+            } else {
+                // 如果没有配置，使用自动检测的路径
+                String autoPaths = AutoScanPathDetector.formatScanPaths(autoDetectedPaths);
+                
+                // 确保custom配置存在
+                if (customConfig == null) {
+                    customConfig = new JsonObject();
+                    conf.put(CUSTOM, customConfig);
+                }
+                
+                // 设置自动检测的路径
+                customConfig.put(BASE_LOCATIONS, autoPaths);
+                
+                // 检查是否使用了@App注解
+                if (isAppAnnotationUsed(autoDetectedPaths)) {
+                    LOGGER.info("App-annotated baseLocations: {}", autoPaths);
+                    LOGGER.info("Using @App annotation configuration for scan paths.");
+                } else {
+                    LOGGER.info("Auto-configured baseLocations: {}", autoPaths);
+                    LOGGER.info("You can override this by setting 'baseLocations' in your config file or using @App annotation.");
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warn("Failed to auto-detect scan paths, using default: cn.qaiu", e);
+            
+            // 设置默认路径
+            JsonObject customConfig = conf.getJsonObject(CUSTOM);
+            if (customConfig == null) {
+                customConfig = new JsonObject();
+                conf.put(CUSTOM, customConfig);
+            }
+            customConfig.put(BASE_LOCATIONS, "cn.qaiu");
+        }
+    }
+
+    /**
+     * 检查是否使用了@App注解
+     *
+     * @param scanPaths 扫描路径
+     * @return 是否使用了@App注解
+     */
+    private boolean isAppAnnotationUsed(Set<String> scanPaths) {
+        try {
+            // 通过堆栈跟踪获取启动类
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            for (StackTraceElement element : stackTrace) {
+                if ("main".equals(element.getMethodName())) {
+                    String className = element.getClassName();
+                    Class<?> mainClass = Class.forName(className);
+                    return mainClass.isAnnotationPresent(cn.qaiu.vx.core.annotaions.App.class);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Failed to check @App annotation", e);
+        }
+        return false;
+    }
+
     private void readConf(JsonObject conf) {
         outLogo(conf);
+        
+        // 自动检测扫描路径
+        autoDetectScanPaths(conf);
         
         // 支持新的配置格式：application.yml 直接使用，无需额外的环境配置文件
         if (conf.containsKey("server") && conf.containsKey("datasources")) {

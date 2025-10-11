@@ -156,17 +156,17 @@ public class TableMetadataTest {
     }
 
     /**
-     * 测试从类创建TableMetadata - Table注解（兼容性）
+     * 测试从类创建TableMetadata - DdlTable注解（兼容性测试）
      */
     @Test
-    @DisplayName("测试从Table注解类创建TableMetadata")
-    public void testFromClassWithTable() {
-        @Table(value = "test_table", keyFields = "id")
+    @DisplayName("测试从DdlTable注解类创建TableMetadata（兼容性）")
+    public void testFromClassWithDdlTableCompatibility() {
+        @DdlTable(value = "test_table", keyFields = "id")
         class TestClass {
-            @Constraint(notNull = true, autoIncrement = true)
+            @DdlColumn(name = "id", type = "INT", autoIncrement = true, nullable = false)
             private Integer id;
 
-            @Constraint(notNull = true)
+            @DdlColumn(name = "name", type = "VARCHAR", nullable = false)
             private String name;
         }
 

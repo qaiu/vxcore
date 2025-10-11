@@ -17,12 +17,18 @@ import org.slf4j.LoggerFactory;
  * 抽象执行器策略
  * 提供通用的执行器实现
  * 
- * @author QAIU
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
 public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExecutorStrategy.class);
     
+    /**
+     * 创建DSL上下文
+     * 
+     * @param pool 连接池
+     * @return DSL上下文
+     */
     @Override
     public DSLContext createDSLContext(Pool pool) {
         Configuration configuration = new DefaultConfiguration();
@@ -35,6 +41,13 @@ public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
         return DSL.using(configuration);
     }
     
+    /**
+     * 执行查询操作
+     * 
+     * @param pool 连接池
+     * @param query 查询对象
+     * @return 查询结果
+     */
     @Override
     public Future<RowSet<io.vertx.sqlclient.Row>> executeQuery(Pool pool, Query query) {
         String sql = query.getSQL();
@@ -48,6 +61,13 @@ public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
                 .onFailure(error -> LOGGER.error("Query execution failed: {}", error.getMessage(), error));
     }
     
+    /**
+     * 执行更新操作
+     * 
+     * @param pool 连接池
+     * @param query 更新查询对象
+     * @return 影响的行数
+     */
     @Override
     public Future<Integer> executeUpdate(Pool pool, Query query) {
         String sql = query.getSQL();
@@ -62,6 +82,14 @@ public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
                 .onFailure(error -> LOGGER.error("Update execution failed: {}", error.getMessage(), error));
     }
     
+    /**
+     * 执行插入操作
+     * 使用通用的IDENTITY()函数获取生成的ID
+     * 
+     * @param pool 连接池
+     * @param query 插入查询对象
+     * @return 生成的ID
+     */
     @Override
     public Future<Long> executeInsert(Pool pool, Query query) {
         String sql = query.getSQL();
@@ -115,6 +143,13 @@ public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
                 });
     }
     
+    /**
+     * 执行批量操作
+     * 
+     * @param pool 连接池
+     * @param queries 查询列表
+     * @return 每个查询的影响行数数组
+     */
     @Override
     public Future<int[]> executeBatch(Pool pool, java.util.List<Query> queries) {
         if (queries == null || queries.isEmpty()) {
@@ -171,6 +206,12 @@ public abstract class AbstractExecutorStrategy implements ExecutorStrategy {
             });
     }
     
+    /**
+     * 检查是否支持指定的连接池
+     * 
+     * @param pool 连接池
+     * @return 是否支持
+     */
     @Override
     public boolean supports(Pool pool) {
         return getPoolType().isAssignableFrom(pool.getClass());

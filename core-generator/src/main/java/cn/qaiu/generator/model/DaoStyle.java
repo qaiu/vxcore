@@ -11,7 +11,7 @@ public enum DaoStyle {
     /**
      * Vert.x SQL 风格
      * 使用原生 SQL + 实体映射
-     * 实体类使用 @RowMapped, @Column 注解
+     * 实体类使用 @DdlTable, @DdlColumn 注解
      */
     VERTX_SQL("vertx", "Vert.x SQL"),
     
@@ -23,8 +23,8 @@ public enum DaoStyle {
     JOOQ("jooq", "jOOQ DSL"),
     
     /**
-     * MP Lambda 风格
-     * MyBatis-Plus 风格的 Lambda 查询
+     * Lambda 风格
+     * VXCore 风格的 Lambda 查询
      * 继承 LambdaDao，使用 Lambda 表达式
      */
     LAMBDA("lambda", "MP Lambda");

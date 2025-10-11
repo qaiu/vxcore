@@ -26,18 +26,19 @@
 - [配置管理](10-configuration.md) - 配置管理详解
 
 ### 🔧 高级特性
-- [异步编程](11-async-programming.md) - Vert.x异步编程模式 (待完成)
-- [事务管理](12-transaction-management.md) - 事务处理最佳实践 (待完成)
-- [性能优化](13-performance-optimization.md) - 性能调优指南 (待完成)
-- [SPI扩展](14-spi-extension.md) - SPI扩展机制 (待完成)
+- [无参构造函数DAO](13-no-arg-constructor-dao.md) - 无参构造函数DAO使用指南
 - [代码生成器](12-code-generator.md) - 代码生成器使用指南
 - [集成测试](INTEGRATION_TEST_GUIDE.md) - 集成测试指南
 - [Git工作流](29-git-workflow.md) - Git工作流规范
+- [异步编程](11-async-programming.md) - Vert.x异步编程模式 (待完成)
+- [事务管理](12-transaction-management.md) - 事务处理最佳实践 (待完成)
+- [性能优化](14-performance-optimization.md) - 性能调优指南 (待完成)
+- [SPI扩展](15-spi-extension.md) - SPI扩展机制 (待完成)
 
 ### 🧪 测试指南
-- [测试环境](15-testing-environment.md) - 测试环境搭建 (待完成)
-- [单元测试](16-unit-testing.md) - 单元测试编写指南 (待完成)
 - [集成测试](INTEGRATION_TEST_GUIDE.md) - 集成测试策略
+- [测试环境](16-testing-environment.md) - 测试环境搭建 (待完成)
+- [单元测试](17-unit-testing.md) - 单元测试编写指南 (待完成)
 - [测试最佳实践](18-testing-best-practices.md) - 测试最佳实践 (待完成)
 
 ### 📊 运维部署
@@ -49,12 +50,12 @@
 ### 📖 API参考
 - [API文档](23-api-reference.md) - 完整API参考 (待完成)
 - [配置参数](10-configuration.md) - 配置参数详解
-- [注解参考](25-annotations.md) - 注解使用说明 (待完成)
+- [注解参考](24-annotations.md) - 注解使用说明 (待完成)
 
 ### 🔄 更新记录
-- [版本历史](26-version-history.md) - 版本更新记录 (待完成)
-- [迁移指南](27-migration-guide.md) - 版本迁移指南 (待完成)
-- [路线图](28-roadmap.md) - 未来发展规划 (待完成)
+- [版本历史](25-version-history.md) - 版本更新记录 (待完成)
+- [迁移指南](26-migration-guide.md) - 版本迁移指南 (待完成)
+- [路线图](27-roadmap.md) - 未来发展规划 (待完成)
 - [Git工作流](29-git-workflow.md) - Git工作流规范
 - [优化计划](VXCORE_OPTIMIZATION_PLAN.md) - 项目优化实施计划
 
@@ -98,6 +99,7 @@
 
 ### 🔍 快速查找
 - **新手上路**: [快速开始](02-quick-start.md)
+- **无参构造函数DAO**: [无参构造函数DAO指南](13-no-arg-constructor-dao.md)
 - **Lambda查询**: [Lambda查询指南](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md)
 - **WebSocket**: [WebSocket指南](WEBSOCKET_GUIDE.md)
 - **多数据源**: [多数据源指南](../core-database/docs/MULTI_DATASOURCE_GUIDE.md)
@@ -119,6 +121,7 @@
 ## 📈 项目状态
 
 ### ✅ 已完成功能 (v2.0.0)
+- **无参构造函数DAO**: 自动初始化，无需手动传递参数，极大简化DAO使用
 - **Lambda查询增强**: Join、聚合查询、子查询
 - **批量操作**: batchInsert、batchUpdate、batchDelete
 - **多数据源支持**: 动态切换、事务隔离

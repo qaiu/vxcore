@@ -3,7 +3,7 @@ package cn.qaiu.example;
 import cn.qaiu.example.config.DatabaseConfig;
 import cn.qaiu.example.config.ServerConfig;
 import cn.qaiu.example.dao.UserDao;
-import cn.qaiu.example.service.UserService;
+import cn.qaiu.example.service.UserServiceImpl;
 import cn.qaiu.db.dsl.core.JooqExecutor;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -29,7 +29,7 @@ public class SimpleExampleApplication extends AbstractVerticle {
     private Pool pool;
     private JooqExecutor executor;
     private UserDao userDao;
-    private UserService userService;
+    private UserServiceImpl userService;
 
     public SimpleExampleApplication() {
     }
@@ -66,7 +66,7 @@ public class SimpleExampleApplication extends AbstractVerticle {
 
         // 创建DAO
         userDao = new UserDao(executor);
-        userService = new UserService();
+        userService = new UserServiceImpl(executor);
 
         // 初始化数据库表
         initializeDatabase()
@@ -171,7 +171,7 @@ public class SimpleExampleApplication extends AbstractVerticle {
     /**
      * 获取UserService实例
      */
-    public UserService getUserService() {
+    public UserServiceImpl getUserService() {
         return userService;
     }
 

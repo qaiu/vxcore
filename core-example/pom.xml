@@ -38,6 +38,24 @@
             <artifactId>core-generator</artifactId>
         </dependency>
 
+        <!-- Dagger2 Dependencies -->
+        <dependency>
+            <groupId>com.google.dagger</groupId>
+            <artifactId>dagger</artifactId>
+            <version>2.50</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.dagger</groupId>
+            <artifactId>dagger-compiler</artifactId>
+            <version>2.50</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+
         <!-- Vert.x dependencies -->
         <dependency>
             <groupId>io.vertx</groupId>
@@ -188,8 +206,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <release>${java.version}</release>
                     <annotationProcessorPaths>
                         <!-- Lombok 注解处理器 -->
                         <path>
@@ -203,7 +220,16 @@
                             <artifactId>vertx-codegen</artifactId>
                             <version>${vertx.version}</version>
                         </path>
+                        <!-- Dagger2 注解处理器 -->
+                        <path>
+                            <groupId>com.google.dagger</groupId>
+                            <artifactId>dagger-compiler</artifactId>
+                            <version>2.50</version>
+                        </path>
                     </annotationProcessorPaths>
+                    <generatedSourcesDirectory>
+                        ${project.basedir}/src/main/generated
+                    </generatedSourcesDirectory>
                 </configuration>
             </plugin>
 

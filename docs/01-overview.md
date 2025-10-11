@@ -308,17 +308,18 @@ public class UserController {
 ### 新手入门 (1-2天)
 1. [快速开始](02-quick-start.md) - 基础概念和第一个应用
 2. [安装配置](03-installation.md) - 环境搭建
-3. [路由注解](08-routing-annotations.md) - Web 开发基础
+3. [无参构造函数DAO](13-no-arg-constructor-dao.md) - 掌握无参构造函数DAO的使用
 
 ### 进阶开发 (3-5天)
 4. [Lambda 查询](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - 数据库操作
 5. [多数据源](../core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 数据源管理
-6. [异常处理](09-exception-handling.md) - 错误处理机制
+6. [路由注解](08-routing-annotations.md) - Web 开发基础
+7. [异常处理](09-exception-handling.md) - 错误处理机制
 
 ### 高级特性 (1-2周)
-7. [WebSocket 指南](WEBSOCKET_GUIDE.md) - 实时通信
-8. [反向代理](WEBSOCKET_PROXY_GUIDE.md) - 代理配置
-9. [配置管理](10-configuration.md) - 高级配置
+8. [WebSocket 指南](WEBSOCKET_GUIDE.md) - 实时通信
+9. [反向代理](WEBSOCKET_PROXY_GUIDE.md) - 代理配置
+10. [配置管理](10-configuration.md) - 高级配置
 
 ## 🤝 社区支持
 

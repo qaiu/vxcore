@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * 产品控制器
@@ -38,7 +39,7 @@ public class ProductController {
      * 获取产品列表 - 支持复杂查询条件
      */
     @RouteMapping(value = "/", method = RouteMethod.GET)
-    public Future<JsonResult> getProducts(
+    public Future<List<Product>> getProducts(
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size,
             @RequestParam(value = "name", required = false) String name,
@@ -52,16 +53,14 @@ public class ProductController {
                 .eq(category != null, Product::getCategory, category)
                 .ge(minPrice != null, Product::getPrice, minPrice)
                 .le(maxPrice != null, Product::getPrice, maxPrice)
-                .eq(Product::getStatus, status)
-                .page(page, size)
-                .map(result -> JsonResult.<Object>data(result));
+                .eq(Product::getStatus, status).executePage(page, size);
     }
     
     /**
      * 根据ID获取产品
      */
     @RouteMapping(value = "/{id}", method = RouteMethod.GET)
-    public Future<JsonResult> getProductById(@PathVariable("id") Long id) {
+    public Future<Product> getProductById(@PathVariable("id") Long id) {
         if (id == null || id <= 0) {
             throw new ValidationException("产品ID不能为空或小于等于0");
         }
@@ -71,7 +70,7 @@ public class ProductController {
                     if (!productOptional.isPresent()) {
                         throw new BusinessException("产品不存在");
                     }
-                     return JsonResult.<Product>data(productOptional.get());
+                    return productOptional.get();
                 });
     }
     
@@ -79,7 +78,7 @@ public class ProductController {
      * 创建产品
      */
     @RouteMapping(value = "/", method = RouteMethod.POST)
-    public Future<JsonResult> createProduct(@RequestBody JsonObject productData) {
+    public Future<Product> createProduct(@RequestBody JsonObject productData) {
         if (productData == null || productData.isEmpty()) {
             throw new ValidationException("产品数据不能为空");
         }
@@ -112,16 +111,19 @@ public class ProductController {
         product.setStock(0); // 默认库存为0
         
         return productDao.lambdaInsert(product)
-                .map(result -> result.isPresent() ? 
-                    JsonResult.data("Product created successfully", result.get().toJson()) :
-                    JsonResult.error("Failed to create product"));
+                .map(result -> {
+                    if (!result.isPresent()) {
+                        throw new RuntimeException("Failed to create product");
+                    }
+                    return result.get();
+                });
     }
     
     /**
      * 更新产品
      */
     @RouteMapping(value = "/{id}", method = RouteMethod.PUT)
-    public Future<JsonResult> updateProduct(
+    public Future<Product> updateProduct(
             @PathVariable("id") Long id,
             @RequestBody JsonObject productData) {
         
@@ -174,18 +176,20 @@ public class ProductController {
                     }
                     
                     return productDao.update(existingProduct)
-                            .map(updatedProduct -> updatedProduct.orElse(null));
-                })
-                .map(result -> result != null ? 
-                    JsonResult.data("Product updated successfully", result.toJson()) :
-                    JsonResult.error("Failed to update product"));
+                            .map(updatedProduct -> {
+                                if (!updatedProduct.isPresent()) {
+                                    throw new RuntimeException("Failed to update product");
+                                }
+                                return updatedProduct.get();
+                            });
+                });
     }
     
     /**
      * 删除产品
      */
     @RouteMapping(value = "/{id}", method = RouteMethod.DELETE)
-    public Future<JsonResult> deleteProduct(@PathVariable("id") Long id) {
+    public Future<Boolean> deleteProduct(@PathVariable("id") Long id) {
         if (id == null || id <= 0) {
             throw new ValidationException("产品ID不能为空或小于等于0");
         }
@@ -196,35 +200,32 @@ public class ProductController {
                         throw new BusinessException("产品不存在");
                     }
                     return productDao.deleteById(id);
-                })
-                .map(result -> JsonResult.<Boolean>data(result));
+                });
     }
     
     /**
      * 按分类统计产品数量
      */
     @RouteMapping(value = "/stats/category", method = RouteMethod.GET)
-    public Future<JsonResult> getProductStatsByCategory() {
-        return productDao.getProductStatistics()
-                .map(result -> JsonResult.<JsonObject>data(result));
+    public Future<JsonObject> getProductStatsByCategory() {
+        return productDao.getProductStatistics();
     }
     
     /**
      * 按分类统计产品价格
      */
     @RouteMapping(value = "/stats/price", method = RouteMethod.GET)
-    public Future<JsonResult> getProductPriceStats(
+    public Future<JsonObject> getProductPriceStats(
             @RequestParam(value = "category", required = false) String category) {
         
-        return productDao.getProductStatistics()
-                .map(result -> JsonResult.<JsonObject>data(result));
+        return productDao.getProductStatistics();
     }
     
     /**
      * 批量更新产品状态
      */
     @RouteMapping(value = "/batch/status", method = RouteMethod.PUT)
-    public Future<JsonResult> batchUpdateStatus(
+    public Future<Boolean> batchUpdateStatus(
             @RequestBody JsonObject updateData) {
         
         @SuppressWarnings("unchecked")
@@ -253,8 +254,7 @@ public class ProductController {
                         );
                     }
                     return future;
-                })
-                .map(result -> JsonResult.data(result));
+                });
     }
     
     // ========== 异常处理器 ==========

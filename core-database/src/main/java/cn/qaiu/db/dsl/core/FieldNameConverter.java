@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
  * 统一处理Java字段名与数据库字段名的转换
  * 默认使用下划线命名，符合数据库字段命名规范
  * 
- * @author qaiu
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class FieldNameConverter {
     

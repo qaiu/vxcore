@@ -40,6 +40,7 @@ public class CodeGeneratorFacade {
     private final EntityBuilder entityBuilder;
     private final DaoBuilder daoBuilder;
     private final ServiceBuilder serviceBuilder;
+    private final JServiceBuilder jServiceBuilder;
     private final ControllerBuilder controllerBuilder;
     private final DtoBuilder dtoBuilder;
     
@@ -52,6 +53,7 @@ public class CodeGeneratorFacade {
         this.entityBuilder = new EntityBuilder(context.getFeatureConfig(), context.getPackageConfig());
         this.daoBuilder = new DaoBuilder(context.getFeatureConfig(), context.getPackageConfig());
         this.serviceBuilder = new ServiceBuilder(context.getFeatureConfig(), context.getPackageConfig());
+        this.jServiceBuilder = new JServiceBuilder(context.getFeatureConfig(), context.getPackageConfig());
         this.controllerBuilder = new ControllerBuilder(context.getFeatureConfig(), context.getPackageConfig());
         this.dtoBuilder = new DtoBuilder(context.getFeatureConfig(), context.getPackageConfig());
     }
@@ -203,6 +205,34 @@ public class CodeGeneratorFacade {
     public Future<String> generateService(TableInfo tableInfo) {
         EntityInfo entityInfo = entityBuilder.buildEntity(tableInfo);
         
+        // 根据配置选择使用 JService 还是传统 Service
+        if (jServiceBuilder.shouldGenerateJService()) {
+            return generateJService(tableInfo, entityInfo);
+        } else {
+            return generateTraditionalService(tableInfo, entityInfo);
+        }
+    }
+    
+    /**
+     * 生成 JService
+     */
+    private Future<String> generateJService(TableInfo tableInfo, EntityInfo entityInfo) {
+        // 生成 JService 接口
+        EntityInfo serviceInfo = jServiceBuilder.buildJServiceInterface(tableInfo, entityInfo);
+        Future<String> interfaceFuture = generateCode(jServiceBuilder.getJServiceInterfaceTemplateName(), serviceInfo, getServiceOutputPath(serviceInfo));
+        
+        // 生成 JService 实现类
+        EntityInfo serviceImplInfo = jServiceBuilder.buildJServiceImplementation(tableInfo, entityInfo);
+        Future<String> implFuture = generateCode(jServiceBuilder.getJServiceImplementationTemplateName(), serviceImplInfo, getServiceOutputPath(serviceImplInfo));
+        
+        return Future.all(interfaceFuture, implFuture)
+                .map(v -> interfaceFuture.result());
+    }
+    
+    /**
+     * 生成传统 Service
+     */
+    private Future<String> generateTraditionalService(TableInfo tableInfo, EntityInfo entityInfo) {
         // 生成 Service 接口
         EntityInfo serviceInfo = serviceBuilder.buildServiceInterface(tableInfo, entityInfo);
         Future<String> interfaceFuture = generateCode("service", serviceInfo, getServiceOutputPath(serviceInfo));

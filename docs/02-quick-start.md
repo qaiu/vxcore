@@ -235,8 +235,24 @@ public class UserDao extends AbstractDao<User> {
 
 ### 4.2 DAO 说明
 - `extends AbstractDao<User>`: 继承抽象 DAO，提供基础 CRUD 操作
+- **无参构造函数**: 框架自动处理所有初始化，无需手动传递参数
 - `lambdaQuery()`: 创建 Lambda 查询包装器
 - `eq(User::getEmail, email)`: 类型安全的字段引用
+
+### 4.3 无参构造函数DAO（推荐）
+
+```java
+// 最简单的DAO - 连构造函数都没有！
+public class UserDao extends AbstractDao<User, Long> {
+    // 完全空的类，框架自动处理所有初始化
+    // 1. 自动通过泛型获取User类型
+    // 2. 自动初始化SQL执行器
+    // 3. 自动获取表名和主键信息
+}
+
+// 使用方式
+UserDao userDao = new UserDao(); // 无需传递任何参数！
+```
 
 ## 🌐 第五步：创建控制器
 
@@ -579,6 +595,7 @@ curl -X DELETE http://localhost:8080/api/users/1
 
 ### 下一步学习
 - [安装配置](03-installation.md) - 深入学习配置选项
+- [无参构造函数DAO](13-no-arg-constructor-dao.md) - 掌握无参构造函数DAO的使用
 - [Lambda 查询指南](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - 掌握数据库操作
 - [多数据源指南](../core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 学习多数据源配置
 - [路由注解指南](08-routing-annotations.md) - 深入了解 Web 开发

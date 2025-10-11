@@ -29,11 +29,9 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * <p>反向代理服务</p>
- * <p>可以根据配置文件自动生成代理服务</p>
- * <p>可以配置多个服务, 配置文件见示例</p>
- * <br>Create date 2021/9/2 0:41
- *
+ * 反向代理Verticle
+ * 提供反向代理服务器功能
+ * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class ReverseProxyVerticle extends AbstractVerticle {

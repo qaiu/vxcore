@@ -17,7 +17,10 @@ import static cn.qaiu.vx.core.util.ConfigConstant.GLOBAL_CONFIG;
 import static cn.qaiu.vx.core.util.ConfigConstant.LOCAL;
 
 /**
- *
+ * HTTP代理Verticle
+ * 提供HTTP代理服务器功能
+ * 
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class HttpProxyVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpProxyVerticle.class);

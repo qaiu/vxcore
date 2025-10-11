@@ -113,6 +113,14 @@ public class CommonUtil {
         LOGGER.info("读取配置{}成功", configName);
     }
 
+    /**
+     * 对类集合进行排序
+     * 根据 @HandleSortFilter 注解的 value 值进行排序
+     * 
+     * @param set 要排序的类集合
+     * @param <T> 类型参数
+     * @return 排序后的实例集合
+     */
     public static <T> Set<T> sortClassSet(Set<Class<? extends T>> set) {
         return set.stream().filter(c1 -> {
             HandleSortFilter s1 = c1.getAnnotation(HandleSortFilter.class);
@@ -143,6 +151,12 @@ public class CommonUtil {
 
     private static String appVersion;
 
+    /**
+     * 获取应用版本号
+     * 从 app.properties 文件中读取版本信息
+     * 
+     * @return 应用版本号字符串
+     */
     public static String getAppVersion() {
         if (null == appVersion) {
             Properties properties = new Properties();

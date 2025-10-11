@@ -16,6 +16,7 @@ public class FeatureConfig {
     private boolean mybatisPlusEnabled = false;
     private boolean jooqEnabled = false;
     private boolean vertxSqlEnabled = false;
+    private boolean useJService = true; // 默认使用 JService
     
     // 生成控制标志
     private boolean generateEntity = true;
@@ -192,6 +193,15 @@ public class FeatureConfig {
     
     public FeatureConfig setUseVertxAnnotations(boolean useVertxAnnotations) {
         this.vertxSqlEnabled = useVertxAnnotations;
+        return this;
+    }
+    
+    public boolean isUseJService() {
+        return useJService;
+    }
+    
+    public FeatureConfig setUseJService(boolean useJService) {
+        this.useJService = useJService;
         return this;
     }
 }

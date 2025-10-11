@@ -42,6 +42,10 @@ public class JacksonConfig {
         LoggerFactory.getLogger(JacksonConfig.class).info("Global JacksonConfig complete.");
     }
 
+    /**
+     * 空方法，用于触发静态初始化块
+     * 确保 Jackson 配置被正确加载
+     */
     public static void nothing() {}
 
 }

@@ -29,6 +29,8 @@ jobs:
         
     - name: Build project
       run: mvn clean package -DskipTests=true
+      env:
+        CI: true
       
     - name: Start application
       run: |

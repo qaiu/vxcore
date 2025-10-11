@@ -11,12 +11,15 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 /**
  * 订单详情数据访问对象 (DAO) - 演示 MyBatis-Plus 风格的 Lambda 查询
+ * 支持 DI 注入，框架自动管理 JooqExecutor
  * 
  * 继承 LambdaDao，父类已提供基础 CRUD 功能：
  * - insert(T entity)
@@ -32,12 +35,20 @@ import java.util.Optional;
  * 
  * @author QAIU
  */
+@Singleton
 public class OrderDetailDao extends LambdaDao<OrderDetail, Long> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDetailDao.class);
 
+    /**
+     * 构造函数 - 使用 DI 注入 JooqExecutor
+     * 
+     * @param executor JooqExecutor 实例（由 DI 容器自动注入）
+     */
+    @Inject
     public OrderDetailDao(JooqExecutor executor) {
         super(executor, OrderDetail.class);
+        LOGGER.info("OrderDetailDao initialized with DI injection");
     }
 
     /**

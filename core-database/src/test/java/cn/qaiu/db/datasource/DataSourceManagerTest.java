@@ -343,7 +343,12 @@ class DataSourceManagerTest {
                 .compose(v -> dataSourceManager.initializeDataSource(name))
                 .onSuccess(v -> testContext.failNow("不应该成功初始化无效配置"))
                 .onFailure(error -> {
-                    assertNotNull(error, "应该返回错误");
+                    testContext.verify(() -> {
+                        assertNotNull(error, "应该返回错误");
+                        assertTrue(error.getMessage().contains("No provider found") || 
+                                 error.getMessage().contains("invalid-type"), 
+                                 "错误信息应该包含provider未找到或invalid-type: " + error.getMessage());
+                    });
                     testContext.completeNow();
                 });
         }

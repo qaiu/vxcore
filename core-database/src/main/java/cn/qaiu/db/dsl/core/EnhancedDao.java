@@ -6,6 +6,7 @@ import cn.qaiu.db.dsl.common.QueryCondition;
 import cn.qaiu.db.dsl.interfaces.JooqDao;
 import cn.qaiu.db.dsl.mapper.EntityMapper;
 import cn.qaiu.db.dsl.mapper.DefaultMapper;
+import cn.qaiu.vx.core.util.StringCase;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import org.jooq.Condition;
@@ -17,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,20 +46,69 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnhancedDao.class);
 
-    protected final JooqExecutor executor;
-    protected final JooqDslBuilder dslBuilder;
-    protected final EntityMapper<T> entityMapper;
     protected final Class<T> entityClass;
     protected final String tableName;
     protected final String primaryKeyField;
+    protected final EntityMapper<T> entityMapper;
+    
+    // 执行器相关（支持延迟初始化）
+    protected volatile JooqExecutor executor;
+    protected volatile JooqDslBuilder dslBuilder;
+    private volatile String dataSourceName;
+    private final boolean autoExecutorMode;
 
+    /**
+     * 构造函数1：手动传入JooqExecutor（传统方式）
+     */
     public EnhancedDao(JooqExecutor executor, Class<T> entityClass) {
         this.executor = executor;
-        this.dslBuilder = new JooqDslBuilder(executor.dsl());
         this.entityClass = entityClass;
+        this.autoExecutorMode = false;
+        
+        // 立即初始化
+        this.dslBuilder = new JooqDslBuilder(executor.dsl());
         this.tableName = dslBuilder.getTableName(entityClass);
         this.primaryKeyField = dslBuilder.getPrimaryKey(entityClass);
         this.entityMapper = new DefaultMapper<>(entityClass, tableName);
+        
+        LOGGER.debug("EnhancedDao initialized with manual JooqExecutor for entity: {}", 
+                entityClass.getSimpleName());
+    }
+
+    /**
+     * 构造函数2：自动获取JooqExecutor（推荐方式）
+     */
+    public EnhancedDao(Class<T> entityClass) {
+        this.entityClass = entityClass;
+        this.autoExecutorMode = true;
+        
+        // 初始化基本信息
+        this.dataSourceName = getDataSourceNameFromAnnotation();
+        this.tableName = getTableNameFromEntity(entityClass);
+        this.primaryKeyField = getPrimaryKeyFromEntity(entityClass);
+        this.entityMapper = new DefaultMapper<>(entityClass, tableName);
+        
+        LOGGER.debug("EnhancedDao initialized with auto-executor mode for entity: {} with datasource: {}", 
+                entityClass.getSimpleName(), dataSourceName);
+    }
+
+    /**
+     * 构造函数3：无参构造函数（最推荐方式）
+     * 自动通过泛型获取实体类类型
+     */
+    @SuppressWarnings("unchecked")
+    public EnhancedDao() {
+        this.entityClass = (Class<T>) getGenericEntityClass();
+        this.autoExecutorMode = true;
+        
+        // 初始化基本信息
+        this.dataSourceName = getDataSourceNameFromAnnotation();
+        this.tableName = getTableNameFromEntity(entityClass);
+        this.primaryKeyField = getPrimaryKeyFromEntity(entityClass);
+        this.entityMapper = new DefaultMapper<>(entityClass, tableName);
+        
+        LOGGER.debug("EnhancedDao initialized with auto-executor mode for entity: {} (from generics) with datasource: {}", 
+                entityClass.getSimpleName(), dataSourceName);
     }
 
     // =================== 基础CRUD方法（继承自父类） ===================
@@ -137,14 +189,14 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
             pageRequest.validate();
 
             // 构建查询SQL
-            Query countQuery = dslBuilder.buildCount(tableName, condition);
+            Query countQuery = getDslBuilder().buildCount(tableName, condition);
             Query selectQuery = buildPageableSelect(tableName, condition, pageRequest);
 
             // 并行执行计数和查询
-            Future<Long> countFuture = executor.executeQuery(countQuery)
+            Future<Long> countFuture = getExecutor().executeQuery(countQuery)
                     .map(rowSet -> rowSet.size() > 0 ? rowSet.iterator().next().getLong(0) : 0L);
 
-            Future<List<T>> dataFuture = executor.executeQuery(selectQuery)
+            Future<List<T>> dataFuture = getExecutor().executeQuery(selectQuery)
                     .map(entityMapper::fromMultiple);
 
             return countFuture
@@ -218,7 +270,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     public Future<List<T>> findByOrder(String sortField, boolean ascending, Integer limit) {
         try {
             Query query = buildOrderedSelect(tableName, DSL.noCondition(), sortField, ascending, limit);
-            return executor.executeQuery(query).map(entityMapper::fromMultiple);
+            return getExecutor().executeQuery(query).map(entityMapper::fromMultiple);
         } catch (Exception e) {
             LOGGER.error("Failed to find by order for table {}", tableName, e);
             return Future.failedFuture(e);
@@ -235,7 +287,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     public Future<List<T>> findByOrder(Map<String, Boolean> sortFields, Integer limit) {
         try {
             Query query = buildMultiOrderedSelect(tableName, DSL.noCondition(), sortFields, limit);
-            return executor.executeQuery(query).map(entityMapper::fromMultiple);
+            return getExecutor().executeQuery(query).map(entityMapper::fromMultiple);
         } catch (Exception e) {
             LOGGER.error("Failed to find by multi-order for table {}", tableName, e);
             return Future.failedFuture(e);
@@ -459,7 +511,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
         String sql = String.format("SELECT %s(%s) FROM %s", aggregateFunction, field, tableName);
         Query query = DSL.query(sql);
         
-        return executor.executeQuery(query)
+        return getExecutor().executeQuery(query)
                 .map(rowSet -> {
                     if (rowSet.size() > 0) {
                         Object value = rowSet.iterator().next().getValue(0);
@@ -472,7 +524,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     /**
      * 将QueryCondition转换为jOOQ Condition
      */
-    private Condition convertQueryConditionToJooq(QueryCondition queryCondition) {
+    protected Condition convertQueryConditionToJooq(QueryCondition queryCondition) {
         if (queryCondition == null) return DSL.noCondition();
         
         String field = queryCondition.getField();
@@ -534,7 +586,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     /**
      * 将多个QueryCondition转换为jOOQ Condition（指定连接符）
      */
-    private Condition convertQueryConditionsToJooq(List<QueryCondition> conditions, QueryCondition.ConditionType connective) {
+    protected Condition convertQueryConditionsToJooq(List<QueryCondition> conditions, QueryCondition.ConditionType connective) {
         if (conditions == null || conditions.isEmpty()) {
             return DSL.noCondition();
         }
@@ -564,11 +616,11 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
             JsonObject data = entityMapper.toJsonObject(entity);
             data.remove(cn.qaiu.db.dsl.core.FieldNameConverter.toDatabaseFieldName(primaryKeyField));
 
-            Query insertQuery = dslBuilder.buildInsert(tableName, data);
+            Query insertQuery = getDslBuilder().buildInsert(tableName, data);
 
-            return executor.executeInsert(insertQuery)
+            return getExecutor().executeInsert(insertQuery)
                     .map(generatedId -> {
-                        System.out.println("[DEBUG] EnhancedDao.performInsert: generatedId=" + generatedId);
+                        LOGGER.debug("EnhancedDao.performInsert: generatedId={}", generatedId);
                         setId(entity, generatedId);
                         LOGGER.debug("Inserted entity to table {} with ID: {}", tableName, generatedId);
                         if (generatedId != null && generatedId > 0) {
@@ -597,9 +649,9 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
             JsonObject data = entityMapper.toJsonObject(entity);
             Condition whereCondition = DSL.field(primaryKeyField).eq(entityId);
-            Query updateQuery = dslBuilder.buildUpdate(tableName, data, whereCondition);
+            Query updateQuery = getDslBuilder().buildUpdate(tableName, data, whereCondition);
 
-            return executor.executeUpdate(updateQuery)
+            return getExecutor().executeUpdate(updateQuery)
                     .map(rowCount -> {
                         if (rowCount > 0) {
                             LOGGER.debug("Updated entity in table {} with ID: {}", tableName, entityId);
@@ -621,9 +673,9 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
         try {
             Condition whereCondition = DSL.field(primaryKeyField).eq(id);
-            Query deleteQuery = dslBuilder.buildDelete(tableName, whereCondition);
+            Query deleteQuery = getDslBuilder().buildDelete(tableName, whereCondition);
 
-            return executor.executeUpdate(deleteQuery)
+            return getExecutor().executeUpdate(deleteQuery)
                     .map(rowCount -> {
                         LOGGER.debug("Deleted {} rows from table {} where {} = {}", 
                                 rowCount, tableName, primaryKeyField, id);
@@ -642,9 +694,9 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
         try {
             Condition condition = DSL.field(primaryKeyField).eq(id);
-            Query selectQuery = dslBuilder.buildSelect(tableName, condition);
+            Query selectQuery = getDslBuilder().buildSelect(tableName, condition);
 
-            return executor.executeQuery(selectQuery)
+            return getExecutor().executeQuery(selectQuery)
                     .map(rowSet -> entityMapper.fromSingle(rowSet));
         } catch (Exception e) {
             LOGGER.error("Failed to find entity by ID: {}", id, e);
@@ -654,9 +706,9 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
     private Future<List<T>> performFindByCondition(Condition condition) {
         try {
-            Query selectQuery = dslBuilder.buildSelect(tableName, condition);
+            Query selectQuery = getDslBuilder().buildSelect(tableName, condition);
 
-            return executor.executeQuery(selectQuery)
+            return getExecutor().executeQuery(selectQuery)
                     .map(entityMapper::fromMultiple);
         } catch (Exception e) {
             LOGGER.error("Failed to find entities by condition", e);
@@ -666,9 +718,9 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
 
     private Future<Long> performCount(Condition condition) {
         try {
-            Query countQuery = dslBuilder.buildCount(tableName, condition);
+            Query countQuery = getDslBuilder().buildCount(tableName, condition);
 
-            return executor.executeQuery(countQuery)
+            return getExecutor().executeQuery(countQuery)
                     .map(rowSet -> {
                         if (rowSet.size() > 0) {
                             return rowSet.iterator().next().getLong(0);
@@ -717,6 +769,247 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     }
 
     protected DSLContext dsl() {
-        return executor.dsl();
+        return getExecutor().dsl();
+    }
+
+    // =================== 自动初始化辅助方法 ===================
+
+    /**
+     * 获取JooqExecutor实例（延迟初始化）
+     */
+    protected JooqExecutor getExecutor() {
+        if (executor == null) {
+            synchronized (this) {
+                if (executor == null) {
+                    if (autoExecutorMode) {
+                        executor = initializeExecutor();
+                    } else {
+                        throw new IllegalStateException("JooqExecutor not initialized in manual mode");
+                    }
+                }
+            }
+        }
+        return executor;
+    }
+
+    /**
+     * 获取JooqDslBuilder实例（延迟初始化）
+     */
+    protected JooqDslBuilder getDslBuilder() {
+        if (dslBuilder == null) {
+            synchronized (this) {
+                if (dslBuilder == null) {
+                    dslBuilder = new JooqDslBuilder(getExecutor().dsl());
+                }
+            }
+        }
+        return dslBuilder;
+    }
+
+    /**
+     * 初始化JooqExecutor（自动模式）
+     */
+    private JooqExecutor initializeExecutor() {
+        try {
+            cn.qaiu.db.datasource.DataSourceManager manager = 
+                    cn.qaiu.db.datasource.DataSourceManager.getInstance(null);
+            JooqExecutor executor = manager.getExecutor(dataSourceName);
+            
+            if (executor == null) {
+                LOGGER.warn("No executor found for datasource: {}, using default", dataSourceName);
+                executor = manager.getDefaultExecutor();
+            }
+            
+            if (executor == null) {
+                throw new IllegalStateException("No JooqExecutor available for datasource: " + dataSourceName);
+            }
+            
+            LOGGER.info("JooqExecutor auto-initialized for datasource: {} in EnhancedDao: {}", 
+                    dataSourceName, this.getClass().getSimpleName());
+            
+            return executor;
+        } catch (Exception e) {
+            LOGGER.error("Failed to auto-initialize JooqExecutor for datasource: {}", dataSourceName, e);
+            throw new RuntimeException("Failed to auto-initialize JooqExecutor", e);
+        }
+    }
+
+    /**
+     * 从类注解中获取数据源名称
+     */
+    private String getDataSourceNameFromAnnotation() {
+        // 检查@DataSource注解
+        cn.qaiu.db.datasource.DataSource dataSourceAnnotation = 
+                this.getClass().getAnnotation(cn.qaiu.db.datasource.DataSource.class);
+        if (dataSourceAnnotation != null) {
+            return dataSourceAnnotation.value();
+        }
+        
+        // 检查@Dao注解（如果存在）
+        try {
+            @SuppressWarnings("unchecked")
+            Class<? extends java.lang.annotation.Annotation> daoAnnotationClass =
+                (Class<? extends java.lang.annotation.Annotation>) Class.forName("cn.qaiu.vx.core.annotaions.Dao");
+            if (this.getClass().isAnnotationPresent(daoAnnotationClass)) {
+                LOGGER.debug("Found @Dao annotation on class: {}", this.getClass().getName());
+            }
+        } catch (ClassNotFoundException e) {
+            // Dao注解不存在，忽略
+        }
+        
+        return "default";
+    }
+
+    /**
+     * 从实体类获取表名
+     */
+    private String getTableNameFromEntity(Class<T> entityClass) {
+        try {
+            // 检查@Table注解（如果存在）
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends java.lang.annotation.Annotation> tableAnnotationClass =
+                    (Class<? extends java.lang.annotation.Annotation>) Class.forName("cn.qaiu.db.dsl.Table");
+                if (entityClass.isAnnotationPresent(tableAnnotationClass)) {
+                    LOGGER.debug("Found @Table annotation on entity: {}", entityClass.getName());
+                }
+            } catch (ClassNotFoundException e) {
+                // Table注解不存在，忽略
+            }
+            
+            // 默认使用类名转下划线
+            return convertToSnakeCase(entityClass.getSimpleName());
+        } catch (Exception e) {
+            LOGGER.warn("Failed to get table name from entity: {}", entityClass.getSimpleName(), e);
+            return convertToSnakeCase(entityClass.getSimpleName());
+        }
+    }
+
+    /**
+     * 从实体类获取主键字段名
+     */
+    private String getPrimaryKeyFromEntity(Class<T> entityClass) {
+        try {
+            // 检查@Id注解的字段（如果存在）
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends java.lang.annotation.Annotation> idAnnotationClass =
+                    (Class<? extends java.lang.annotation.Annotation>) Class.forName("cn.qaiu.db.dsl.Id");
+                
+                for (Method method : entityClass.getMethods()) {
+                    if (method.isAnnotationPresent(idAnnotationClass)) {
+                        String methodName = method.getName();
+                        if (methodName.startsWith("get")) {
+                            String fieldName = methodName.substring(3);
+                            return convertToSnakeCase(fieldName);
+                        }
+                    }
+                }
+            } catch (ClassNotFoundException e) {
+                // Id注解不存在，忽略
+            }
+            
+            // 默认使用"id"
+            return "id";
+        } catch (Exception e) {
+            LOGGER.warn("Failed to get primary key from entity: {}", entityClass.getSimpleName(), e);
+            return "id";
+        }
+    }
+
+    /**
+     * 转换为下划线命名
+     */
+    private String convertToSnakeCase(String camelCase) {
+        return StringCase.toUnderlineCase(camelCase);
+    }
+
+    /**
+     * 通过反射获取泛型实体类类型
+     * 支持多层继承的泛型类型获取
+     */
+    @SuppressWarnings("unchecked")
+    private Class<?> getGenericEntityClass() {
+        try {
+            // 获取当前类的泛型信息
+            Type genericSuperclass = this.getClass().getGenericSuperclass();
+            
+            // 如果是参数化类型（ParameterizedType），直接获取第一个泛型参数
+            if (genericSuperclass instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) genericSuperclass;
+                Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                if (actualTypeArguments.length > 0) {
+                    Type entityType = actualTypeArguments[0];
+                    if (entityType instanceof Class) {
+                        return (Class<?>) entityType;
+                    }
+                }
+            }
+            
+            // 如果当前类没有泛型信息，向上查找父类
+            Class<?> currentClass = this.getClass();
+            while (currentClass != null && currentClass != EnhancedDao.class) {
+                Type superclass = currentClass.getGenericSuperclass();
+                if (superclass instanceof ParameterizedType) {
+                    ParameterizedType parameterizedType = (ParameterizedType) superclass;
+                    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                    if (actualTypeArguments.length > 0) {
+                        Type entityType = actualTypeArguments[0];
+                        if (entityType instanceof Class) {
+                            return (Class<?>) entityType;
+                        }
+                    }
+                }
+                currentClass = currentClass.getSuperclass();
+            }
+            
+            throw new IllegalStateException("无法从泛型中获取实体类类型，请使用带参数的构造函数");
+            
+        } catch (Exception e) {
+            LOGGER.error("获取泛型实体类类型失败", e);
+            throw new IllegalStateException("无法从泛型中获取实体类类型，请使用带参数的构造函数", e);
+        }
+    }
+
+    /**
+     * 获取实体类类型
+     */
+    public Class<T> getEntityClass() {
+        return entityClass;
+    }
+
+    /**
+     * 获取当前数据源名称
+     */
+    protected String getCurrentDataSource() {
+        return dataSourceName;
+    }
+
+    /**
+     * 切换到指定数据源执行操作
+     */
+    protected <R> Future<R> executeWithDataSource(String targetDataSource, 
+                                                  java.util.function.Function<JooqExecutor, Future<R>> operation) {
+        if (!autoExecutorMode) {
+            return Future.failedFuture("DataSource switching only supported in auto-executor mode");
+        }
+        
+        return Future.future(promise -> {
+            String originalDataSource = dataSourceName;
+            try {
+                // 临时切换数据源
+                dataSourceName = targetDataSource;
+                executor = null; // 强制重新初始化
+                
+                JooqExecutor targetExecutor = getExecutor();
+                operation.apply(targetExecutor)
+                    .onSuccess(promise::complete)
+                    .onFailure(promise::fail);
+            } finally {
+                // 恢复原始数据源
+                dataSourceName = originalDataSource;
+                executor = null; // 强制重新初始化
+            }
+        });
     }
 }

@@ -35,6 +35,14 @@ jobs:
       
     - name: Update dependencies
       run: mvn versions:use-latest-versions
+      env:
+        CI: true
+      
+    - name: Run tests with updated dependencies
+      run: mvn clean test
+      env:
+        CI: true
+      continue-on-error: true
       
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5

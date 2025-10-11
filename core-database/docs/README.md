@@ -6,6 +6,12 @@ VXCore Database 模块是一个基于 **jOOQ DSL** 和 **Vert.x SQL Client** 的
 
 ## 🚀 核心特性
 
+### ✅ 无参构造函数DAO
+- **自动初始化**：无需手动传递任何参数，框架自动处理所有初始化
+- **泛型类型获取**：通过反射自动获取实体类类型
+- **数据源自动管理**：自动从DataSourceManager获取JooqExecutor
+- **极简使用**：DAO类可以是完全空的，连构造函数都没有
+
 ### ✅ Lambda 查询增强
 - **类似 MyBatis-Plus 的 Lambda 表达式**：支持 `User::getName` 类型安全的字段引用
 - **Join 查询支持**：leftJoin、innerJoin、rightJoin、fullJoin
@@ -97,41 +103,27 @@ public class User extends BaseEntity {
 }
 ```
 
-### 2. 创建 DAO
+### 2. 创建 DAO（无参构造函数方式）
 
 ```java
-public class UserDao extends AbstractDao<User> {
-    
-    public UserDao(JooqExecutor executor) {
-        super(executor, User.class);
-    }
-    
-    // Lambda 查询示例
-    public Future<List<User>> findActiveUsers() {
-        return lambdaQuery()
-            .eq(User::getStatus, "ACTIVE")
-            .like(User::getName, "张%")
-            .orderBy(User::getCreateTime, SortOrder.DESC)
-            .list();
-    }
-    
-    // Join 查询示例
-    public Future<List<User>> findUsersWithOrders() {
-        return lambdaQuery()
-            .leftJoin(Order.class, (user, order) -> 
-                user.getId().eq(order.getUserId()))
-            .eq(User::getStatus, "ACTIVE")
-            .list();
-    }
-    
-    // 聚合查询示例
-    public Future<List<Map<String, Object>>> getUserStats() {
-        return lambdaQuery()
-            .select(User::getStatus, DSL.count())
-            .groupBy(User::getStatus)
-            .having(DSL.count().gt(10))
-            .list();
-    }
+// 最简单的DAO - 连构造函数都没有！
+public class UserDao extends AbstractDao<User, Long> {
+    // 完全空的类，框架自动处理所有初始化
+    // 1. 自动通过泛型获取User类型
+    // 2. 自动初始化SQL执行器
+    // 3. 自动获取表名和主键信息
+}
+
+// 使用方式
+UserDao userDao = new UserDao(); // 无需传递任何参数！
+
+// Lambda 查询示例
+public Future<List<User>> findActiveUsers() {
+    return userDao.lambdaQuery()
+        .eq(User::getStatus, "ACTIVE")
+        .like(User::getName, "张%")
+        .orderBy(User::getCreateTime, SortOrder.DESC)
+        .list();
 }
 ```
 
@@ -621,6 +613,7 @@ public class User extends BaseEntity {
 ## 📚 详细文档
 
 ### 核心文档
+- [无参构造函数DAO](../../docs/13-no-arg-constructor-dao.md) - 无参构造函数DAO使用指南
 - [Lambda查询指南](lambda/LAMBDA_QUERY_GUIDE.md) - Lambda查询详解
 - [多数据源指南](MULTI_DATASOURCE_GUIDE.md) - 多数据源配置和使用
 - [并行开发总结](PARALLEL_DEVELOPMENT_SUMMARY.md) - 开发总结
@@ -813,29 +806,35 @@ public class DatabaseConfig {
 
 ## 📝 更新记录
 
-### v2.0.0 - Lambda查询增强 (当前版本)
+### v2.0.0 - 无参构造函数DAO + Lambda查询增强 (当前版本)
 
 #### ✅ 主要变化
 
-1. **Lambda查询增强**
+1. **无参构造函数DAO（革命性特性）**
+   - 新增无参构造函数支持 - 无需手动传递任何参数
+   - 自动泛型类型获取 - 通过反射自动获取实体类类型
+   - 自动数据源管理 - 自动从DataSourceManager获取JooqExecutor
+   - 极简使用方式 - DAO类可以是完全空的
+
+2. **Lambda查询增强**
    - 新增 `LambdaQueryWrapper` - 支持类似MyBatis-Plus的Lambda表达式
    - 新增 Join查询支持 - leftJoin、innerJoin、rightJoin、fullJoin
    - 新增聚合查询 - groupBy、having、selectCount、selectSum等
    - 新增子查询支持 - exists、notExists、inSubQuery等
 
-2. **多数据源支持**
+3. **多数据源支持**
    - 新增 `DataSourceManager` - 数据源管理器
    - 新增 `DataSourceContext` - 线程本地数据源上下文
    - 新增 `@DataSource` 注解 - 数据源切换注解
    - 新增 `DataSourceConfigLoader` - 配置加载器
 
-3. **批量操作优化**
+4. **批量操作优化**
    - 新增 `batchInsert` - 批量插入
    - 新增 `batchUpdate` - 批量更新
    - 新增 `batchDelete` - 批量删除
    - 新增 `batchUpsert` - 批量插入或更新
 
-4. **执行器策略模式**
+5. **执行器策略模式**
    - 新增 `ExecutorStrategy` 接口 - 执行器策略
    - 新增 `AbstractExecutorStrategy` - 抽象执行器策略
    - 支持不同数据库类型的执行器
@@ -852,6 +851,7 @@ public class DatabaseConfig {
 
 | 功能 | v1.0 (旧版) | v2.0 (当前) |
 |------|-------------|-------------|
+| 无参构造函数DAO | ❌ 不支持 | ✅ 完整支持 |
 | Lambda查询 | ❌ 不支持 | ✅ 完整支持 |
 | Join查询 | ❌ 不支持 | ✅ 完整支持 |
 | 聚合查询 | ❌ 不支持 | ✅ 完整支持 |
@@ -860,6 +860,7 @@ public class DatabaseConfig {
 | 批量操作 | ❌ 不支持 | ✅ 完整支持 |
 | 类型安全 | ⚠️ 部分支持 | ✅ 完全支持 |
 | 性能 | ⚠️ 一般 | ✅ 优秀 |
+| 易用性 | ⚠️ 复杂 | ✅ 极简 |
 
 ## 📞 技术支持
 

@@ -31,6 +31,13 @@ public class MultiDataSourceTest {
     void setUp() {
         vertx = Vertx.vertx();
         dataSourceManager = DataSourceManager.getInstance(vertx);
+        
+        // 清除之前测试遗留的数据源配置
+        try {
+            dataSourceManager.closeAllDataSources().toCompletionStage().toCompletableFuture().get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // 忽略清除错误
+        }
     }
     
     @Test

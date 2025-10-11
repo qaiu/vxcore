@@ -5,6 +5,7 @@ import cn.qaiu.vx.core.annotaions.RouteMapping;
 import cn.qaiu.vx.core.base.BaseHttpApi;
 import cn.qaiu.vx.core.enums.RouteMethod;
 import cn.qaiu.vx.core.model.JsonResult;
+import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,39 +25,35 @@ public class ExampleController implements BaseHttpApi {
      * 健康检查端点
      */
     @RouteMapping(value = "/health", method = RouteMethod.GET)
-    public void health(RoutingContext ctx) {
+    public Future<String> health() {
         LOGGER.info("Health check requested");
-        JsonResult<String> result = JsonResult.data("VXCore Example Application is running");
-        doFireJsonResultResponse(ctx, result);
+        return Future.succeededFuture("VXCore Example Application is running");
     }
     
     /**
      * 用户列表端点
      */
     @RouteMapping(value = "/users", method = RouteMethod.GET)
-    public void getUsers(RoutingContext ctx) {
+    public Future<String> getUsers() {
         LOGGER.info("Get users requested");
-        JsonResult<String> result = JsonResult.data("GET /users");
-        doFireJsonResultResponse(ctx, result);
+        return Future.succeededFuture("GET /users");
     }
     
     /**
      * 产品列表端点
      */
     @RouteMapping(value = "/products", method = RouteMethod.GET)
-    public void getProducts(RoutingContext ctx) {
+    public Future<String> getProducts() {
         LOGGER.info("Get products requested");
-        JsonResult<String> result = JsonResult.data("GET /products");
-        doFireJsonResultResponse(ctx, result);
+        return Future.succeededFuture("GET /products");
     }
     
     /**
      * 系统信息端点
      */
     @RouteMapping(value = "/system/info", method = RouteMethod.GET)
-    public void getSystemInfo(RoutingContext ctx) {
+    public Future<String> getSystemInfo() {
         LOGGER.info("Get system info requested");
-        JsonResult<String> result = JsonResult.data("1.0.0");
-        doFireJsonResultResponse(ctx, result);
+        return Future.succeededFuture("1.0.0");
     }
 }

@@ -27,6 +27,7 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 ### 🔒 类型安全数据库操作
 - **jOOQ DSL**: 编译时类型检查，完全防止 SQL 注入
 - **Lambda 查询**: 类似 MyBatis-Plus 的 Lambda 表达式查询
+- **无参构造函数DAO**: 自动初始化，无需手动传递参数
 - **多数据源支持**: 支持动态数据源切换和事务隔离
 - **批量操作**: 高性能批量 CRUD 操作
 
@@ -125,7 +126,7 @@ public class UserController {
 }
 ```
 
-#### 3. 使用 Lambda 查询
+#### 3. 使用无参构造函数DAO（推荐）
 
 ```java
 @DdlTable("users")
@@ -138,6 +139,17 @@ public class User extends BaseEntity {
     
     // getters and setters...
 }
+
+// 最简单的DAO - 连构造函数都没有
+public class UserDao extends AbstractDao<User, Long> {
+    // 完全空的类，框架自动处理所有初始化
+    // 1. 自动通过泛型获取User类型
+    // 2. 自动初始化SQL执行器
+    // 3. 自动获取表名和主键信息
+}
+
+// 使用方式
+UserDao userDao = new UserDao(); // 无需传递任何参数！
 
 // Lambda 查询示例
 public class UserService {
@@ -330,6 +342,7 @@ mvn test jacoco:report
 ## 📈 版本历史
 
 ### v2.0.0 (当前版本)
+- ✅ **无参构造函数DAO**: 自动初始化，无需手动传递参数，极大简化DAO使用
 - ✅ **代码生成器**: 根据数据库表结构自动生成三层架构代码
 - ✅ **Lambda 查询增强**: 支持 Join、聚合查询、子查询
 - ✅ **批量操作**: batchInsert、batchUpdate、batchDelete

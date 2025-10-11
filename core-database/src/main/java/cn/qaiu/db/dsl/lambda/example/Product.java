@@ -17,13 +17,13 @@ import java.time.LocalDateTime;
  * @author qaiu
  */
 @RowMapped(formatter = SnakeCase.class)
-@DdlTable("products")
+@DdlTable(value = "products", keyFields = "product_id")
 public class Product extends BaseEntity {
     
     private static final long serialVersionUID = 1L;
     
     // 使用value字段的简洁写法
-    @DdlColumn("product_id")
+    @DdlColumn(value = "product_id", type = "BIGINT", autoIncrement = false)
     private Long id;
     
     // 使用value字段

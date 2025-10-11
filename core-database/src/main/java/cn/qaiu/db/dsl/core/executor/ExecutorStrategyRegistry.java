@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 执行器策略注册表
  * 管理不同数据源类型的执行器策略
  * 
- * @author QAIU
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class ExecutorStrategyRegistry {
     
@@ -31,6 +31,8 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 获取单例实例
+     * 
+     * @return 执行器策略注册表实例
      */
     public static ExecutorStrategyRegistry getInstance() {
         return INSTANCE;
@@ -38,6 +40,7 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 注册内置执行器策略
+     * 包括MySQL、PostgreSQL和H2策略
      */
     private void registerBuiltinStrategies() {
         // 注册MySQL策略（如果可用）
@@ -65,6 +68,7 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 通过SPI加载外部执行器策略
+     * 支持动态扩展执行器策略
      */
     private void loadExternalStrategies() {
         try {
@@ -80,6 +84,8 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 注册执行器策略
+     * 
+     * @param strategy 执行器策略
      */
     public void registerStrategy(ExecutorStrategy strategy) {
         JDBCType type = strategy.getSupportedType();
@@ -94,6 +100,10 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 根据数据源类型获取执行器策略
+     * 
+     * @param type 数据源类型
+     * @return 执行器策略
+     * @throws IllegalArgumentException 如果找不到对应的策略
      */
     public ExecutorStrategy getStrategy(JDBCType type) {
         ExecutorStrategy strategy = strategies.get(type);
@@ -105,6 +115,10 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 根据连接池获取执行器策略
+     * 
+     * @param pool 连接池
+     * @return 执行器策略
+     * @throws IllegalArgumentException 如果找不到对应的策略
      */
     public ExecutorStrategy getStrategy(Pool pool) {
         // 首先尝试精确匹配
@@ -125,6 +139,9 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 检查是否支持指定的数据源类型
+     * 
+     * @param type 数据源类型
+     * @return 是否支持
      */
     public boolean supports(JDBCType type) {
         return strategies.containsKey(type);
@@ -132,6 +149,9 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 检查是否支持指定的连接池
+     * 
+     * @param pool 连接池
+     * @return 是否支持
      */
     public boolean supports(Pool pool) {
         try {
@@ -144,6 +164,8 @@ public class ExecutorStrategyRegistry {
     
     /**
      * 获取所有支持的数据源类型
+     * 
+     * @return 支持的数据源类型集合
      */
     public java.util.Set<JDBCType> getSupportedTypes() {
         return strategies.keySet();

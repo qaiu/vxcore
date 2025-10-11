@@ -7,6 +7,10 @@ import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * PostgreSQL测试配置
  * 
@@ -14,23 +18,34 @@ import io.vertx.sqlclient.PoolOptions;
  */
 public class PostgreSQLTestConfig {
     
+    private static Properties loadProperties() {
+        Properties props = new Properties();
+        try (InputStream input = PostgreSQLTestConfig.class.getClassLoader().getResourceAsStream("postgresql-test.properties")) {
+            if (input != null) {
+                props.load(input);
+            }
+        } catch (IOException e) {
+            System.out.println("⚠️ Failed to load postgresql-test.properties: " + e.getMessage());
+        }
+        return props;
+    }
+    
     /**
      * 创建PostgreSQL连接池
      */
     public static JDBCPool createPostgreSQLPool(Vertx vertx) {
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+        Properties props = loadProperties();
         
-        // 从环境变量获取密码，如果没有设置则使用空字符串
-        String password = System.getenv("POSTGRES_PASSWORD");
-        if (password == null) {
-            password = System.getProperty("postgres.password", "testpass");
+        if (!props.containsKey("postgresql.url")) {
+            System.out.println("⚠️ postgresql-test.properties not configured properly");
+            return null;
         }
         
+        PoolOptions poolOptions = new PoolOptions().setMaxSize(Integer.parseInt(props.getProperty("postgresql.max_pool_size", "10")));
         JDBCConnectOptions connectOptions = new JDBCConnectOptions()
-                .setJdbcUrl("jdbc:postgresql://localhost:5432/testdb")
-                .setUser("testuser")
-                .setPassword(password);
-//                .setDataSourceProvider(new HikariCPDataSourceProvider());
+                .setJdbcUrl(props.getProperty("postgresql.url"))
+                .setUser(props.getProperty("postgresql.user"))
+                .setPassword(props.getProperty("postgresql.password"));
 
         return JDBCPool.pool(vertx, connectOptions, poolOptions);
     }
@@ -39,12 +54,24 @@ public class PostgreSQLTestConfig {
      * 创建PostgreSQL连接池（指定数据库名）
      */
     public static JDBCPool createPostgreSQLPool(Vertx vertx, String databaseName) {
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+        Properties props = loadProperties();
+        
+        if (!props.containsKey("postgresql.url")) {
+            System.out.println("⚠️ postgresql-test.properties not configured properly");
+            return null;
+        }
+        
+        PoolOptions poolOptions = new PoolOptions().setMaxSize(Integer.parseInt(props.getProperty("postgresql.max_pool_size", "10")));
+        
+        // 替换数据库名
+        String url = props.getProperty("postgresql.url");
+        String baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
+        String newUrl = baseUrl + databaseName + "?" + url.substring(url.indexOf('?') + 1);
+        
         JDBCConnectOptions connectOptions = new JDBCConnectOptions()
-                .setJdbcUrl("jdbc:postgresql://localhost:5432/" + databaseName)
-                .setUser("testuser")
-                .setPassword("testpass");
-//                .setDataSourceProvider(new HikariCPDataSourceProvider());
+                .setJdbcUrl(newUrl)
+                .setUser(props.getProperty("postgresql.user"))
+                .setPassword(props.getProperty("postgresql.password"));
 
         return JDBCPool.pool(vertx, connectOptions, poolOptions);
     }
@@ -56,7 +83,9 @@ public class PostgreSQLTestConfig {
         try {
             // 尝试加载PostgreSQL驱动
             Class.forName("org.postgresql.Driver");
-            return true;
+            // 检查配置文件是否存在
+            Properties props = loadProperties();
+            return props.containsKey("postgresql.url");
         } catch (ClassNotFoundException e) {
             return false;
         }

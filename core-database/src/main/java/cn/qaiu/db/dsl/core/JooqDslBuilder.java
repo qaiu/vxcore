@@ -14,6 +14,8 @@ import java.util.List;
 /**
  * 简化的 jOOQ DSL SQL 构建器
  * 使用正确的 jOOQ API，避免复杂的类型推断问题
+ * 
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class JooqDslBuilder {
 
@@ -21,12 +23,21 @@ public class JooqDslBuilder {
 
     private final DSLContext dslContext;
 
+    /**
+     * 构造函数
+     * 
+     * @param dslContext jOOQ DSL上下文
+     */
     public JooqDslBuilder(DSLContext dslContext) {
         this.dslContext = dslContext;
     }
 
     /**
      * 构建 INSERT 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param data 数据对象
+     * @return INSERT查询
      */
     public Query buildInsert(String tableName, JsonObject data) {
         List<String> columns = new ArrayList<>();
@@ -54,6 +65,11 @@ public class JooqDslBuilder {
 
     /**
      * 构建 UPDATE 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param data 数据对象
+     * @param whereCondition WHERE条件
+     * @return UPDATE查询
      */
     public Query buildUpdate(String tableName, JsonObject data, Condition whereCondition) {
         List<String> setClauses = new ArrayList<>();
@@ -90,6 +106,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建 SELECT 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param condition 查询条件
+     * @return SELECT查询
      */
     public Query buildSelect(String tableName, Condition condition) {
         if (condition != null) {
@@ -103,6 +123,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建 COUNT 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param condition 查询条件
+     * @return COUNT查询
      */
     public Query buildCount(String tableName, Condition condition) {
         if (condition != null) {
@@ -118,6 +142,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建 DELETE 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param condition 删除条件
+     * @return DELETE查询
      */
     public Query buildDelete(String tableName, Condition condition) {
         // 使用jOOQ的DSL来构建查询，这样可以正确处理参数绑定
@@ -127,6 +155,14 @@ public class JooqDslBuilder {
 
     /**
      * 构建分页查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param condition 查询条件
+     * @param orderBy 排序字段
+     * @param ascending 是否升序
+     * @param offset 偏移量
+     * @param limit 限制数量
+     * @return 分页查询
      */
     public Query buildSelectWithPagination(String tableName, Condition condition, 
                                                 String orderBy, boolean ascending, 
@@ -153,6 +189,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建批量 INSERT 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param dataList 数据列表
+     * @return 批量INSERT查询
      */
     public Query buildBatchInsert(String tableName, List<JsonObject> dataList) {
         if (dataList == null || dataList.isEmpty()) {
@@ -205,6 +245,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建 EXISTS 查询 - 使用简化的 jOOQ DSL
+     * 
+     * @param tableName 表名
+     * @param condition 查询条件
+     * @return EXISTS查询
      */
     public Query buildExists(String tableName, Condition condition) {
         String whereClause = buildConditionString(condition);
@@ -215,6 +259,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建 IN 查询条件
+     * 
+     * @param fieldName 字段名
+     * @param values 值列表
+     * @return IN条件
      */
     public Condition buildInCondition(String fieldName, List<?> values) {
         Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
@@ -223,6 +271,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建 LIKE 查询条件
+     * 
+     * @param fieldName 字段名
+     * @param pattern 匹配模式
+     * @return LIKE条件
      */
     public Condition buildLikeCondition(String fieldName, String pattern) {
         Field<String> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName), String.class);
@@ -231,6 +283,11 @@ public class JooqDslBuilder {
 
     /**
      * 构建 BETWEEN 查询条件
+     * 
+     * @param fieldName 字段名
+     * @param minValue 最小值
+     * @param maxValue 最大值
+     * @return BETWEEN条件
      */
     public Condition buildBetweenCondition(String fieldName, Object minValue, Object maxValue) {
         Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
@@ -239,6 +296,11 @@ public class JooqDslBuilder {
 
     /**
      * 构建比较查询条件
+     * 
+     * @param fieldName 字段名
+     * @param operator 操作符
+     * @param value 值
+     * @return 比较条件
      */
     public Condition buildComparisonCondition(String fieldName, String operator, Object value) {
         Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
@@ -273,6 +335,10 @@ public class JooqDslBuilder {
 
     /**
      * 构建复合条件
+     * 
+     * @param conditions 条件列表
+     * @param useAnd 是否使用AND连接
+     * @return 复合条件
      */
     public Condition buildCompoundCondition(List<Condition> conditions, boolean useAnd) {
         if (conditions == null || conditions.isEmpty()) {
@@ -293,6 +359,9 @@ public class JooqDslBuilder {
 
     /**
      * 基于实体类注解获取表名
+     * 
+     * @param entityClass 实体类
+     * @return 表名
      */
     public String getTableName(Class<?> entityClass) {
         DdlTable ddlTable = entityClass.getAnnotation(DdlTable.class);
@@ -306,6 +375,9 @@ public class JooqDslBuilder {
 
     /**
      * 基于实体类注解获取主键字段名
+     * 
+     * @param entityClass 实体类
+     * @return 主键字段名
      */
     public String getPrimaryKey(Class<?> entityClass) {
         DdlTable ddlTable = entityClass.getAnnotation(DdlTable.class);
@@ -318,6 +390,9 @@ public class JooqDslBuilder {
 
     /**
      * 将 JsonObject 值转换为数据库兼容的值
+     * 
+     * @param jsonValue JSON值
+     * @return 数据库兼容的值
      */
     private Object convertJsonValue(Object jsonValue) {
         return EnhancedTypeMapper.convertToDatabaseValue(jsonValue);
@@ -325,6 +400,9 @@ public class JooqDslBuilder {
 
     /**
      * 构建条件字符串 - 简化实现
+     * 
+     * @param condition 条件对象
+     * @return 条件字符串
      */
     private String buildConditionString(Condition condition) {
         // 对于简单条件，直接转换为字符串
@@ -335,6 +413,8 @@ public class JooqDslBuilder {
 
     /**
      * 获取 DSLContext
+     * 
+     * @return DSL上下文
      */
     public DSLContext dsl() {
         return dslContext;

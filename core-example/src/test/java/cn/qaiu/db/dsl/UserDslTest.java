@@ -165,7 +165,7 @@ public class UserDslTest {
                         assertEquals("bob", user.getUsername());
                         assertEquals("bob@example.com", user.getEmail());
                     });
-                    LOGGER.info("User found by email: {}", userOpt.get().getName());
+                    LOGGER.info("User found by email: {}", userOpt.get().getUsername());
                     testContext.completeNow();
                 })
                 .onFailure(testContext::failNow);
@@ -291,7 +291,7 @@ public class UserDslTest {
                         assertNotNull(users);
                         // 在 H2 中，只有 35 岁的用户应该被找到
                         assertEquals(1, users.size());
-                        assertEquals("middle", users.get(0).getName());
+                        assertEquals("middle", users.get(0).getUsername());
                     });
                     LOGGER.info("Found {} users in age range 30-40", users.size());
                     testContext.completeNow();

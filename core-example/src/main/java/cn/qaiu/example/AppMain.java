@@ -1,6 +1,7 @@
 package cn.qaiu.example;
 
 import cn.qaiu.vx.core.Deploy;
+import cn.qaiu.vx.core.annotaions.App;
 import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
@@ -12,12 +13,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author qaiu
  */
+@App
 public class AppMain {
     
     private static final Logger log = LoggerFactory.getLogger(AppMain.class);
 
     public static void main(String[] args) {
-        Deploy.instance().start(args, AppMain::exec);
+        Deploy.run(args, AppMain::exec);
     }
 
     /**

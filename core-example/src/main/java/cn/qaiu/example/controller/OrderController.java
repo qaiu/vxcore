@@ -30,6 +30,11 @@ public class OrderController implements BaseHttpApi {
 
     private final OrderService orderService;
 
+    /**
+     * 构造函数
+     * 
+     * @param orderService 订单服务实例
+     */
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
@@ -39,32 +44,22 @@ public class OrderController implements BaseHttpApi {
      * POST /orders
      */
     @RouteMapping(value = "/orders", method = RouteMethod.POST)
-    public Future<JsonResult<JsonObject>> createOrder(JsonObject requestBody) {
+    public Future<Order> createOrder(JsonObject requestBody) {
         LOGGER.info("Creating order: {}", requestBody);
 
-        try {
-            Long userId = requestBody.getLong("userId");
-            Long productId = requestBody.getLong("productId");
-            Integer quantity = requestBody.getInteger("quantity");
+        Long userId = requestBody.getLong("userId");
+        Long productId = requestBody.getLong("productId");
+        Integer quantity = requestBody.getInteger("quantity");
 
-            if (userId == null || productId == null || quantity == null) {
-                return Future.succeededFuture(JsonResult.<JsonObject>error("Missing required fields: userId, productId, quantity"));
-            }
-
-            if (quantity <= 0) {
-                return Future.succeededFuture(JsonResult.<JsonObject>error("Quantity must be greater than 0"));
-            }
-
-            return orderService.createOrder(userId, productId, quantity)
-                    .map(order -> JsonResult.data("Order created successfully", order.toJson()))
-                    .recover(throwable -> {
-                        LOGGER.error("Failed to create order", throwable);
-                        return Future.succeededFuture(JsonResult.<JsonObject>error("Failed to create order: " + throwable.getMessage()));
-                    });
-        } catch (Exception e) {
-            LOGGER.error("Error creating order", e);
-            return Future.succeededFuture(JsonResult.<JsonObject>error("Error creating order: " + e.getMessage()));
+        if (userId == null || productId == null || quantity == null) {
+            throw new IllegalArgumentException("Missing required fields: userId, productId, quantity");
         }
+
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
+
+        return orderService.createOrder(userId, productId, quantity);
     }
 
     /**
@@ -72,21 +67,10 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/{id}
      */
     @RouteMapping(value = "/orders/:id", method = RouteMethod.GET)
-    public Future<JsonResult<JsonObject>> getOrderById(Long id) {
+    public Future<Order> getOrderById(Long id) {
         LOGGER.debug("Getting order by ID: {}", id);
 
-        return orderService.getOrderById(id)
-                .map(orderOptional -> {
-                    if (orderOptional.isPresent()) {
-                        return JsonResult.data("Order found", orderOptional.get().toJson());
-                    } else {
-                        return JsonResult.<JsonObject>error("Order not found");
-                    }
-                })
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get order", throwable);
-                    return Future.succeededFuture(JsonResult.<JsonObject>error("Failed to get order: " + throwable.getMessage()));
-                });
+        return orderService.getOrderById(id);
     }
 
     /**
@@ -94,21 +78,14 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/search?orderNo={orderNo}
      */
     @RouteMapping(value = "/orders/search", method = RouteMethod.GET)
-    public Future<JsonResult<List<JsonObject>>> getOrdersByOrderNo(String orderNo) {
+    public Future<List<Order>> getOrdersByOrderNo(String orderNo) {
         LOGGER.debug("Getting orders by orderNo: {}", orderNo);
 
         if (orderNo == null || orderNo.trim().isEmpty()) {
-            return Future.succeededFuture(JsonResult.error("OrderNo is required"));
+            throw new IllegalArgumentException("OrderNo is required");
         }
 
-        return orderService.getOrdersByOrderNo(orderNo)
-                .map(orders -> JsonResult.data("Orders found", orders.stream()
-                        .map(Order::toJson)
-                        .collect(java.util.stream.Collectors.toList())))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get orders by orderNo", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to get orders: " + throwable.getMessage()));
-                });
+        return orderService.getOrdersByOrderNo(orderNo);
     }
 
     /**
@@ -116,17 +93,10 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/user/{userId}
      */
     @RouteMapping(value = "/orders/user/:userId", method = RouteMethod.GET)
-    public Future<JsonResult<List<JsonObject>>> getUserOrders(Long userId) {
+    public Future<List<Order>> getUserOrders(Long userId) {
         LOGGER.debug("Getting orders for user: {}", userId);
 
-        return orderService.getUserOrders(userId)
-                .map(orders -> JsonResult.data("User orders found", orders.stream()
-                        .map(Order::toJson)
-                        .collect(java.util.stream.Collectors.toList())))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get user orders", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to get user orders: " + throwable.getMessage()));
-                });
+        return orderService.getUserOrders(userId);
     }
 
     /**
@@ -134,17 +104,10 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/product/{productId}
      */
     @RouteMapping(value = "/orders/product/:productId", method = RouteMethod.GET)
-    public Future<JsonResult<List<JsonObject>>> getProductOrders(Long productId) {
+    public Future<List<Order>> getProductOrders(Long productId) {
         LOGGER.debug("Getting orders for product: {}", productId);
 
-        return orderService.getProductOrders(productId)
-                .map(orders -> JsonResult.data("Product orders found", orders.stream()
-                        .map(Order::toJson)
-                        .collect(java.util.stream.Collectors.toList())))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get product orders", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to get product orders: " + throwable.getMessage()));
-                });
+        return orderService.getProductOrders(productId);
     }
 
     /**
@@ -152,21 +115,14 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/status/{status}
      */
     @RouteMapping(value = "/orders/status/:status", method = RouteMethod.GET)
-    public Future<JsonResult<List<JsonObject>>> getOrdersByStatus(String status) {
+    public Future<List<Order>> getOrdersByStatus(String status) {
         LOGGER.debug("Getting orders by status: {}", status);
 
         try {
             Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
-            return orderService.getOrdersByStatus(orderStatus)
-                    .map(orders -> JsonResult.data("Orders found", orders.stream()
-                            .map(Order::toJson)
-                            .collect(java.util.stream.Collectors.toList())))
-                    .recover(throwable -> {
-                        LOGGER.error("Failed to get orders by status", throwable);
-                        return Future.succeededFuture(JsonResult.error("Failed to get orders: " + throwable.getMessage()));
-                    });
+            return orderService.getOrdersByStatus(orderStatus);
         } catch (IllegalArgumentException e) {
-            return Future.succeededFuture(JsonResult.error("Invalid status: " + status));
+            throw new IllegalArgumentException("Invalid status: " + status);
         }
     }
 
@@ -175,31 +131,15 @@ public class OrderController implements BaseHttpApi {
      * PUT /orders/{id}/pay
      */
     @RouteMapping(value = "/orders/:id/pay", method = RouteMethod.PUT)
-    public Future<JsonResult<String>> payOrder(Long id, JsonObject requestBody) {
+    public Future<Boolean> payOrder(Long id, JsonObject requestBody) {
         LOGGER.info("Paying order: {}", id);
 
-        try {
-            String paymentMethod = requestBody.getString("paymentMethod");
-            if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
-                return Future.succeededFuture(JsonResult.error("Payment method is required"));
-            }
-
-            return orderService.payOrder(id, paymentMethod)
-                    .map(success -> {
-                        if (success) {
-                            return JsonResult.<String>success("Order paid successfully");
-                        } else {
-                            return JsonResult.<String>error("Failed to pay order");
-                        }
-                    })
-                    .recover(throwable -> {
-                        LOGGER.error("Failed to pay order", throwable);
-                        return Future.succeededFuture(JsonResult.<String>error("Failed to pay order: " + throwable.getMessage()));
-                    });
-        } catch (Exception e) {
-            LOGGER.error("Error paying order", e);
-            return Future.succeededFuture(JsonResult.<String>error("Error paying order: " + e.getMessage()));
+        String paymentMethod = requestBody.getString("paymentMethod");
+        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+            throw new IllegalArgumentException("Payment method is required");
         }
+
+        return orderService.payOrder(id, paymentMethod);
     }
 
     /**
@@ -207,21 +147,10 @@ public class OrderController implements BaseHttpApi {
      * PUT /orders/{id}/ship
      */
     @RouteMapping(value = "/orders/:id/ship", method = RouteMethod.PUT)
-    public Future<JsonResult<String>> shipOrder(Long id) {
+    public Future<Boolean> shipOrder(Long id) {
         LOGGER.info("Shipping order: {}", id);
 
-        return orderService.shipOrder(id)
-                .map(success -> {
-                    if (success) {
-                        return JsonResult.<String>success("Order shipped successfully");
-                    } else {
-                        return JsonResult.<String>error("Failed to ship order");
-                    }
-                })
-                .recover(throwable -> {
-                    LOGGER.error("Failed to ship order", throwable);
-                    return Future.succeededFuture(JsonResult.<String>error("Failed to ship order: " + throwable.getMessage()));
-                });
+        return orderService.shipOrder(id);
     }
 
     /**
@@ -229,21 +158,10 @@ public class OrderController implements BaseHttpApi {
      * PUT /orders/{id}/deliver
      */
     @RouteMapping(value = "/orders/:id/deliver", method = RouteMethod.PUT)
-    public Future<JsonResult<String>> confirmDelivery(Long id) {
+    public Future<Boolean> confirmDelivery(Long id) {
         LOGGER.info("Confirming delivery for order: {}", id);
 
-        return orderService.confirmDelivery(id)
-                .map(success -> {
-                    if (success) {
-                        return JsonResult.<String>success("Delivery confirmed successfully");
-                    } else {
-                        return JsonResult.<String>error("Failed to confirm delivery");
-                    }
-                })
-                .recover(throwable -> {
-                    LOGGER.error("Failed to confirm delivery", throwable);
-                    return Future.succeededFuture(JsonResult.<String>error("Failed to confirm delivery: " + throwable.getMessage()));
-                });
+        return orderService.confirmDelivery(id);
     }
 
     /**
@@ -251,21 +169,10 @@ public class OrderController implements BaseHttpApi {
      * PUT /orders/{id}/cancel
      */
     @RouteMapping(value = "/orders/:id/cancel", method = RouteMethod.PUT)
-    public Future<JsonResult<String>> cancelOrder(Long id) {
+    public Future<Boolean> cancelOrder(Long id) {
         LOGGER.info("Cancelling order: {}", id);
 
-        return orderService.cancelOrder(id)
-                .map(success -> {
-                    if (success) {
-                        return JsonResult.<String>success("Order cancelled successfully");
-                    } else {
-                        return JsonResult.<String>error("Failed to cancel order");
-                    }
-                })
-                .recover(throwable -> {
-                    LOGGER.error("Failed to cancel order", throwable);
-                    return Future.succeededFuture(JsonResult.<String>error("Failed to cancel order: " + throwable.getMessage()));
-                });
+        return orderService.cancelOrder(id);
     }
 
     /**
@@ -273,33 +180,19 @@ public class OrderController implements BaseHttpApi {
      * PUT /orders/{id}/status
      */
     @RouteMapping(value = "/orders/:id/status", method = RouteMethod.PUT)
-    public Future<JsonResult<String>> updateOrderStatus(Long id, JsonObject requestBody) {
+    public Future<Boolean> updateOrderStatus(Long id, JsonObject requestBody) {
         LOGGER.info("Updating order {} status", id);
 
-        try {
-            String status = requestBody.getString("status");
-            if (status == null || status.trim().isEmpty()) {
-                return Future.succeededFuture(JsonResult.error("Status is required"));
-            }
+        String status = requestBody.getString("status");
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status is required");
+        }
 
+        try {
             Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
-            return orderService.updateOrderStatus(id, orderStatus)
-                    .map(success -> {
-                        if (success) {
-                            return JsonResult.<String>success("Order status updated successfully");
-                        } else {
-                            return JsonResult.<String>error("Failed to update order status");
-                        }
-                    })
-                    .recover(throwable -> {
-                        LOGGER.error("Failed to update order status", throwable);
-                        return Future.succeededFuture(JsonResult.<String>error("Failed to update order status: " + throwable.getMessage()));
-                    });
+            return orderService.updateOrderStatus(id, status);
         } catch (IllegalArgumentException e) {
-            return Future.succeededFuture(JsonResult.error("Invalid status: " + requestBody.getString("status")));
-        } catch (Exception e) {
-            LOGGER.error("Error updating order status", e);
-            return Future.succeededFuture(JsonResult.error("Error updating order status: " + e.getMessage()));
+            throw new IllegalArgumentException("Invalid status: " + status);
         }
     }
 
@@ -308,15 +201,10 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/statistics
      */
     @RouteMapping(value = "/orders/statistics", method = RouteMethod.GET)
-    public Future<JsonResult<JsonObject>> getOrderStatistics() {
+    public Future<JsonObject> getOrderStatistics() {
         LOGGER.debug("Getting order statistics");
 
-        return orderService.getOrderStatistics()
-                .map(stats -> JsonResult.data("Order statistics", stats))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get order statistics", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to get order statistics: " + throwable.getMessage()));
-                });
+        return orderService.getOrderStatistics();
     }
 
     /**
@@ -324,15 +212,10 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/user/{userId}/statistics
      */
     @RouteMapping(value = "/orders/user/:userId/statistics", method = RouteMethod.GET)
-    public Future<JsonResult<JsonObject>> getUserOrderStatistics(Long userId) {
+    public Future<JsonObject> getUserOrderStatistics(Long userId) {
         LOGGER.debug("Getting order statistics for user: {}", userId);
 
-        return orderService.getUserOrderStatistics(userId)
-                .map(stats -> JsonResult.data("User order statistics", stats))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get user order statistics", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to get user order statistics: " + throwable.getMessage()));
-                });
+        return orderService.getUserOrderStatistics(userId);
     }
 
     /**
@@ -340,21 +223,14 @@ public class OrderController implements BaseHttpApi {
      * GET /orders/search?keyword={keyword}
      */
     @RouteMapping(value = "/orders/search", method = RouteMethod.GET)
-    public Future<JsonResult<List<JsonObject>>> searchOrders(String keyword) {
+    public Future<List<Order>> searchOrders(String keyword) {
         LOGGER.debug("Searching orders with keyword: {}", keyword);
 
         if (keyword == null || keyword.trim().isEmpty()) {
-            return Future.succeededFuture(JsonResult.error("Keyword is required"));
+            throw new IllegalArgumentException("Keyword is required");
         }
 
-        return orderService.searchOrders(keyword)
-                .map(orders -> JsonResult.data("Orders found", orders.stream()
-                        .map(Order::toJson)
-                        .collect(java.util.stream.Collectors.toList())))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to search orders", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to search orders: " + throwable.getMessage()));
-                });
+        return orderService.searchOrders(keyword);
     }
 
     /**
@@ -362,21 +238,10 @@ public class OrderController implements BaseHttpApi {
      * DELETE /orders/{id}
      */
     @RouteMapping(value = "/orders/:id", method = RouteMethod.DELETE)
-    public Future<JsonResult<String>> deleteOrder(Long id) {
+    public Future<Boolean> deleteOrder(Long id) {
         LOGGER.info("Deleting order: {}", id);
 
-        return orderService.deleteOrder(id)
-                .map(success -> {
-                    if (success) {
-                        return JsonResult.<String>success("Order deleted successfully");
-                    } else {
-                        return JsonResult.<String>error("Failed to delete order");
-                    }
-                })
-                .recover(throwable -> {
-                    LOGGER.error("Failed to delete order", throwable);
-                    return Future.succeededFuture(JsonResult.<String>error("Failed to delete order: " + throwable.getMessage()));
-                });
+        return orderService.deleteOrder(id);
     }
 
     /**
@@ -384,17 +249,10 @@ public class OrderController implements BaseHttpApi {
      * GET /orders
      */
     @RouteMapping(value = "/orders", method = RouteMethod.GET)
-    public Future<JsonResult<List<JsonObject>>> getAllOrders() {
+    public Future<List<Order>> getAllOrders() {
         LOGGER.debug("Getting all orders");
 
-        return orderService.getAllOrders()
-                .map(orders -> JsonResult.data("Orders found", orders.stream()
-                        .map(Order::toJson)
-                        .collect(java.util.stream.Collectors.toList())))
-                .recover(throwable -> {
-                    LOGGER.error("Failed to get all orders", throwable);
-                    return Future.succeededFuture(JsonResult.error("Failed to get orders: " + throwable.getMessage()));
-                });
+        return orderService.getAllOrders();
     }
 
 }

@@ -14,5 +14,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Service {
+    /**
+     * 服务名称，默认为空
+     * 如果为空，将使用类名首字母小写作为服务名称
+     * 
+     * @return 服务名称
+     */
     String name() default "";
 }

@@ -36,19 +36,19 @@ public @interface DdlColumn {
      * 字段长度
      * @return 字段长度，用于VARCHAR、DECIMAL等类型
      */
-    int length() default 0;
+    int length() default 255;
 
     /**
      * 精度（用于DECIMAL类型）
      * @return 精度
      */
-    int precision() default 0;
+    int precision() default 10;
 
     /**
      * 小数位数（用于DECIMAL类型）
      * @return 小数位数
      */
-    int scale() default 0;
+    int scale() default 2;
 
     /**
      * 是否允许NULL

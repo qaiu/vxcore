@@ -8,9 +8,10 @@ import java.util.List;
 
 /**
  * Lambda分页查询结果
+ * 用于Lambda查询的分页结果封装
  * 
  * @param <T> 数据类型
- * @author qaiu
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class LambdaPageResult<T> implements Serializable {
     
@@ -41,9 +42,20 @@ public class LambdaPageResult<T> implements Serializable {
      */
     private Long pages;
     
+    /**
+     * 默认构造函数
+     */
     public LambdaPageResult() {
     }
     
+    /**
+     * 构造函数
+     * 
+     * @param records 数据列表
+     * @param total 总记录数
+     * @param current 当前页码
+     * @param size 每页大小
+     */
     public LambdaPageResult(List<T> records, Long total, Long current, Long size) {
         this.records = records;
         this.total = total;
@@ -52,6 +64,11 @@ public class LambdaPageResult<T> implements Serializable {
         this.pages = (total + size - 1) / size; // 向上取整
     }
     
+    /**
+     * JsonObject构造函数
+     * 
+     * @param json JSON对象
+     */
     public LambdaPageResult(JsonObject json) {
         // 简单的JSON转换实现
         this.current = json.getLong("current");
@@ -61,6 +78,11 @@ public class LambdaPageResult<T> implements Serializable {
         // records需要特殊处理，这里简化实现
     }
     
+    /**
+     * 转换为JsonObject
+     * 
+     * @return JSON对象
+     */
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.put("records", records);

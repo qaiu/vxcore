@@ -12,8 +12,14 @@ import static cn.qaiu.vx.core.util.ResponseUtil.sendError;
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 public interface BeforeInterceptor extends Handler<RoutingContext> {
+    /** 路由上下文是否继续执行的标识键 */
     String IS_NEXT = "RoutingContextIsNext";
 
+    /**
+     * 执行前置拦截处理
+     * 
+     * @return 处理后的路由处理器
+     */
     default Handler<RoutingContext> doHandle() {
         return ctx -> {
             // 使用this锁对象
@@ -28,6 +34,11 @@ public interface BeforeInterceptor extends Handler<RoutingContext> {
         };
     }
 
+    /**
+     * 继续执行下一个处理器
+     * 
+     * @param context 路由上下文
+     */
     default void doNext(RoutingContext context) {
         // 设置上下文状态为可以继续执行
         // 使用this锁对象
@@ -37,6 +48,12 @@ public interface BeforeInterceptor extends Handler<RoutingContext> {
         }
     }
 
+    /**
+     * 处理路由上下文
+     * 实现具体的拦截处理逻辑
+     * 
+     * @param context 路由上下文
+     */
     void handle(RoutingContext context); // 实现具体的拦截处理逻辑
 }
 
