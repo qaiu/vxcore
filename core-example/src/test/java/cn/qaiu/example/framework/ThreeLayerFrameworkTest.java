@@ -111,7 +111,7 @@ public class ThreeLayerFrameworkTest {
     @DisplayName("测试组件初始化")
     void testComponentInitialization(VertxTestContext testContext) {
         FrameworkLifecycleManager lifecycleManager = application.getLifecycleManager();
-        var components = lifecycleManager.getComponents();
+        List<LifecycleComponent> components = lifecycleManager.getComponents();
         
         testContext.verify(() -> {
             assertNotNull(components, "组件列表不应为空");
@@ -143,7 +143,7 @@ public class ThreeLayerFrameworkTest {
     @DisplayName("测试数据源管理")
     void testDataSourceManagement(VertxTestContext testContext) {
         FrameworkLifecycleManager lifecycleManager = application.getLifecycleManager();
-        var dataSourceComponent = lifecycleManager.getComponents().stream()
+        cn.qaiu.vx.core.lifecycle.DataSourceComponent dataSourceComponent = lifecycleManager.getComponents().stream()
             .filter(c -> c instanceof cn.qaiu.vx.core.lifecycle.DataSourceComponent)
             .map(c -> (cn.qaiu.vx.core.lifecycle.DataSourceComponent) c)
             .findFirst()
@@ -152,10 +152,10 @@ public class ThreeLayerFrameworkTest {
         testContext.verify(() -> {
             assertNotNull(dataSourceComponent, "数据源组件不应为空");
             
-            var dataSourceManager = dataSourceComponent.getDataSourceManager();
+            cn.qaiu.db.datasource.DataSourceManager dataSourceManager = dataSourceComponent.getDataSourceManager();
             assertNotNull(dataSourceManager, "数据源管理器不应为空");
             
-            var dataSourceNames = dataSourceManager.getDataSourceNames();
+            List<String> dataSourceNames = dataSourceManager.getDataSourceNames();
             assertNotNull(dataSourceNames, "数据源名称列表不应为空");
             
             LOGGER.info("Data source management test passed");
@@ -167,7 +167,7 @@ public class ThreeLayerFrameworkTest {
     @DisplayName("测试服务注册")
     void testServiceRegistration(VertxTestContext testContext) {
         FrameworkLifecycleManager lifecycleManager = application.getLifecycleManager();
-        var serviceComponent = lifecycleManager.getComponents().stream()
+        cn.qaiu.vx.core.lifecycle.ServiceRegistryComponent serviceComponent = lifecycleManager.getComponents().stream()
             .filter(c -> c instanceof cn.qaiu.vx.core.lifecycle.ServiceRegistryComponent)
             .map(c -> (cn.qaiu.vx.core.lifecycle.ServiceRegistryComponent) c)
             .findFirst()
@@ -176,10 +176,10 @@ public class ThreeLayerFrameworkTest {
         testContext.verify(() -> {
             assertNotNull(serviceComponent, "服务组件不应为空");
             
-            var serviceComponent2 = serviceComponent.getServiceComponent();
+            cn.qaiu.vx.core.component.ServiceComponent serviceComponent2 = serviceComponent.getServiceComponent();
             assertNotNull(serviceComponent2, "服务组件实例不应为空");
             
-            var serviceRegistry = serviceComponent.getServiceRegistry();
+            cn.qaiu.vx.core.component.ServiceRegistry serviceRegistry = serviceComponent.getServiceRegistry();
             assertNotNull(serviceRegistry, "服务注册表不应为空");
             
             LOGGER.info("Service registration test passed");
@@ -191,7 +191,7 @@ public class ThreeLayerFrameworkTest {
     @DisplayName("测试路由管理")
     void testRouterManagement(VertxTestContext testContext) {
         FrameworkLifecycleManager lifecycleManager = application.getLifecycleManager();
-        var routerComponent = lifecycleManager.getComponents().stream()
+        cn.qaiu.vx.core.lifecycle.RouterComponent routerComponent = lifecycleManager.getComponents().stream()
             .filter(c -> c instanceof cn.qaiu.vx.core.lifecycle.RouterComponent)
             .map(c -> (cn.qaiu.vx.core.lifecycle.RouterComponent) c)
             .findFirst()
@@ -200,10 +200,10 @@ public class ThreeLayerFrameworkTest {
         testContext.verify(() -> {
             assertNotNull(routerComponent, "路由组件不应为空");
             
-            var router = routerComponent.getRouter();
+            io.vertx.ext.web.Router router = routerComponent.getRouter();
             assertNotNull(router, "路由器不应为空");
             
-            var routerHandlerFactory = routerComponent.getRouterHandlerFactory();
+            cn.qaiu.vx.core.handlerfactory.RouterHandlerFactory routerHandlerFactory = routerComponent.getRouterHandlerFactory();
             assertNotNull(routerHandlerFactory, "路由处理器工厂不应为空");
             
             LOGGER.info("Router management test passed");
@@ -217,14 +217,14 @@ public class ThreeLayerFrameworkTest {
         FrameworkLifecycleManager lifecycleManager = application.getLifecycleManager();
         
         testContext.verify(() -> {
-            var state = lifecycleManager.getState();
+            FrameworkLifecycleManager.LifecycleState state = lifecycleManager.getState();
             assertEquals(FrameworkLifecycleManager.LifecycleState.STARTED, state, 
                         "框架状态应该是STARTED");
             
-            var vertx = lifecycleManager.getVertx();
+            io.vertx.core.Vertx vertx = lifecycleManager.getVertx();
             assertNotNull(vertx, "Vertx实例不应为空");
             
-            var config = lifecycleManager.getGlobalConfig();
+            io.vertx.core.json.JsonObject config = lifecycleManager.getGlobalConfig();
             assertNotNull(config, "全局配置不应为空");
             
             LOGGER.info("Framework state management test passed");

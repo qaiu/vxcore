@@ -380,7 +380,7 @@
                     <version>${dependency.check.plugin.version}</version>
                     <configuration>
                         <format>ALL</format>
-                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <failBuildOnCVSS>6</failBuildOnCVSS>
                     </configuration>
                 </plugin>
             </plugins>
