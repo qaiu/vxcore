@@ -3,13 +3,13 @@ package cn.qaiu.vx.core.lifecycle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.Pool;
 
 import java.util.List;
 
 /**
  * 数据源管理器接口
  * 定义数据源管理的基本操作
+ * 使用抽象类型避免与具体数据库实现耦合
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -35,11 +35,12 @@ public interface DataSourceManager {
     
     /**
      * 获取数据源连接池
+     * 返回Object类型避免与具体数据库实现耦合
      * 
      * @param name 数据源名称
-     * @return Pool实例
+     * @return 连接池实例
      */
-    Pool getPool(String name);
+    Object getPool(String name);
     
     /**
      * 获取所有数据源名称
@@ -62,4 +63,20 @@ public interface DataSourceManager {
      * @return Future<Void>
      */
     Future<Void> closeAllDataSources();
+    
+    /**
+     * 检查数据源是否可用
+     * 
+     * @param name 数据源名称
+     * @return Future<Boolean>
+     */
+    Future<Boolean> isDataSourceAvailable(String name);
+    
+    /**
+     * 关闭指定数据源
+     * 
+     * @param name 数据源名称
+     * @return Future<Void>
+     */
+    Future<Void> closeDataSource(String name);
 }
