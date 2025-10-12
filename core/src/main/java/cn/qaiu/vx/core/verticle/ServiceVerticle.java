@@ -1,81 +1,73 @@
 package cn.qaiu.vx.core.verticle;
 
-import cn.qaiu.vx.core.di.ServiceComponent;
-import cn.qaiu.vx.core.di.DaggerServiceComponent;
-import cn.qaiu.vx.core.registry.ServiceRegistry;
-import cn.qaiu.vx.core.util.AnnotationNameGenerator;
+import cn.qaiu.vx.core.lifecycle.FrameworkLifecycleManager;
+import cn.qaiu.vx.core.lifecycle.ServiceRegistryComponent;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Set;
-
 /**
- * 服务注册到EventBus
- * <br>Create date 2021-05-07 10:26:54
- *
+ * 服务注册Verticle
+ * 使用组合模式，依赖ServiceRegistryComponent进行服务管理
+ * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class ServiceVerticle extends AbstractVerticle {
 
-    Logger LOGGER = LoggerFactory.getLogger(ServiceVerticle.class);
-    private ServiceComponent serviceComponent;
-    private Set<Class<?>> handlers;
-    private ServiceRegistry serviceRegistry;
-    private Map<String, Set<Class<?>>> annotatedClassesMap;
-    private Map<String, String> annotatedClassNamesMap;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceVerticle.class);
+    
+    private ServiceRegistryComponent serviceRegistryComponent;
+
     @Override
     public void start(Promise<Void> startPromise) {
         try {
-            // 初始化Dagger2组件
-            serviceComponent = DaggerServiceComponent.create();
+            // 获取框架生命周期管理器
+            FrameworkLifecycleManager lifecycleManager = FrameworkLifecycleManager.getInstance();
             
-            // 注入依赖
-            serviceComponent.inject(this);
+            // 获取服务注册组件
+            serviceRegistryComponent = (ServiceRegistryComponent) lifecycleManager
+                .getComponents().stream()
+                .filter(component -> component instanceof ServiceRegistryComponent)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("ServiceRegistryComponent not found"));
             
-            // 获取所有注解类的映射
-            annotatedClassesMap = serviceComponent.annotatedClassesMap();
-            
-            // 获取注解类名称映射
-            annotatedClassNamesMap = serviceComponent.annotatedClassNamesMap();
-            
-            // 获取Service注解的类集合
-            handlers = serviceComponent.serviceClasses();
-            
-            // 创建ServiceRegistry实例
-            serviceRegistry = new ServiceRegistry(vertx);
-            
-            // 记录所有扫描到的注解类
-            logAnnotatedClasses();
-
-            // 注册所有服务
-            int registeredCount = serviceRegistry.registerServices(handlers);
-            LOGGER.info("Service registration completed. Total registered: {}", registeredCount);
-            startPromise.complete();
+            // 启动服务注册
+            serviceRegistryComponent.start()
+                .onSuccess(v -> {
+                    LOGGER.info("ServiceVerticle started successfully");
+                    startPromise.complete();
+                })
+                .onFailure(error -> {
+                    LOGGER.error("Failed to start ServiceVerticle", error);
+                    startPromise.fail(error);
+                });
+                
         } catch (Exception e) {
             LOGGER.error("Failed to start ServiceVerticle", e);
             startPromise.fail(e);
         }
     }
-
-    /**
-     * 记录所有扫描到的注解类
-     */
-    private void logAnnotatedClasses() {
-        if (annotatedClassesMap != null) {
-            LOGGER.info("=== Annotated Classes Scan Results ===");
-            annotatedClassesMap.forEach((annotationType, classes) -> {
-                LOGGER.info("@{} classes found: {}", annotationType, classes.size());
-                classes.forEach(clazz -> {
-                    String effectiveName = annotatedClassNamesMap != null ? 
-                        annotatedClassNamesMap.get(clazz.getName()) : 
-                        AnnotationNameGenerator.getEffectiveName(clazz);
-                    LOGGER.info("  - {} -> {}", clazz.getSimpleName(), effectiveName);
-                });
-            });
-            LOGGER.info("=== End of Scan Results ===");
+    
+    @Override
+    public void stop(Promise<Void> stopPromise) {
+        try {
+            if (serviceRegistryComponent != null) {
+                serviceRegistryComponent.stop()
+                    .onSuccess(v -> {
+                        LOGGER.info("ServiceVerticle stopped successfully");
+                        stopPromise.complete();
+                    })
+                    .onFailure(error -> {
+                        LOGGER.error("Failed to stop ServiceVerticle", error);
+                        stopPromise.fail(error);
+                    });
+            } else {
+                stopPromise.complete();
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to stop ServiceVerticle", e);
+            stopPromise.fail(e);
         }
     }
 }
