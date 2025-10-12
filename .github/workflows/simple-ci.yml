@@ -1,0 +1,207 @@
+name: Simple CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  MAVEN_OPTS: -Xmx1024m -XX:+UseG1GC
+  CI: true
+
+jobs:
+  # 构建和测试
+  build-and-test:
+    name: 构建和测试
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        java-version: [17, 21]
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 构建项目
+      run: mvn clean compile -B
+      env:
+        CI: true
+    
+    - name: 运行单元测试
+      run: mvn test -B
+      env:
+        CI: true
+        DB_TYPE: h2
+    
+    - name: 生成测试报告
+      run: mvn jacoco:report -B
+      continue-on-error: true
+    
+    - name: 打包项目
+      run: mvn package -DskipTests -B
+      env:
+        CI: true
+    
+    - name: 上传测试报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-java-${{ matrix.java-version }}
+        path: |
+          **/target/surefire-reports/
+          **/target/site/jacoco/
+        retention-days: 7
+
+  # 集成测试
+  integration-tests:
+    name: 集成测试
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    strategy:
+      matrix:
+        java-version: [17]
+        database: [h2, mysql, postgresql]
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      
+      postgresql:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 等待数据库启动
+      if: matrix.database != 'h2'
+      run: |
+        if [ "${{ matrix.database }}" = "mysql" ]; then
+          timeout 60 bash -c 'until mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot --silent; do sleep 2; done'
+        elif [ "${{ matrix.database }}" = "postgresql" ]; then
+          timeout 60 bash -c 'until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do sleep 2; done'
+        fi
+    
+    - name: 运行集成测试
+      run: mvn verify -pl core-example -B
+      env:
+        CI: true
+        DB_TYPE: ${{ matrix.database }}
+        MYSQL_URL: jdbc:mysql://127.0.0.1:3306/testdb
+        MYSQL_USER: root
+        MYSQL_PASSWORD: root
+        POSTGRES_URL: jdbc:postgresql://127.0.0.1:5432/testdb
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+    
+    - name: 上传集成测试报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-test-reports-${{ matrix.database }}-java-${{ matrix.java-version }}
+        path: |
+          core-example/target/failsafe-reports/
+          core-example/target/site/jacoco/
+        retention-days: 7
+
+  # 测试结果汇总
+  test-summary:
+    name: 测试结果汇总
+    runs-on: ubuntu-latest
+    needs: [build-and-test, integration-tests]
+    if: always()
+    
+    steps:
+    - name: 下载所有测试报告
+      uses: actions/download-artifact@v4
+      with:
+        path: test-reports
+    
+    - name: 生成测试汇总报告
+      run: |
+        echo "# VXCore 测试结果汇总" > test-summary.md
+        echo "" >> test-summary.md
+        echo "## 测试时间" >> test-summary.md
+        echo "$(date)" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        # 统计测试结果
+        if [ -d "test-reports" ]; then
+          echo "## 测试统计" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          # 统计单元测试结果
+          test_count=$(find test-reports -name "TEST-*.xml" | wc -l)
+          echo "- 测试套件数量: $test_count" >> test-summary.md
+          
+          if [ $test_count -gt 0 ]; then
+            total_tests=$(find test-reports -name "TEST-*.xml" -exec grep -o 'tests="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print sum+0}')
+            failures=$(find test-reports -name "TEST-*.xml" -exec grep -o 'failures="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print sum+0}')
+            errors=$(find test-reports -name "TEST-*.xml" -exec grep -o 'errors="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print sum+0}')
+            
+            echo "- 总测试数: $total_tests" >> test-summary.md
+            echo "- 失败数: $failures" >> test-summary.md
+            echo "- 错误数: $errors" >> test-summary.md
+            
+            if [ $total_tests -gt 0 ]; then
+              success_rate=$(( (total_tests - failures - errors) * 100 / total_tests ))
+              echo "- 成功率: $success_rate%" >> test-summary.md
+            fi
+          fi
+        fi
+        
+        echo "" >> test-summary.md
+        echo "## 覆盖率报告" >> test-summary.md
+        echo "" >> test-summary.md
+        echo "详细的覆盖率报告请查看各模块的 jacoco 报告。" >> test-summary.md
+    
+    - name: 上传测试汇总报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-summary-report
+        path: test-summary.md
+        retention-days: 7
+    
+    - name: 评论 PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('test-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });

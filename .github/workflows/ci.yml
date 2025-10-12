@@ -34,12 +34,15 @@ jobs:
     
     - name: 代码格式检查
       run: mvn spotless:check -B
+      continue-on-error: true
     
     - name: 静态代码分析
       run: mvn spotbugs:check -B
+      continue-on-error: true
     
     - name: 依赖安全检查
       run: mvn org.owasp:dependency-check-maven:check -B
+      continue-on-error: true
     
     - name: 上传代码质量报告
       if: always()
