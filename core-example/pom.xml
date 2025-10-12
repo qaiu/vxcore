@@ -32,11 +32,6 @@
             <groupId>cn.qaiu</groupId>
             <artifactId>core-database</artifactId>
         </dependency>
-        
-        <dependency>
-            <groupId>cn.qaiu</groupId>
-            <artifactId>core-generator</artifactId>
-        </dependency>
 
         <!-- Dagger2 Dependencies -->
         <dependency>

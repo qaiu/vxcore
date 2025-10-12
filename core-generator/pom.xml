@@ -21,10 +21,11 @@
             <artifactId>core</artifactId>
         </dependency>
 
-        <!-- Core database module dependency -->
+        <!-- Core database module dependency (optional for code generation) -->
         <dependency>
             <groupId>cn.qaiu</groupId>
             <artifactId>core-database</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Database drivers -->
