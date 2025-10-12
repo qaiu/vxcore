@@ -94,6 +94,12 @@
             <artifactId>vertx-codegen</artifactId>
             <scope>compile</scope>
         </dependency>
+        <!-- Vert.x SQL Client -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-sql-client</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-sql-client-templates</artifactId>
