@@ -1,233 +1,143 @@
 package cn.qaiu.example.controller;
 
-import cn.qaiu.example.entity.User;
+import cn.qaiu.example.model.User;
 import cn.qaiu.example.service.UserService;
-import cn.qaiu.example.service.UserServiceImpl;
-import cn.qaiu.vx.core.annotaions.Controller;
 import cn.qaiu.vx.core.annotaions.RouteHandler;
 import cn.qaiu.vx.core.annotaions.RouteMapping;
-import cn.qaiu.vx.core.annotaions.param.RequestParam;
-import cn.qaiu.vx.core.annotaions.param.PathVariable;
-import cn.qaiu.vx.core.annotaions.param.RequestBody;
-import cn.qaiu.vx.core.base.BaseHttpApi;
-import cn.qaiu.vx.core.enums.RouteMethod;
-import cn.qaiu.vx.core.util.AsyncServiceUtil;
+import cn.qaiu.vx.core.model.JsonResult;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
  * 用户控制器
- * 演示 VXCore 框架的三层架构 Controller 层，使用 JService
+ * 演示三层架构中的Controller层
  * 
- * @author QAIU
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
-@Controller
-@Singleton
 @RouteHandler("/api/users")
-public class UserController implements BaseHttpApi {
+public class UserController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
     
-    private UserService userService;
+    private final UserService userService;
     
-    /**
-     * 无参构造函数 - VXCore框架要求
-     */
     public UserController() {
-        // VXCore框架会调用无参构造函数
-        // UserService将在需要时通过其他方式获取
+        this.userService = new UserService();
     }
     
     /**
-     * 获取UserService实例
-     * 直接创建UserServiceImpl实例
+     * 获取所有用户
      */
-    private UserService getUserService() {
-        if (userService == null) {
-            try {
-                userService = new UserServiceImpl();
-                LOGGER.info("UserService created directly");
-            } catch (Exception e) {
-                LOGGER.error("Failed to create UserService", e);
-                return null;
-            }
-        }
-        return userService;
-    }
-    
-    /**
-     * 获取用户列表
-     */
-    @RouteMapping(value = "/", method = RouteMethod.GET)
-    public Future<List<User>> getUsers(
-            @RequestParam(value = "status", required = false) String status) {
-        
-        LOGGER.info("Get users requested, status: {}", status);
-        
-        UserService service = getUserService();
-        if (service == null) {
-            return Future.failedFuture("UserService not available");
-        }
-        
-        if (status != null) {
-            try {
-                User.UserStatus userStatus = User.UserStatus.valueOf(status.toUpperCase());
-                return service.findActiveUsers();
-            } catch (IllegalArgumentException e) {
-                return Future.failedFuture("Invalid status: " + status);
-            }
-        }
-        
-        return service.list();
+    @RouteMapping(value = "", method = HttpMethod.GET)
+    public Future<JsonResult> getAllUsers() {
+        LOGGER.info("Getting all users");
+        return userService.findAllUsers()
+            .map(users -> JsonResult.success(users))
+            .recover(error -> {
+                LOGGER.error("Failed to get all users", error);
+                return Future.succeededFuture(JsonResult.error("获取用户列表失败: " + error.getMessage()));
+            });
     }
     
     /**
      * 根据ID获取用户
      */
-    @RouteMapping(value = "/{id}", method = RouteMethod.GET)
-    public Future<User> getUserById(@PathVariable("id") Long id) {
-        LOGGER.info("Get user by id: {}", id);
-        
-        UserService service = getUserService();
-        if (service == null) {
-            return Future.failedFuture("UserService not available");
-        }
-        
-        return service.getById(id)
-                .compose(optional -> {
-                    if (optional.isPresent()) {
-                        return Future.succeededFuture(optional.get());
-                    } else {
-                        return Future.failedFuture("User not found with id: " + id);
-                    }
-                });
-    }
-    
-    /**
-     * 根据邮箱获取用户
-     */
-    @RouteMapping(value = "/email/{email}", method = RouteMethod.GET)
-    public Future<User> getUserByEmail(@PathVariable("email") String email) {
-        LOGGER.info("Get user by email: {}", email);
-        
-        return userService.findByEmail(email)
-                .map(user -> {
-                    if (user == null) {
-                        throw new RuntimeException("User not found");
-                    }
-                    return user;
-                });
+    @RouteMapping(value = "/{id}", method = HttpMethod.GET)
+    public Future<JsonResult> getUserById(Long id) {
+        LOGGER.info("Getting user by id: {}", id);
+        return userService.findUserById(id)
+            .map(user -> {
+                if (user != null) {
+                    return JsonResult.success(user);
+                } else {
+                    return JsonResult.error("用户不存在", 404);
+                }
+            })
+            .recover(error -> {
+                LOGGER.error("Failed to get user by id: {}", id, error);
+                return Future.succeededFuture(JsonResult.error("获取用户失败: " + error.getMessage()));
+            });
     }
     
     /**
      * 创建用户
      */
-    @RouteMapping(value = "/", method = RouteMethod.POST)
-    public Future<User> createUser(@RequestBody User user) {
-        LOGGER.info("Create user: {}", user.getUsername());
-        
-        return userService.save(user)
-                .map(optional -> {
-                    if (optional.isPresent()) {
-                        return optional.get();
-                    } else {
-                        throw new RuntimeException("Failed to create user");
-                    }
-                });
+    @RouteMapping(value = "", method = HttpMethod.POST)
+    public Future<JsonResult> createUser(User user) {
+        LOGGER.info("Creating user: {}", user);
+        return userService.createUser(user)
+            .map(createdUser -> JsonResult.success(createdUser, "用户创建成功"))
+            .recover(error -> {
+                LOGGER.error("Failed to create user: {}", user, error);
+                return Future.succeededFuture(JsonResult.error("创建用户失败: " + error.getMessage()));
+            });
     }
     
     /**
      * 更新用户
      */
-    @RouteMapping(value = "/{id}", method = RouteMethod.PUT)
-    public Future<User> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
-        LOGGER.info("Update user: {}", id);
-        
+    @RouteMapping(value = "/{id}", method = HttpMethod.PUT)
+    public Future<JsonResult> updateUser(Long id, User user) {
+        LOGGER.info("Updating user id: {}, data: {}", id, user);
         user.setId(id);
-        return userService.updateById(user)
-                .map(result -> {
-                    if (!result.isPresent()) {
-                        throw new RuntimeException("User not found");
-                    }
-                    return result.get();
-                });
+        return userService.updateUser(user)
+            .map(updatedUser -> JsonResult.success(updatedUser, "用户更新成功"))
+            .recover(error -> {
+                LOGGER.error("Failed to update user id: {}", id, error);
+                return Future.succeededFuture(JsonResult.error("更新用户失败: " + error.getMessage()));
+            });
     }
     
     /**
      * 删除用户
      */
-    @RouteMapping(value = "/{id}", method = RouteMethod.DELETE)
-    public Future<Boolean> deleteUser(@PathVariable("id") Long id) {
-        LOGGER.info("Delete user: {}", id);
-        
-        return userService.removeById(id);
+    @RouteMapping(value = "/{id}", method = HttpMethod.DELETE)
+    public Future<JsonResult> deleteUser(Long id) {
+        LOGGER.info("Deleting user id: {}", id);
+        return userService.deleteUser(id)
+            .map(deleted -> {
+                if (deleted) {
+                    return JsonResult.success("用户删除成功");
+                } else {
+                    return JsonResult.error("用户不存在", 404);
+                }
+            })
+            .recover(error -> {
+                LOGGER.error("Failed to delete user id: {}", id, error);
+                return Future.succeededFuture(JsonResult.error("删除用户失败: " + error.getMessage()));
+            });
     }
     
     /**
-     * 更新用户余额
+     * 根据用户名搜索用户
      */
-    @RouteMapping(value = "/{id}/balance", method = RouteMethod.PUT)
-    public Future<Boolean> updateUserBalance(
-            @PathVariable("id") Long id,
-            @RequestParam("balance") BigDecimal balance) {
-        
-        LOGGER.info("Update user balance: {} -> {}", id, balance);
-        
-        return userService.updateUserBalance(id, balance);
+    @RouteMapping(value = "/search", method = HttpMethod.GET)
+    public Future<JsonResult> searchUsers(String name) {
+        LOGGER.info("Searching users by name: {}", name);
+        return userService.findUsersByName(name)
+            .map(users -> JsonResult.success(users))
+            .recover(error -> {
+                LOGGER.error("Failed to search users by name: {}", name, error);
+                return Future.succeededFuture(JsonResult.error("搜索用户失败: " + error.getMessage()));
+            });
     }
     
     /**
-     * 验证用户邮箱
+     * 批量创建用户
      */
-    @RouteMapping(value = "/{id}/verify-email", method = RouteMethod.POST)
-    public Future<Boolean> verifyUserEmail(@PathVariable("id") Long id) {
-        LOGGER.info("Verify user email: {}", id);
-        
-        return userService.verifyUserEmail(id);
-    }
-    
-    /**
-     * 测试API - 验证Controller是否被正确注册
-     */
-    @RouteMapping(value = "/test", method = RouteMethod.GET, order = 100)
-    public Future<String> test() {
-        LOGGER.info("UserController test API called");
-        return Future.succeededFuture("UserController is working!");
-    }
-    
-    /**
-     * 获取用户统计信息
-     */
-    @RouteMapping(value = "/statistics", method = RouteMethod.GET, order = 100)
-    public Future<JsonObject> getUserStatistics() {
-        LOGGER.info("Get user statistics");
-        
-        UserService service = getUserService();
-        if (service == null) {
-            return Future.failedFuture("UserService not available");
-        }
-        
-        return service.getUserStatistics();
-    }
-    
-    /**
-     * 根据年龄范围获取用户
-     */
-    @RouteMapping(value = "/age-range", method = RouteMethod.GET, order = 100)
-    public Future<List<User>> getUsersByAgeRange(
-            @RequestParam("minAge") Integer minAge,
-            @RequestParam("maxAge") Integer maxAge) {
-        
-        LOGGER.info("Get users by age range: {} - {}", minAge, maxAge);
-        
-        return userService.getUsersByAgeRange(minAge, maxAge);
+    @RouteMapping(value = "/batch", method = HttpMethod.POST)
+    public Future<JsonResult> batchCreateUsers(List<User> users) {
+        LOGGER.info("Batch creating {} users", users.size());
+        return userService.batchCreateUsers(users)
+            .map(createdUsers -> JsonResult.success(createdUsers, "批量创建用户成功"))
+            .recover(error -> {
+                LOGGER.error("Failed to batch create users", error);
+                return Future.succeededFuture(JsonResult.error("批量创建用户失败: " + error.getMessage()));
+            });
     }
 }
-

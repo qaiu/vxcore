@@ -1,0 +1,41 @@
+# 测试环境配置
+server:
+  port: 8080
+  host: 0.0.0.0
+
+# 数据源配置
+datasources:
+  default:
+    type: h2
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ""
+    driver: org.h2.Driver
+    maxPoolSize: 10
+    minPoolSize: 1
+    connectionTimeout: 30000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+
+# 自定义配置
+custom:
+  baseLocations: "cn.qaiu.example"
+  gatewayPrefix: "api"
+  routeTimeout: 30000
+  asyncServiceInstances: 4
+
+# 日志配置
+logging:
+  level:
+    cn.qaiu: DEBUG
+    io.vertx: INFO
+    org.jooq: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 性能配置
+performance:
+  enableMetrics: true
+  enableProfiling: false
+  maxConcurrentRequests: 1000
+  requestTimeout: 30000

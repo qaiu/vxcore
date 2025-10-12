@@ -1,88 +1,173 @@
 package cn.qaiu.example.service;
 
-import cn.qaiu.db.dsl.lambda.JService;
-import cn.qaiu.example.entity.User;
+import cn.qaiu.example.dao.UserDao;
+import cn.qaiu.example.model.User;
+import cn.qaiu.vx.core.annotaions.Service;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 用户服务接口
+ * 用户服务
+ * 演示三层架构中的Service层
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public interface UserService extends JService<User, Long> {
-
+@Service
+public class UserService {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
+    
+    private final UserDao userDao;
+    private final AtomicLong idGenerator = new AtomicLong(1);
+    
+    public UserService() {
+        this.userDao = new UserDao();
+    }
+    
     /**
-     * 查找活跃用户
-     * 
-     * @return 活跃用户列表
+     * 查找所有用户
      */
-    Future<List<User>> findActiveUsers();
-
+    public Future<List<User>> findAllUsers() {
+        LOGGER.info("Finding all users");
+        return userDao.findAll()
+            .onSuccess(users -> LOGGER.info("Found {} users", users.size()))
+            .onFailure(error -> LOGGER.error("Failed to find all users", error));
+    }
+    
     /**
-     * 根据邮箱查找用户
-     * 
-     * @param email 邮箱
-     * @return 用户信息
+     * 根据ID查找用户
      */
-    Future<User> findByEmail(String email);
-
+    public Future<User> findUserById(Long id) {
+        LOGGER.info("Finding user by id: {}", id);
+        return userDao.findById(id)
+            .onSuccess(user -> {
+                if (user != null) {
+                    LOGGER.info("Found user: {}", user);
+                } else {
+                    LOGGER.info("User not found with id: {}", id);
+                }
+            })
+            .onFailure(error -> LOGGER.error("Failed to find user by id: {}", id, error));
+    }
+    
     /**
-     * 根据用户名模糊查询
-     * 
-     * @param keyword 关键词
-     * @return 用户列表
+     * 根据用户名查找用户
      */
-    Future<List<User>> searchByName(String keyword);
-
+    public Future<List<User>> findUsersByName(String name) {
+        LOGGER.info("Finding users by name: {}", name);
+        return userDao.findByName(name)
+            .onSuccess(users -> LOGGER.info("Found {} users with name: {}", users.size(), name))
+            .onFailure(error -> LOGGER.error("Failed to find users by name: {}", name, error));
+    }
+    
     /**
-     * 统计用户数量
-     * 
-     * @return 用户总数
+     * 创建用户
      */
-    Future<Long> countUsers();
-
+    public Future<User> createUser(User user) {
+        LOGGER.info("Creating user: {}", user);
+        
+        // 业务逻辑验证
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            return Future.failedFuture(new IllegalArgumentException("用户名不能为空"));
+        }
+        
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            return Future.failedFuture(new IllegalArgumentException("邮箱不能为空"));
+        }
+        
+        // 设置ID
+        user.setId(idGenerator.getAndIncrement());
+        
+        return userDao.save(user)
+            .onSuccess(savedUser -> LOGGER.info("Created user: {}", savedUser))
+            .onFailure(error -> LOGGER.error("Failed to create user: {}", user, error));
+    }
+    
     /**
-     * 检查邮箱是否存在
-     * 
-     * @param email 邮箱
-     * @return 是否存在
+     * 更新用户
      */
-    Future<Boolean> existsByEmail(String email);
-
+    public Future<User> updateUser(User user) {
+        LOGGER.info("Updating user: {}", user);
+        
+        if (user.getId() == null) {
+            return Future.failedFuture(new IllegalArgumentException("用户ID不能为空"));
+        }
+        
+        return userDao.update(user)
+            .onSuccess(updatedUser -> LOGGER.info("Updated user: {}", updatedUser))
+            .onFailure(error -> LOGGER.error("Failed to update user: {}", user, error));
+    }
+    
     /**
-     * 更新用户余额
-     * 
-     * @param userId 用户ID
-     * @param balance 新余额
-     * @return 是否更新成功
+     * 删除用户
      */
-    Future<Boolean> updateUserBalance(Long userId, BigDecimal balance);
-
+    public Future<Boolean> deleteUser(Long id) {
+        LOGGER.info("Deleting user with id: {}", id);
+        
+        if (id == null) {
+            return Future.failedFuture(new IllegalArgumentException("用户ID不能为空"));
+        }
+        
+        return userDao.deleteById(id)
+            .onSuccess(deleted -> {
+                if (deleted) {
+                    LOGGER.info("Deleted user with id: {}", id);
+                } else {
+                    LOGGER.info("User not found with id: {}", id);
+                }
+            })
+            .onFailure(error -> LOGGER.error("Failed to delete user with id: {}", id, error));
+    }
+    
     /**
-     * 验证用户邮箱
-     * 
-     * @param userId 用户ID
-     * @return 是否验证成功
+     * 批量创建用户
      */
-    Future<Boolean> verifyUserEmail(Long userId);
-
+    public Future<List<User>> batchCreateUsers(List<User> users) {
+        LOGGER.info("Batch creating {} users", users.size());
+        
+        if (users == null || users.isEmpty()) {
+            return Future.succeededFuture(List.of());
+        }
+        
+        // 业务逻辑验证
+        for (User user : users) {
+            if (user.getName() == null || user.getName().trim().isEmpty()) {
+                return Future.failedFuture(new IllegalArgumentException("用户名不能为空"));
+            }
+            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+                return Future.failedFuture(new IllegalArgumentException("邮箱不能为空"));
+            }
+        }
+        
+        // 设置ID
+        for (User user : users) {
+            user.setId(idGenerator.getAndIncrement());
+        }
+        
+        return userDao.batchSave(users)
+            .onSuccess(savedUsers -> LOGGER.info("Batch created {} users", savedUsers.size()))
+            .onFailure(error -> LOGGER.error("Failed to batch create users", error));
+    }
+    
     /**
      * 获取用户统计信息
-     * 
-     * @return 统计信息
      */
-    Future<JsonObject> getUserStatistics();
-
-    /**
-     * 根据年龄范围获取用户
-     * 
-     * @param minAge 最小年龄
-     * @param maxAge 最大年龄
-     * @return 用户列表
-     */
-    Future<List<User>> getUsersByAgeRange(Integer minAge, Integer maxAge);
+    public Future<JsonObject> getUserStatistics() {
+        LOGGER.info("Getting user statistics");
+        
+        return userDao.count()
+            .compose(count -> {
+                JsonObject stats = new JsonObject()
+                    .put("totalUsers", count)
+                    .put("timestamp", System.currentTimeMillis());
+                
+                LOGGER.info("User statistics: {}", stats.encodePrettily());
+                return Future.succeededFuture(stats);
+            })
+            .onFailure(error -> LOGGER.error("Failed to get user statistics", error));
+    }
 }
