@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.lifecycle;
 
-import cn.qaiu.db.datasource.DataSourceManager;
+import cn.qaiu.vx.core.lifecycle.DataSourceManager;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;

@@ -152,7 +152,7 @@ public class ThreeLayerFrameworkTest {
         testContext.verify(() -> {
             assertNotNull(dataSourceComponent, "数据源组件不应为空");
             
-            cn.qaiu.db.datasource.DataSourceManager dataSourceManager = dataSourceComponent.getDataSourceManager();
+            cn.qaiu.vx.core.lifecycle.DataSourceManager dataSourceManager = dataSourceComponent.getDataSourceManager();
             assertNotNull(dataSourceManager, "数据源管理器不应为空");
             
             List<String> dataSourceNames = dataSourceManager.getDataSourceNames();

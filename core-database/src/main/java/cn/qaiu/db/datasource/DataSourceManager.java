@@ -1,7 +1,6 @@
 package cn.qaiu.db.datasource;
 
 import cn.qaiu.db.dsl.core.JooqExecutor;
-import cn.qaiu.vx.core.lifecycle.DataSourceManager as DataSourceManagerInterface;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public class DataSourceManager implements DataSourceManagerInterface {
+public class DataSourceManager implements cn.qaiu.vx.core.lifecycle.DataSourceManager {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceManager.class);
     

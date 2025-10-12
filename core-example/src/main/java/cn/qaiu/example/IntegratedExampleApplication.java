@@ -1,7 +1,6 @@
 package cn.qaiu.example;
 
 import cn.qaiu.db.datasource.DataSourceConfig;
-import cn.qaiu.db.datasource.DataSourceManager;
 import cn.qaiu.db.datasource.DataSourceManagerFactory;
 import cn.qaiu.vx.core.VXCoreApplication;
 import cn.qaiu.vx.core.lifecycle.DataSourceComponent;
@@ -69,7 +68,7 @@ public class IntegratedExampleApplication extends AbstractVerticle {
                 }
                 
                 // 创建core-database模块的DataSourceManager实现
-                DataSourceManager databaseManager = DataSourceManagerFactory.getInstance(vertx);
+                cn.qaiu.vx.core.lifecycle.DataSourceManager databaseManager = DataSourceManagerFactory.getInstance(vertx);
                 
                 // 注入实现
                 dataSourceComponent.setDataSourceManager(databaseManager);
@@ -92,7 +91,7 @@ public class IntegratedExampleApplication extends AbstractVerticle {
     /**
      * 初始化数据源
      */
-    private io.vertx.core.Future<Void> initializeDataSources(DataSourceManager manager) {
+    private io.vertx.core.Future<Void> initializeDataSources(cn.qaiu.vx.core.lifecycle.DataSourceManager manager) {
         // 创建H2内存数据库配置
         DataSourceConfig h2Config = new DataSourceConfig(
             "default",  // name
