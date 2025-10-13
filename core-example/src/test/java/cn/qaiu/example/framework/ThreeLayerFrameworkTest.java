@@ -2,6 +2,10 @@ package cn.qaiu.example.framework;
 
 import cn.qaiu.vx.core.VXCoreApplication;
 import cn.qaiu.vx.core.lifecycle.FrameworkLifecycleManager;
+import cn.qaiu.vx.core.lifecycle.LifecycleComponent;
+import cn.qaiu.vx.core.lifecycle.DataSourceManagerInterface;
+import cn.qaiu.vx.core.di.ServiceComponent;
+import cn.qaiu.vx.core.registry.ServiceRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -14,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -152,7 +158,7 @@ public class ThreeLayerFrameworkTest {
         testContext.verify(() -> {
             assertNotNull(dataSourceComponent, "数据源组件不应为空");
             
-            cn.qaiu.vx.core.lifecycle.DataSourceManager dataSourceManager = dataSourceComponent.getDataSourceManager();
+            DataSourceManagerInterface dataSourceManager = dataSourceComponent.getDataSourceManager();
             assertNotNull(dataSourceManager, "数据源管理器不应为空");
             
             List<String> dataSourceNames = dataSourceManager.getDataSourceNames();
@@ -176,10 +182,10 @@ public class ThreeLayerFrameworkTest {
         testContext.verify(() -> {
             assertNotNull(serviceComponent, "服务组件不应为空");
             
-            cn.qaiu.vx.core.component.ServiceComponent serviceComponent2 = serviceComponent.getServiceComponent();
+            ServiceComponent serviceComponent2 = serviceComponent.getServiceComponent();
             assertNotNull(serviceComponent2, "服务组件实例不应为空");
             
-            cn.qaiu.vx.core.component.ServiceRegistry serviceRegistry = serviceComponent.getServiceRegistry();
+            ServiceRegistry serviceRegistry = serviceComponent.getServiceRegistry();
             assertNotNull(serviceRegistry, "服务注册表不应为空");
             
             LOGGER.info("Service registration test passed");

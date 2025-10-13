@@ -266,10 +266,10 @@ public class UserDslTest {
                 .onSuccess(stats -> {
                     testContext.verify(() -> {
                         assertNotNull(stats);
-                        assertTrue(stats.getInteger("totalUsers") >= 3);
-                        assertTrue(stats.getInteger("activeUsers") >= 0);
+                        assertTrue(((Long) stats.get("totalUsers")) >= 3);
+                        assertTrue(((Long) stats.get("activeUsers")) >= 0);
                     });
-                    LOGGER.info("User statistics: {}", stats.encodePrettily());
+                    LOGGER.info("User statistics: {}", stats);
                     testContext.completeNow();
                 })
                 .onFailure(testContext::failNow);

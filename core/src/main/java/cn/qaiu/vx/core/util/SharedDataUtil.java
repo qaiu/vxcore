@@ -13,7 +13,7 @@ import io.vertx.core.shareddata.SharedData;
  */
 public class SharedDataUtil {
 
-    private static final SharedData sharedData = VertxHolder.getVertxInstance().sharedData();
+    private static SharedData sharedData;
 
     /**
      * 获取共享数据对象
@@ -21,6 +21,14 @@ public class SharedDataUtil {
      * @return Vert.x共享数据对象
      */
     public static SharedData shareData() {
+        if (sharedData == null) {
+            try {
+                sharedData = VertxHolder.getVertxInstance().sharedData();
+            } catch (Exception e) {
+                // 在测试环境中可能没有初始化Vertx，返回null
+                return null;
+            }
+        }
         return sharedData;
     }
 
@@ -31,7 +39,11 @@ public class SharedDataUtil {
      * @return 本地映射对象
      */
     public static LocalMap<String, Object> getLocalMap(String key) {
-        return shareData().getLocalMap(key);
+        SharedData data = shareData();
+        if (data == null) {
+            return null;
+        }
+        return data.getLocalMap(key);
     }
 
     /**
@@ -42,7 +54,11 @@ public class SharedDataUtil {
      * @return 本地映射对象
      */
     public static <T> LocalMap<String, T> getLocalMapWithCast(String key) {
-        return  sharedData.getLocalMap(key);
+        SharedData data = shareData();
+        if (data == null) {
+            return null;
+        }
+        return data.getLocalMap(key);
     }
 
     /**
@@ -53,6 +69,9 @@ public class SharedDataUtil {
      */
     public static JsonObject getJsonConfig(String key) {
         LocalMap<String, Object> localMap = getLocalMap("local");
+        if (localMap == null) {
+            return null;
+        }
         return (JsonObject) localMap.get(key);
     }
 

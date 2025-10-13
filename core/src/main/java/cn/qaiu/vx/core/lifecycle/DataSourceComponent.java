@@ -18,7 +18,7 @@ public class DataSourceComponent implements LifecycleComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceComponent.class);
     
     private Vertx vertx;
-    private DataSourceManager dataSourceManager;
+    private DataSourceProvider dataSourceProvider;
     private JsonObject globalConfig;
     
     @Override
@@ -38,9 +38,18 @@ public class DataSourceComponent implements LifecycleComponent {
                     return;
                 }
                 
-                // 这里应该通过SPI或者工厂模式来获取DataSourceManager的实现
-                // 暂时先记录日志，实际实现会在core-database模块中提供
-                LOGGER.info("Database configuration found, datasource manager will be initialized by core-database module");
+                // 使用SPI模式查找数据源提供者
+                DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+                registry.initialize();
+                
+                // 查找支持的数据源提供者
+                DataSourceProvider provider = findSupportedProvider(registry, databaseConfig);
+                if (provider != null) {
+                    this.dataSourceProvider = provider;
+                    LOGGER.info("Found DataSource provider: {} for database configuration", provider.getName());
+                } else {
+                    LOGGER.warn("No DataSource provider found for database configuration, datasource will not be initialized");
+                }
                 
                 promise.complete();
             } catch (Exception e) {
@@ -56,11 +65,22 @@ public class DataSourceComponent implements LifecycleComponent {
             try {
                 LOGGER.info("Starting DataSource component...");
                 
-                // 实际的启动逻辑将在core-database模块中实现
-                // 这里只是占位符
-                
-                LOGGER.info("DataSource component started successfully");
-                promise.complete();
+                if (dataSourceProvider != null) {
+                    // 使用提供者初始化数据源
+                    dataSourceProvider.initializeDataSources(vertx, globalConfig)
+                        .onSuccess(v -> {
+                            LOGGER.info("DataSource component started successfully with provider: {}", 
+                                       dataSourceProvider.getName());
+                            promise.complete();
+                        })
+                        .onFailure(error -> {
+                            LOGGER.error("Failed to start datasource component", error);
+                            promise.fail(error);
+                        });
+                } else {
+                    LOGGER.info("No DataSource provider available, component started without datasource");
+                    promise.complete();
+                }
             } catch (Exception e) {
                 LOGGER.error("Failed to start datasource component", e);
                 promise.fail(e);
@@ -74,8 +94,9 @@ public class DataSourceComponent implements LifecycleComponent {
             try {
                 LOGGER.info("Stopping DataSource component...");
                 
-                if (dataSourceManager != null) {
-                    dataSourceManager.closeAllDataSources()
+                if (dataSourceProvider != null) {
+                    // 使用提供者关闭数据源
+                    dataSourceProvider.closeAllDataSources()
                         .onSuccess(v -> {
                             LOGGER.info("All datasources closed successfully");
                             promise.complete();
@@ -85,7 +106,7 @@ public class DataSourceComponent implements LifecycleComponent {
                             promise.fail(error);
                         });
                 } else {
-                    LOGGER.info("No datasource manager to close");
+                    LOGGER.info("No datasource provider to close");
                     promise.complete();
                 }
             } catch (Exception e) {
@@ -106,23 +127,44 @@ public class DataSourceComponent implements LifecycleComponent {
     }
     
     /**
-     * 获取数据源管理器
-     * 这个方法将在运行时由core-database模块的实现来设置
+     * 获取数据源提供者
      * 
-     * @return DataSourceManager实例
+     * @return DataSourceProvider实例
      */
-    public DataSourceManager getDataSourceManager() {
-        return dataSourceManager;
+    public DataSourceProvider getDataSourceProvider() {
+        return dataSourceProvider;
     }
     
     /**
-     * 设置数据源管理器
-     * 这个方法将由core-database模块在运行时调用
+     * 设置数据源提供者
      * 
-     * @param dataSourceManager DataSourceManager实例
+     * @param dataSourceProvider DataSourceProvider实例
      */
-    public void setDataSourceManager(DataSourceManager dataSourceManager) {
-        this.dataSourceManager = dataSourceManager;
+    public void setDataSourceProvider(DataSourceProvider dataSourceProvider) {
+        this.dataSourceProvider = dataSourceProvider;
+    }
+    
+    /**
+     * 获取数据源管理器（通过提供者）
+     * 
+     * @return DataSourceManagerInterface实例
+     */
+    public DataSourceManagerInterface getDataSourceManager() {
+        if (dataSourceProvider != null) {
+            return dataSourceProvider.createDataSourceManager(vertx);
+        }
+        return null;
+    }
+    
+    /**
+     * 设置数据源管理器（直接注入实现）
+     * 
+     * @param dataSourceManager 数据源管理器实现
+     */
+    public void setDataSourceManager(DataSourceManagerInterface dataSourceManager) {
+        // 这个方法主要用于测试或直接注入实现
+        // 正常情况下应该通过DataSourceProvider来获取
+        LOGGER.warn("Direct injection of DataSourceManager is not recommended. Use DataSourceProvider instead.");
     }
     
     /**
@@ -136,5 +178,29 @@ public class DataSourceComponent implements LifecycleComponent {
         }
         JsonObject databaseConfig = globalConfig.getJsonObject("database");
         return databaseConfig != null && !databaseConfig.isEmpty();
+    }
+    
+    /**
+     * 查找支持的数据源提供者
+     * 
+     * @param registry 提供者注册表
+     * @param databaseConfig 数据库配置
+     * @return 支持的数据源提供者
+     */
+    private DataSourceProvider findSupportedProvider(DataSourceProviderRegistry registry, JsonObject databaseConfig) {
+        // 遍历所有数据源配置，查找支持的提供者
+        for (String dataSourceName : databaseConfig.fieldNames()) {
+            JsonObject dataSourceConfig = databaseConfig.getJsonObject(dataSourceName);
+            if (dataSourceConfig != null) {
+                String type = dataSourceConfig.getString("type");
+                if (type != null) {
+                    DataSourceProvider provider = registry.getProviderByType(type);
+                    if (provider != null) {
+                        return provider;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

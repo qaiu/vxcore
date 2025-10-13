@@ -13,7 +13,7 @@ import java.util.List;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public interface DataSourceManager {
+public interface DataSourceManagerInterface {
     
     /**
      * 注册数据源
@@ -34,28 +34,11 @@ public interface DataSourceManager {
     Future<Void> initializeDataSources(Vertx vertx, JsonObject config);
     
     /**
-     * 获取数据源连接池
-     * 返回Object类型避免与具体数据库实现耦合
+     * 初始化所有已注册的数据源
      * 
-     * @param name 数据源名称
-     * @return 连接池实例
+     * @return Future<Void>
      */
-    Object getPool(String name);
-    
-    /**
-     * 获取所有数据源名称
-     * 
-     * @return 数据源名称列表
-     */
-    List<String> getDataSourceNames();
-    
-    /**
-     * 检查数据源是否存在
-     * 
-     * @param name 数据源名称
-     * @return 是否存在
-     */
-    boolean hasDataSource(String name);
+    Future<Void> initializeAllDataSources();
     
     /**
      * 关闭所有数据源
@@ -65,18 +48,17 @@ public interface DataSourceManager {
     Future<Void> closeAllDataSources();
     
     /**
-     * 检查数据源是否可用
+     * 获取数据源连接池
      * 
      * @param name 数据源名称
-     * @return Future<Boolean>
+     * @return 连接池对象
      */
-    Future<Boolean> isDataSourceAvailable(String name);
+    Object getPool(String name);
     
     /**
-     * 关闭指定数据源
+     * 获取所有数据源名称
      * 
-     * @param name 数据源名称
-     * @return Future<Void>
+     * @return 数据源名称列表
      */
-    Future<Void> closeDataSource(String name);
+    List<String> getDataSourceNames();
 }

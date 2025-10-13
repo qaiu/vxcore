@@ -28,7 +28,7 @@ public class IntegratedExampleApplication extends AbstractVerticle {
         LOGGER.info("Starting Integrated VXCore Example Application...");
         
         // 使用VXCoreApplication启动框架
-        VXCoreApplication.run(vertx, config -> {
+        VXCoreApplication.run(new String[]{}, config -> {
             LOGGER.info("VXCore framework started, injecting database implementation...");
             
             // 注入core-database模块的实现到core模块
@@ -68,7 +68,7 @@ public class IntegratedExampleApplication extends AbstractVerticle {
                 }
                 
                 // 创建core-database模块的DataSourceManager实现
-                cn.qaiu.vx.core.lifecycle.DataSourceManager databaseManager = DataSourceManagerFactory.getInstance(vertx);
+                cn.qaiu.db.datasource.DataSourceManager databaseManager = cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
                 
                 // 注入实现
                 dataSourceComponent.setDataSourceManager(databaseManager);
@@ -91,7 +91,7 @@ public class IntegratedExampleApplication extends AbstractVerticle {
     /**
      * 初始化数据源
      */
-    private io.vertx.core.Future<Void> initializeDataSources(cn.qaiu.vx.core.lifecycle.DataSourceManager manager) {
+    private io.vertx.core.Future<Void> initializeDataSources(cn.qaiu.db.datasource.DataSourceManager manager) {
         // 创建H2内存数据库配置
         DataSourceConfig h2Config = new DataSourceConfig(
             "default",  // name

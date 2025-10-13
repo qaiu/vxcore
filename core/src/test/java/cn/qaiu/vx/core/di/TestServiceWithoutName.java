@@ -21,6 +21,7 @@ public class TestServiceWithoutName implements TestServiceWithoutNameInterface {
 /**
  * 测试服务接口（无名称）
  */
+@io.vertx.codegen.annotations.ProxyGen
 interface TestServiceWithoutNameInterface {
     Future<String> process(String input);
 }

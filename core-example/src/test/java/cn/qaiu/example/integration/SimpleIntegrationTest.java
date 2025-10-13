@@ -403,9 +403,9 @@ class SimpleIntegrationTest {
                     .onSuccess(updateCount -> {
                         testContext.verify(() -> {
                             assertNotNull(updateCount, "更新计数不应为空");
-                            assertEquals(3, updateCount.intValue(), "应该更新3个用户");
+                            assertEquals(3, updateCount.size(), "应该更新3个用户");
                             
-                            LOGGER.info("✅ Batch update test passed: {} users", updateCount);
+                            LOGGER.info("✅ Batch update test passed: {} users", updateCount.size());
                         });
                         testContext.completeNow();
                     })

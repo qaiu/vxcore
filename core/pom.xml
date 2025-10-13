@@ -140,6 +140,24 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Javadoc Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <sourcepath>
+                        ${project.build.sourceDirectory};
+                        ${project.basedir}/src/main/generated
+                    </sourcepath>
+                    <failOnError>false</failOnError>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                    <quiet>true</quiet>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <charset>${project.build.sourceEncoding}</charset>
+                    <docencoding>${project.build.sourceEncoding}</docencoding>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -158,6 +176,9 @@
                             <version>2.57.2</version>
                         </path>
                     </annotationProcessorPaths>
+                    <annotationProcessors>
+                        <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                    </annotationProcessors>
                     <generatedSourcesDirectory>
                         ${project.basedir}/src/main/generated
                     </generatedSourcesDirectory>

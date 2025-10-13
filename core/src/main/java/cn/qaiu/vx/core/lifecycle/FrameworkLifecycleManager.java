@@ -45,6 +45,13 @@ public class FrameworkLifecycleManager {
     }
     
     /**
+     * 重置实例（仅用于测试）
+     */
+    public static void resetInstance() {
+        INSTANCE.set(null);
+    }
+    
+    /**
      * 初始化组件
      */
     private void initializeComponents() {

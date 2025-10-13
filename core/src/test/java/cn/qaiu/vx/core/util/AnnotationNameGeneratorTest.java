@@ -1,6 +1,7 @@
 package cn.qaiu.vx.core.util;
 
 import cn.qaiu.vx.core.annotaions.*;
+import io.vertx.codegen.annotations.ModuleGen;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -88,6 +89,7 @@ public class AnnotationNameGeneratorTest {
     public static class UserService implements UserServiceInterface {
     }
     
+    @io.vertx.codegen.annotations.ProxyGen
     interface UserServiceInterface {
     }
 
@@ -111,6 +113,7 @@ public class AnnotationNameGeneratorTest {
     public static class CustomUserService implements CustomUserServiceInterface {
     }
     
+    @io.vertx.codegen.annotations.ProxyGen
     interface CustomUserServiceInterface {
     }
 

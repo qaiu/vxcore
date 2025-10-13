@@ -174,7 +174,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-                        <skipTests>false</skipTests>
+                        <skipTests>${skipTests}</skipTests>
                         <includes>
                             <include>**/*Test.java</include>
                             <include>**/*Tests.java</include>
@@ -187,6 +187,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven.failsafe.plugin.version}</version>
+                    <configuration>
+                        <skipTests>${skipTests}</skipTests>
+                    </configuration>
                     <executions>
                         <execution>
                             <goals>
@@ -230,6 +233,13 @@
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <charset>${project.build.sourceEncoding}</charset>
                         <docencoding>${project.build.sourceEncoding}</docencoding>
+                        <sourcepath>
+                            ${project.build.sourceDirectory};
+                            ${project.basedir}/src/main/generated
+                        </sourcepath>
+                        <failOnError>false</failOnError>
+                        <additionalJOption>-Xdoclint:none</additionalJOption>
+                        <quiet>true</quiet>
                     </configuration>
                 </plugin>
 
