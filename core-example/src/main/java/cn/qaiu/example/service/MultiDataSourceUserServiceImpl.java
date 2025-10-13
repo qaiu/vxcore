@@ -85,10 +85,10 @@ public class MultiDataSourceUserServiceImpl extends JServiceImpl<User, Long> imp
     }
 
     @Override
-    public Future<Boolean> updateUserBalance(Long userId, BigDecimal balance) {
+    public Future<Boolean> updateUserBalance(Long userId, String balance) {
         LOGGER.info("更新用户余额: {} -> {} (使用 user 数据源)", userId, balance);
         User user = new User();
-        user.setBalance(balance);
+        user.setBalance(new BigDecimal(balance));
         return lambdaUpdate(lambdaQuery().eq(User::getId, userId), user)
                 .map(rows -> rows > 0);
     }

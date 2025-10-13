@@ -25,6 +25,13 @@ public class UserServiceImpl extends JServiceImpl<User, Long> implements UserSer
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
     
+    /**
+     * 无参构造函数 - VXCore框架要求
+     */
+    public UserServiceImpl() {
+        super();
+    }
+    
     @Override
     public Future<List<User>> findActiveUsers() {
         LOGGER.info("查找活跃用户");
@@ -77,14 +84,14 @@ public class UserServiceImpl extends JServiceImpl<User, Long> implements UserSer
     }
 
     @Override
-    public Future<Boolean> updateUserBalance(Long id, BigDecimal balance) {
+    public Future<Boolean> updateUserBalance(Long id, String balance) {
         LOGGER.info("更新用户余额: {} -> {}", id, balance);
         // 先获取用户，然后更新余额
         return getById(id)
                 .compose(optional -> {
                     if (optional.isPresent()) {
                         User user = optional.get();
-                        user.setBalance(balance);
+                        user.setBalance(new BigDecimal(balance));
                         return updateById(user)
                                 .map(result -> result.isPresent());
                     } else {

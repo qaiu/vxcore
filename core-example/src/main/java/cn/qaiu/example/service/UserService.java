@@ -1,7 +1,8 @@
 package cn.qaiu.example.service;
 
-import cn.qaiu.db.dsl.lambda.JService;
+import cn.qaiu.db.dsl.lambda.SimpleJService;
 import cn.qaiu.example.entity.User;
+import cn.qaiu.vx.core.codegen.CustomProxyGen;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
@@ -13,7 +14,8 @@ import java.util.List;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public interface UserService extends JService<User, Long> {
+@CustomProxyGen
+public interface UserService extends SimpleJService<User, Long> {
 
     /**
      * 查找活跃用户
@@ -60,7 +62,7 @@ public interface UserService extends JService<User, Long> {
      * @param balance 新余额
      * @return 是否更新成功
      */
-    Future<Boolean> updateUserBalance(Long userId, BigDecimal balance);
+    Future<Boolean> updateUserBalance(Long userId, String balance);
 
     /**
      * 验证用户邮箱

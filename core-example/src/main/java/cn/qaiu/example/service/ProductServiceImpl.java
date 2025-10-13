@@ -4,6 +4,7 @@ import cn.qaiu.db.dsl.core.JooqExecutor;
 import cn.qaiu.db.dsl.lambda.JServiceImpl;
 import cn.qaiu.db.dsl.lambda.LambdaPageResult;
 import cn.qaiu.example.entity.Product;
+import cn.qaiu.vx.core.annotaions.Service;
 import io.vertx.core.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import java.util.List;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
+@Service
 @Singleton
 public class ProductServiceImpl extends JServiceImpl<Product, Long> implements ProductService {
 
@@ -35,6 +37,13 @@ public class ProductServiceImpl extends JServiceImpl<Product, Long> implements P
         LOGGER.info("ProductServiceImpl initialized with DI injection");
     }
 
+    /**
+     * 无参构造函数 - VXCore框架要求
+     */
+    public ProductServiceImpl() {
+        super();
+    }
+
     @Override
     public Future<List<Product>> findAvailableProducts() {
         LOGGER.info("查找在售产品");
@@ -44,11 +53,13 @@ public class ProductServiceImpl extends JServiceImpl<Product, Long> implements P
     }
 
     @Override
-    public Future<List<Product>> findByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
+    public Future<List<Product>> findByPriceRange(String minPrice, String maxPrice) {
         LOGGER.info("根据价格范围查找产品: {} - {}", minPrice, maxPrice);
+        BigDecimal min = new BigDecimal(minPrice);
+        BigDecimal max = new BigDecimal(maxPrice);
         return lambdaList(lambdaQuery()
-                .ge(Product::getPrice, minPrice)
-                .le(Product::getPrice, maxPrice)
+                .ge(Product::getPrice, min)
+                .le(Product::getPrice, max)
                 .eq(Product::getStatus, Product.ProductStatus.ACTIVE)
                 .orderByAsc(Product::getPrice));
     }

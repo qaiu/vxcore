@@ -38,28 +38,28 @@ public class UserController implements BaseHttpApi {
     private UserService userService;
     
     /**
+     * 构造函数 - 使用依赖注入
+     */
+    @Inject
+    public UserController(UserService userService) {
+        this.userService = userService;
+        LOGGER.info("UserController initialized with UserService injection");
+    }
+    
+    /**
      * 无参构造函数 - VXCore框架要求
      */
     public UserController() {
         // VXCore框架会调用无参构造函数
-        // UserService将在需要时通过其他方式获取
+        // UserService将通过依赖注入设置
     }
     
     /**
-     * 获取UserService实例
-     * 直接创建UserServiceImpl实例
+     * 设置UserService - 由框架调用
      */
-    private UserService getUserService() {
-        if (userService == null) {
-            try {
-                userService = new UserServiceImpl();
-                LOGGER.info("UserService created directly");
-            } catch (Exception e) {
-                LOGGER.error("Failed to create UserService", e);
-                return null;
-            }
-        }
-        return userService;
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+        LOGGER.info("UserService injected into UserController");
     }
     
     /**
@@ -71,21 +71,20 @@ public class UserController implements BaseHttpApi {
         
         LOGGER.info("Get users requested, status: {}", status);
         
-        UserService service = getUserService();
-        if (service == null) {
+        if (userService == null) {
             return Future.failedFuture("UserService not available");
         }
         
         if (status != null) {
             try {
                 User.UserStatus userStatus = User.UserStatus.valueOf(status.toUpperCase());
-                return service.findActiveUsers();
+                return userService.findActiveUsers();
             } catch (IllegalArgumentException e) {
                 return Future.failedFuture("Invalid status: " + status);
             }
         }
         
-        return service.list();
+        return userService.list();
     }
     
     /**
@@ -95,12 +94,11 @@ public class UserController implements BaseHttpApi {
     public Future<User> getUserById(@PathVariable("id") Long id) {
         LOGGER.info("Get user by id: {}", id);
         
-        UserService service = getUserService();
-        if (service == null) {
+        if (userService == null) {
             return Future.failedFuture("UserService not available");
         }
         
-        return service.getById(id)
+        return userService.getById(id)
                 .compose(optional -> {
                     if (optional.isPresent()) {
                         return Future.succeededFuture(optional.get());
@@ -176,7 +174,7 @@ public class UserController implements BaseHttpApi {
     @RouteMapping(value = "/{id}/balance", method = RouteMethod.PUT)
     public Future<Boolean> updateUserBalance(
             @PathVariable("id") Long id,
-            @RequestParam("balance") BigDecimal balance) {
+            @RequestParam("balance") String balance) {
         
         LOGGER.info("Update user balance: {} -> {}", id, balance);
         
@@ -209,12 +207,11 @@ public class UserController implements BaseHttpApi {
     public Future<JsonObject> getUserStatistics() {
         LOGGER.info("Get user statistics");
         
-        UserService service = getUserService();
-        if (service == null) {
+        if (userService == null) {
             return Future.failedFuture("UserService not available");
         }
         
-        return service.getUserStatistics();
+        return userService.getUserStatistics();
     }
     
     /**

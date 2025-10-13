@@ -242,8 +242,14 @@ public class DataSourceProviderRegistry {
                     PoolOptions poolOptions = new PoolOptions()
                         .setMaxSize(config.getMaxPoolSize());
                     
-                    // 使用JDBC Pool for H2
-                    Pool pool = JDBCPool.pool(vertx, config.toJsonObject());
+                    // 使用JDBCConnectOptions for H2
+                    io.vertx.jdbcclient.JDBCConnectOptions connectOptions = 
+                        new io.vertx.jdbcclient.JDBCConnectOptions()
+                            .setJdbcUrl(config.getUrl())
+                            .setUser(config.getUsername())
+                            .setPassword(config.getPassword() != null ? config.getPassword() : "");
+                    
+                    Pool pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
                     promise.complete(pool);
                 } catch (Exception e) {
                     promise.fail(e);

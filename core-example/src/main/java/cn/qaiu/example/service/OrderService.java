@@ -1,8 +1,9 @@
 package cn.qaiu.example.service;
 
-import cn.qaiu.db.dsl.lambda.JService;
+import cn.qaiu.db.dsl.lambda.SimpleJService;
 import cn.qaiu.db.dsl.lambda.LambdaPageResult;
 import cn.qaiu.example.entity.Order;
+import cn.qaiu.vx.core.codegen.CustomProxyGen;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
@@ -15,7 +16,8 @@ import java.util.List;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public interface OrderService extends JService<Order, Long> {
+@CustomProxyGen
+public interface OrderService extends SimpleJService<Order, Long> {
 
     /**
      * 根据用户ID查找订单
@@ -40,7 +42,7 @@ public interface OrderService extends JService<Order, Long> {
      * @param endTime 结束时间
      * @return 订单列表
      */
-    Future<List<Order>> findByTimeRange(LocalDateTime startTime, LocalDateTime endTime);
+    Future<List<Order>> findByTimeRange(String startTime, String endTime);
 
     /**
      * 分页查询用户订单
@@ -66,7 +68,7 @@ public interface OrderService extends JService<Order, Long> {
      * @param userId 用户ID
      * @return 总金额
      */
-    Future<BigDecimal> calculateUserTotalAmount(Long userId);
+    Future<String> calculateUserTotalAmount(Long userId);
 
     /**
      * 获取待处理订单
@@ -132,7 +134,7 @@ public interface OrderService extends JService<Order, Long> {
      * @param status 订单状态
      * @return 订单列表
      */
-    Future<List<Order>> getOrdersByStatus(Order.OrderStatus status);
+    Future<List<Order>> getOrdersByStatus(String status);
 
     /**
      * 支付订单

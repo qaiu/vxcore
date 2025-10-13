@@ -204,32 +204,23 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.8.1</version>
                 <configuration>
-                    <release>${java.version}</release>
-                    <annotationProcessorPaths>
-                        <!-- Lombok 注解处理器 -->
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.30</version>
-                        </path>
-                        <!-- Vert.x CodeGen 注解处理器 -->
-                        <path>
-                            <groupId>io.vertx</groupId>
-                            <artifactId>vertx-codegen</artifactId>
-                            <version>${vertx.version}</version>
-                        </path>
-                        <!-- Dagger2 注解处理器 -->
-                        <path>
-                            <groupId>com.google.dagger</groupId>
-                            <artifactId>dagger-compiler</artifactId>
-                            <version>2.50</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <!-- 代码生成器 -->
+                    <annotationProcessors>
+                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>
+                        <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                        <annotationProcessor>dagger.internal.codegen.ComponentProcessor</annotationProcessor>
+                        <annotationProcessor>cn.qaiu.vx.core.codegen.ServiceProxyGenerator</annotationProcessor>
+                    </annotationProcessors>
                     <generatedSourcesDirectory>
                         ${project.basedir}/src/main/generated
                     </generatedSourcesDirectory>
+                    <compilerArgs>
+                        <arg>-AoutputDirectory=${project.basedir}/src/main -Xlint:unchecked</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
 
@@ -330,6 +321,19 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>src/main/generated</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -1,5 +1,6 @@
 package cn.qaiu.example.controller;
 
+import cn.qaiu.vx.core.annotaions.Controller;
 import cn.qaiu.vx.core.annotaions.RouteHandler;
 import cn.qaiu.vx.core.annotaions.RouteMapping;
 import cn.qaiu.vx.core.base.BaseHttpApi;
@@ -12,6 +13,8 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,19 +26,36 @@ import java.util.Optional;
  * 
  * @author QAIU
  */
+@Controller
+@Singleton
 @RouteHandler(order = 1)
 public class OrderController implements BaseHttpApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
-    private final OrderService orderService;
+    private OrderService orderService;
 
     /**
-     * 构造函数
+     * 构造函数 - 使用依赖注入
      * 
      * @param orderService 订单服务实例
      */
+    @Inject
     public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    /**
+     * 无参构造函数 - VXCore框架要求
+     */
+    public OrderController() {
+        // 框架会通过setter注入OrderService
+    }
+    
+    /**
+     * 设置OrderService - 由框架调用
+     */
+    public void setOrderService(OrderService orderService) {
         this.orderService = orderService;
     }
 
@@ -46,6 +66,10 @@ public class OrderController implements BaseHttpApi {
     @RouteMapping(value = "/orders", method = RouteMethod.POST)
     public Future<Order> createOrder(JsonObject requestBody) {
         LOGGER.info("Creating order: {}", requestBody);
+
+        if (orderService == null) {
+            return Future.failedFuture("OrderService not available");
+        }
 
         Long userId = requestBody.getLong("userId");
         Long productId = requestBody.getLong("productId");
@@ -119,8 +143,8 @@ public class OrderController implements BaseHttpApi {
         LOGGER.debug("Getting orders by status: {}", status);
 
         try {
-            Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
-            return orderService.getOrdersByStatus(orderStatus);
+            Order.OrderStatus.valueOf(status.toUpperCase()); // 验证状态是否有效
+            return orderService.getOrdersByStatus(status);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status: " + status);
         }

@@ -1,8 +1,9 @@
 package cn.qaiu.example.service;
 
-import cn.qaiu.db.dsl.lambda.JService;
+import cn.qaiu.db.dsl.lambda.SimpleJService;
 import cn.qaiu.db.dsl.lambda.LambdaPageResult;
 import cn.qaiu.example.entity.Product;
+import cn.qaiu.vx.core.codegen.CustomProxyGen;
 import io.vertx.core.Future;
 
 import java.math.BigDecimal;
@@ -13,7 +14,8 @@ import java.util.List;
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public interface ProductService extends JService<Product, Long> {
+@CustomProxyGen
+public interface ProductService extends SimpleJService<Product, Long> {
 
     /**
      * 查找在售产品
@@ -29,7 +31,7 @@ public interface ProductService extends JService<Product, Long> {
      * @param maxPrice 最高价格
      * @return 产品列表
      */
-    Future<List<Product>> findByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);
+    Future<List<Product>> findByPriceRange(String minPrice, String maxPrice);
 
     /**
      * 根据分类查找产品

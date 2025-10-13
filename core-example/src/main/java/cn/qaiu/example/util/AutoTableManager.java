@@ -50,9 +50,20 @@ public class AutoTableManager {
         String tableName = getTableName(entityClass);
         LOGGER.info("Creating table: {}", tableName);
         
-        // 这里应该使用 VXCore 的自动建表功能
-        // 暂时返回成功，实际实现需要调用框架的建表方法
-        return Future.succeededFuture();
+        // 获取Pool - 从DataSourceManager获取
+        cn.qaiu.db.datasource.DataSourceManager manager = 
+            cn.qaiu.db.datasource.DataSourceManager.getInstance(null);
+        io.vertx.sqlclient.Pool pool = manager.getDefaultPool();
+        
+        if (pool == null) {
+            LOGGER.error("Cannot get default pool for table creation");
+            return io.vertx.core.Future.failedFuture("Cannot get default pool");
+        }
+        
+        // 使用DDL映射系统自动创建表
+        return cn.qaiu.db.ddl.EnhancedCreateTable.createTableWithStrictMapping(pool, entityClass)
+            .onSuccess(v -> LOGGER.info("✅ Table created successfully: {}", tableName))
+            .onFailure(err -> LOGGER.error("❌ Failed to create table: {}", tableName, err));
     }
     
     /**
@@ -60,7 +71,10 @@ public class AutoTableManager {
      */
     private String getTableName(Class<?> entityClass) {
         // 从 @DdlTable 注解获取表名
-        // 暂时返回类名的小写形式
+        cn.qaiu.db.ddl.DdlTable ddlTable = entityClass.getAnnotation(cn.qaiu.db.ddl.DdlTable.class);
+        if (ddlTable != null && !ddlTable.value().isEmpty()) {
+            return ddlTable.value();
+        }
         return entityClass.getSimpleName().toLowerCase() + "s";
     }
 }

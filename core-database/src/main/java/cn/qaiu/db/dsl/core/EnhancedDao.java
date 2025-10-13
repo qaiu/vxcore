@@ -868,6 +868,12 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
      */
     private String getTableNameFromEntity(Class<T> entityClass) {
         try {
+            // 优先检查@DdlTable注解
+            cn.qaiu.db.ddl.DdlTable ddlTable = entityClass.getAnnotation(cn.qaiu.db.ddl.DdlTable.class);
+            if (ddlTable != null && !ddlTable.value().isEmpty()) {
+                return ddlTable.value();
+            }
+            
             // 检查@Table注解（如果存在）
             try {
                 @SuppressWarnings("unchecked")

@@ -188,6 +188,28 @@
                     <release>17</release>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.2</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>core/src/main/generated</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>core-example/src/main/generated</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>core-database/src/main/generated</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>core-generator/src/main/generated</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
