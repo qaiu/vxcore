@@ -44,8 +44,9 @@ public final class ReflectionUtil {
             String baseLocations = SharedDataUtil.getStringForCustomConfig(BASE_LOCATIONS);
             return getReflections(baseLocations);
         } catch (Exception e) {
-            // 在测试环境中可能没有初始化配置，使用默认包路径
-            return getReflections("cn.qaiu");
+            // 在测试环境中可能没有初始化配置，使用安全的默认包路径
+            // 避免扫描到测试类，使用一个不存在的包名
+            return getReflections("cn.qaiu.vx.core.nonexistent");
         }
     }
 

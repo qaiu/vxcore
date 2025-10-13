@@ -171,6 +171,11 @@
                             <version>${vertx.version}</version>
                         </path>
                         <path>
+                            <groupId>io.vertx</groupId>
+                            <artifactId>vertx-service-proxy</artifactId>
+                            <version>${vertx.version}</version>
+                        </path>
+                        <path>
                             <groupId>com.google.dagger</groupId>
                             <artifactId>dagger-compiler</artifactId>
                             <version>2.57.2</version>
@@ -183,6 +188,9 @@
                     <generatedSourcesDirectory>
                         ${project.basedir}/src/main/generated
                     </generatedSourcesDirectory>
+                    <generatedTestSourcesDirectory>
+                        ${project.basedir}/src/test/generated
+                    </generatedTestSourcesDirectory>
                 </configuration>
             </plugin>
             

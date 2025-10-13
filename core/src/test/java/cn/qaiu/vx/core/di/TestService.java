@@ -20,8 +20,8 @@ public class TestService implements TestServiceInterface {
 
 /**
  * 测试服务接口
+ * 移除@ProxyGen注解，避免在测试中生成代理类
  */
-@io.vertx.codegen.annotations.ProxyGen
 interface TestServiceInterface {
     Future<String> getValue(String key);
 }

@@ -5,11 +5,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +27,18 @@ class DataSourceManagerTest {
     void setUp(Vertx vertx) {
         this.vertx = vertx;
         this.dataSourceManager = DataSourceManager.getInstance(vertx);
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // 清理测试数据源
+        if (dataSourceManager != null) {
+            try {
+                dataSourceManager.closeAllDataSources().toCompletionStage().toCompletableFuture().get(5, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                // 忽略清理错误
+            }
+        }
     }
 
     @Nested

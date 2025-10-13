@@ -49,11 +49,11 @@ echo ""
 if [ -z "$1" ]; then
     # 运行所有模块测试
     echo -e "${YELLOW}运行所有模块测试 (CI模式 - 排除MySQL和PostgreSQL)...${NC}"
-    mvn test -B
+    mvn test -B -Pci
 else
     # 运行指定模块测试
     echo -e "${YELLOW}运行 $1 模块测试 (CI模式 - 排除MySQL和PostgreSQL)...${NC}"
-    mvn test -B -pl "$1"
+    mvn test -B -pl "$1" -Pci
 fi
 
 echo ""

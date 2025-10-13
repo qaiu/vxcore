@@ -1,7 +1,6 @@
 package cn.qaiu.vx.core.util;
 
 import cn.qaiu.vx.core.annotaions.*;
-import io.vertx.codegen.annotations.ModuleGen;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -83,13 +82,14 @@ public class AnnotationNameGeneratorTest {
         assertTrue(true, "ServiceModule name mapping test placeholder");
     }
 
+
     // 测试用的内部类
 
     @Service
     public static class UserService implements UserServiceInterface {
     }
     
-    @io.vertx.codegen.annotations.ProxyGen
+    // 移除@ProxyGen注解，避免在测试中生成代理类
     interface UserServiceInterface {
     }
 
@@ -113,11 +113,12 @@ public class AnnotationNameGeneratorTest {
     public static class CustomUserService implements CustomUserServiceInterface {
     }
     
-    @io.vertx.codegen.annotations.ProxyGen
+    // 移除@ProxyGen注解，避免在测试中生成代理类
     interface CustomUserServiceInterface {
     }
 
     @Dao(name = "customUserDao")
     public static class CustomUserDao {
     }
+
 }

@@ -22,10 +22,9 @@ class TypeConverterRegistryTest {
         @Test
         @DisplayName("字符串转换测试")
         void testStringConversion() {
-            // 字符串转换应该返回原值，除非有自定义转换器
+            // 字符串转换应该返回原值，因为String类型通过反射转换直接返回原值
             String result = TypeConverterRegistry.convert("hello", String.class);
-            // 由于测试中注册了自定义转换器，期望返回自定义值
-            assertEquals("custom_hello", result);
+            assertEquals("hello", result);
         }
 
         @Test
@@ -185,14 +184,31 @@ class TypeConverterRegistryTest {
             // 注册自定义转换器
             TypeConverterRegistry.register(customConverter);
             
-            // 验证注册成功
-            assertTrue(TypeConverterRegistry.isSupported(String.class));
-            TypeConverter<String> retrievedConverter = TypeConverterRegistry.getConverter(String.class);
-            assertNotNull(retrievedConverter);
-            
-            // 测试自定义转换器功能
-            String result = retrievedConverter.convert("test");
-            assertEquals("custom_test", result);
+            try {
+                // 验证注册成功
+                assertTrue(TypeConverterRegistry.isSupported(String.class));
+                TypeConverter<String> retrievedConverter = TypeConverterRegistry.getConverter(String.class);
+                assertNotNull(retrievedConverter);
+                
+                // 测试自定义转换器功能
+                String result = retrievedConverter.convert("test");
+                assertEquals("custom_test", result);
+            } finally {
+                // 清理：移除自定义转换器，避免影响其他测试
+                // 注意：这里我们无法直接移除，因为TypeConverterRegistry没有提供remove方法
+                // 但我们可以通过重新注册一个默认的String转换器来"覆盖"
+                TypeConverterRegistry.register(new TypeConverter<String>() {
+                    @Override
+                    public String convert(String value) throws IllegalArgumentException {
+                        return value; // 直接返回原值
+                    }
+                    
+                    @Override
+                    public Class<String> getTargetType() {
+                        return String.class;
+                    }
+                });
+            }
         }
     }
 

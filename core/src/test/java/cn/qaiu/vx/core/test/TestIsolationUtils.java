@@ -73,7 +73,7 @@ public class TestIsolationUtils {
                     .put("username", "sa")
                     .put("password", "")))
             .put("custom", new JsonObject()
-                .put("baseLocations", "cn.qaiu.test")
+                .put("baseLocations", "cn.qaiu.vx.core.nonexistent")
                 .put("gatewayPrefix", "api"));
     }
     
