@@ -91,7 +91,8 @@ public abstract class MultiDataSourceDao {
      */
     protected Pool getCurrentPool() {
         String dataSourceName = getCurrentDataSource();
-        Pool pool = dataSourceManager.getPool(dataSourceName);
+        Object poolObj = dataSourceManager.getPool(dataSourceName);
+        Pool pool = poolObj instanceof Pool ? (Pool) poolObj : null;
         if (pool == null) {
             LOGGER.warn("Pool not found for datasource: {}, using default", dataSourceName);
             pool = dataSourceManager.getDefaultPool();

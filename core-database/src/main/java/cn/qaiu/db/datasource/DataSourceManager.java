@@ -173,7 +173,7 @@ public class DataSourceManager implements cn.qaiu.vx.core.lifecycle.DataSourceMa
      * 获取默认数据源连接池
      */
     public Pool getDefaultPool() {
-        return getPool(defaultDataSource);
+        return getPoolInternal(defaultDataSource);
     }
     
     /**
@@ -334,74 +334,6 @@ public class DataSourceManager implements cn.qaiu.vx.core.lifecycle.DataSourceMa
                 }
             } catch (Exception e) {
                 LOGGER.error("Failed to register datasources from config", e);
-                promise.fail(e);
-            }
-        });
-    }
-    
-    /**
-     * 检查数据源是否可用
-     * 实现接口方法
-     */
-    public Future<Boolean> isDataSourceAvailable(String name) {
-        return Future.future(promise -> {
-            try {
-                if (!configs.containsKey(name)) {
-                    promise.complete(false);
-                    return;
-                }
-                
-                Pool pool = pools.get(name);
-                if (pool == null) {
-                    promise.complete(false);
-                    return;
-                }
-                
-                // 简单的健康检查
-                pool.query("SELECT 1")
-                    .execute()
-                    .onSuccess(result -> {
-                        LOGGER.debug("DataSource {} is available", name);
-                        promise.complete(true);
-                    })
-                    .onFailure(error -> {
-                        LOGGER.warn("DataSource {} is not available: {}", name, error.getMessage());
-                        promise.complete(false);
-                    });
-            } catch (Exception e) {
-                LOGGER.error("Failed to check datasource availability for {}", name, e);
-                promise.complete(false);
-            }
-        });
-    }
-    
-    /**
-     * 关闭指定数据源
-     * 实现接口方法
-     */
-    public Future<Void> closeDataSource(String name) {
-        return Future.future(promise -> {
-            try {
-                Pool pool = pools.get(name);
-                if (pool != null) {
-                    pool.close()
-                        .onSuccess(v -> {
-                            pools.remove(name);
-                            configs.remove(name);
-                            executors.remove(name);
-                            LOGGER.info("Datasource {} closed successfully", name);
-                            promise.complete();
-                        })
-                        .onFailure(error -> {
-                            LOGGER.error("Failed to close datasource {}", name, error);
-                            promise.fail(error);
-                        });
-                } else {
-                    LOGGER.warn("Datasource {} not found for closing", name);
-                    promise.complete();
-                }
-            } catch (Exception e) {
-                LOGGER.error("Failed to close datasource {}", name, e);
                 promise.fail(e);
             }
         });

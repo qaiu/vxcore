@@ -1,6 +1,5 @@
 package cn.qaiu.db.datasource;
 
-import cn.qaiu.vx.core.lifecycle.DataSourceManager;
 import io.vertx.core.Vertx;
 
 /**
@@ -18,7 +17,7 @@ public class DataSourceManagerFactory {
      * @return DataSourceManager实例
      */
     public static cn.qaiu.vx.core.lifecycle.DataSourceManager createDataSourceManager(Vertx vertx) {
-        return new DataSourceManager(vertx);
+        return cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
     }
     
     /**
@@ -28,6 +27,6 @@ public class DataSourceManagerFactory {
      * @return DataSourceManager实例
      */
     public static cn.qaiu.vx.core.lifecycle.DataSourceManager getInstance(Vertx vertx) {
-        return DataSourceManager.getInstance(vertx);
+        return cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
     }
 }

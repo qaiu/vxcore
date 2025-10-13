@@ -34,10 +34,10 @@ public class UserController {
      * 获取所有用户
      */
     @RouteMapping(value = "", method = HttpMethod.GET)
-    public Future<JsonResult> getAllUsers() {
+    public Future<JsonResult<?>> getAllUsers() {
         LOGGER.info("Getting all users");
         return userService.findAllUsers()
-            .map(users -> JsonResult.success(users))
+            .map(users -> (JsonResult<?>) JsonResult.data(users))
             .recover(error -> {
                 LOGGER.error("Failed to get all users", error);
                 return Future.succeededFuture(JsonResult.error("获取用户列表失败: " + error.getMessage()));
@@ -48,14 +48,14 @@ public class UserController {
      * 根据ID获取用户
      */
     @RouteMapping(value = "/{id}", method = HttpMethod.GET)
-    public Future<JsonResult> getUserById(Long id) {
+    public Future<JsonResult<?>> getUserById(Long id) {
         LOGGER.info("Getting user by id: {}", id);
         return userService.findUserById(id)
             .map(user -> {
                 if (user != null) {
-                    return JsonResult.success(user);
+                    return (JsonResult<?>) JsonResult.data(user);
                 } else {
-                    return JsonResult.error("用户不存在", 404);
+                    return (JsonResult<?>) JsonResult.error("用户不存在", 404);
                 }
             })
             .recover(error -> {
@@ -68,10 +68,10 @@ public class UserController {
      * 创建用户
      */
     @RouteMapping(value = "", method = HttpMethod.POST)
-    public Future<JsonResult> createUser(User user) {
+    public Future<JsonResult<?>> createUser(User user) {
         LOGGER.info("Creating user: {}", user);
         return userService.createUser(user)
-            .map(createdUser -> JsonResult.success(createdUser, "用户创建成功"))
+            .map(createdUser -> (JsonResult<?>) JsonResult.data("用户创建成功", createdUser))
             .recover(error -> {
                 LOGGER.error("Failed to create user: {}", user, error);
                 return Future.succeededFuture(JsonResult.error("创建用户失败: " + error.getMessage()));
@@ -82,11 +82,11 @@ public class UserController {
      * 更新用户
      */
     @RouteMapping(value = "/{id}", method = HttpMethod.PUT)
-    public Future<JsonResult> updateUser(Long id, User user) {
+    public Future<JsonResult<?>> updateUser(Long id, User user) {
         LOGGER.info("Updating user id: {}, data: {}", id, user);
         user.setId(id);
         return userService.updateUser(user)
-            .map(updatedUser -> JsonResult.success(updatedUser, "用户更新成功"))
+            .map(updatedUser -> (JsonResult<?>) JsonResult.data("用户更新成功", updatedUser))
             .recover(error -> {
                 LOGGER.error("Failed to update user id: {}", id, error);
                 return Future.succeededFuture(JsonResult.error("更新用户失败: " + error.getMessage()));
@@ -97,14 +97,14 @@ public class UserController {
      * 删除用户
      */
     @RouteMapping(value = "/{id}", method = HttpMethod.DELETE)
-    public Future<JsonResult> deleteUser(Long id) {
+    public Future<JsonResult<?>> deleteUser(Long id) {
         LOGGER.info("Deleting user id: {}", id);
         return userService.deleteUser(id)
             .map(deleted -> {
                 if (deleted) {
-                    return JsonResult.success("用户删除成功");
+                    return (JsonResult<?>) JsonResult.success("用户删除成功");
                 } else {
-                    return JsonResult.error("用户不存在", 404);
+                    return (JsonResult<?>) JsonResult.error("用户不存在", 404);
                 }
             })
             .recover(error -> {
@@ -117,10 +117,10 @@ public class UserController {
      * 根据用户名搜索用户
      */
     @RouteMapping(value = "/search", method = HttpMethod.GET)
-    public Future<JsonResult> searchUsers(String name) {
+    public Future<JsonResult<?>> searchUsers(String name) {
         LOGGER.info("Searching users by name: {}", name);
         return userService.findUsersByName(name)
-            .map(users -> JsonResult.success(users))
+            .map(users -> (JsonResult<?>) JsonResult.data(users))
             .recover(error -> {
                 LOGGER.error("Failed to search users by name: {}", name, error);
                 return Future.succeededFuture(JsonResult.error("搜索用户失败: " + error.getMessage()));
@@ -131,10 +131,10 @@ public class UserController {
      * 批量创建用户
      */
     @RouteMapping(value = "/batch", method = HttpMethod.POST)
-    public Future<JsonResult> batchCreateUsers(List<User> users) {
+    public Future<JsonResult<?>> batchCreateUsers(List<User> users) {
         LOGGER.info("Batch creating {} users", users.size());
         return userService.batchCreateUsers(users)
-            .map(createdUsers -> JsonResult.success(createdUsers, "批量创建用户成功"))
+            .map(createdUsers -> (JsonResult<?>) JsonResult.data("批量创建用户成功", createdUsers))
             .recover(error -> {
                 LOGGER.error("Failed to batch create users", error);
                 return Future.succeededFuture(JsonResult.error("批量创建用户失败: " + error.getMessage()));
