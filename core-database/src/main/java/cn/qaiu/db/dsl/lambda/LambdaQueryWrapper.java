@@ -23,6 +23,7 @@ public class LambdaQueryWrapper<T> {
     private final DSLContext dslContext;
     private final Table<?> table;
     private final Class<T> entityClass;
+    private final cn.qaiu.db.dsl.core.JooqExecutor executor;
     private final List<Condition> conditions;
     private final List<SortField<?>> orderByFields;
     private final List<Field<?>> selectFields;
@@ -34,6 +35,20 @@ public class LambdaQueryWrapper<T> {
     
     public LambdaQueryWrapper(DSLContext dslContext, Table<?> table, Class<T> entityClass) {
         this.dslContext = dslContext;
+        this.table = table;
+        this.entityClass = entityClass;
+        this.executor = null; // 兼容旧构造函数
+        this.conditions = new ArrayList<>();
+        this.orderByFields = new ArrayList<>();
+        this.selectFields = new ArrayList<>();
+        this.joins = new ArrayList<>();
+        this.groupByFields = new ArrayList<>();
+        this.havingConditions = new ArrayList<>();
+    }
+    
+    public LambdaQueryWrapper(cn.qaiu.db.dsl.core.JooqExecutor executor, Table<?> table, Class<T> entityClass) {
+        this.executor = executor;
+        this.dslContext = executor.dsl();
         this.table = table;
         this.entityClass = entityClass;
         this.conditions = new ArrayList<>();
@@ -995,17 +1010,27 @@ public class LambdaQueryWrapper<T> {
             finalQuery = limitedQuery.offset(0);
         }
         
-        // 执行查询 - 这里需要实际的执行器
-        // 暂时返回空的Future，实际实现需要注入JooqExecutor
-        return Future.succeededFuture(dslContext.fetch(finalQuery));
+        // 执行查询 - 使用JooqExecutor
+        if (executor != null) {
+            // 直接使用DSLContext执行查询，因为LambdaQueryWrapper需要jOOQ Result类型
+            return Future.succeededFuture(dslContext.fetch(finalQuery));
+        } else {
+            // 兼容旧版本，直接使用DSLContext
+            return Future.succeededFuture(dslContext.fetch(finalQuery));
+        }
     }
     
     /**
      * 执行COUNT查询
      */
     private Future<Long> executeCountQuery(SelectConditionStep<Record1<Integer>> countQuery) {
-        // 执行COUNT查询 - 这里需要实际的执行器
-        // 暂时返回0，实际实现需要注入JooqExecutor
-        return Future.succeededFuture(0L);
+        // 执行COUNT查询 - 直接使用DSLContext
+        if (executor != null) {
+            // 使用DSLContext执行查询
+            return Future.succeededFuture(dslContext.fetchOne(countQuery).value1().longValue());
+        } else {
+            // 兼容旧版本，直接使用DSLContext
+            return Future.succeededFuture(0L);
+        }
     }
 }

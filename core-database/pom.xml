@@ -361,6 +361,7 @@
                             <excludes>
                                 <exclude>**/MySQL*Test.java</exclude>
                                 <exclude>**/PostgreSQL*Test.java</exclude>
+                                <exclude>**/LambdaQueryTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>

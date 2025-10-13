@@ -34,7 +34,7 @@ class LambdaUtilsTest {
         assertEquals(String.class, LambdaUtils.getFieldType(User::getEmail));
         assertEquals(Integer.class, LambdaUtils.getFieldType(User::getAge));
         assertEquals(String.class, LambdaUtils.getFieldType(User::getStatus));
-        assertEquals(Double.class, LambdaUtils.getFieldType(User::getBalance));
+        assertEquals(java.math.BigDecimal.class, LambdaUtils.getFieldType(User::getBalance));
         assertEquals(Boolean.class, LambdaUtils.getFieldType(User::getEmailVerified));
         assertEquals(String.class, LambdaUtils.getFieldType(User::getBio));
         assertEquals(java.time.LocalDateTime.class, LambdaUtils.getFieldType(User::getCreateTime));

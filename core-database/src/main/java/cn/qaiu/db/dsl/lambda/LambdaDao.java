@@ -42,7 +42,7 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
      */
     public LambdaQueryWrapper<T> lambdaQuery() {
         Table<?> table = DSL.table(tableName);
-        return new LambdaQueryWrapper<>(getExecutor().dsl(), table, entityClass);
+        return new LambdaQueryWrapper<>(getExecutor(), table, entityClass);
     }
     
     /**

@@ -261,6 +261,16 @@ public class DataSourceManager implements DataSourceManagerInterface {
     }
     
     /**
+     * 清除所有数据源配置（用于测试）
+     */
+    public void clearAllConfigs() {
+        configs.clear();
+        pools.clear();
+        executors.clear();
+        LOGGER.info("Cleared all datasource configs");
+    }
+    
+    /**
      * 获取所有数据源名称
      */
     public List<String> getDataSourceNames() {
