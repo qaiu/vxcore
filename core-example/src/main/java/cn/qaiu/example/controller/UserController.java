@@ -1,6 +1,7 @@
 package cn.qaiu.example.controller;
 
 import cn.qaiu.example.model.User;
+import cn.qaiu.example.model.UserRegistrationRequest;
 import cn.qaiu.example.service.UserService;
 import cn.qaiu.vx.core.annotaions.RouteHandler;
 import cn.qaiu.vx.core.annotaions.RouteMapping;
@@ -138,6 +139,21 @@ public class UserController {
             .recover(error -> {
                 LOGGER.error("Failed to batch create users", error);
                 return Future.succeededFuture(JsonResult.error("批量创建用户失败: " + error.getMessage()));
+            });
+    }
+    
+    /**
+     * 用户注册端点
+     * 提供完整的注册验证功能
+     */
+    @RouteMapping(value = "/register", method = HttpMethod.POST)
+    public Future<JsonResult<?>> registerUser(UserRegistrationRequest request) {
+        LOGGER.info("User registration request: {}", request);
+        return userService.registerUser(request)
+            .map(registeredUser -> (JsonResult<?>) JsonResult.data("注册成功", registeredUser))
+            .recover(error -> {
+                LOGGER.error("Failed to register user: {}", request, error);
+                return Future.succeededFuture(JsonResult.error("注册失败: " + error.getMessage()));
             });
     }
 }
