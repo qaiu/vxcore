@@ -1,0 +1,48 @@
+{
+  "name": "VXCore Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17",
+      "jdkDistro": "ms"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "redhat.java",
+        "vscjava.vscode-maven",
+        "ms-vscode.vscode-json",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "java.home": "/usr/local/sdkman/candidates/java/17.0.16-ms",
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-17",
+            "path": "/usr/local/sdkman/candidates/java/17.0.16-ms"
+          }
+        ],
+        "maven.executable.path": "mvn",
+        "java.compile.nullAnalysis.mode": "automatic",
+        "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml"
+      }
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  
+  "forwardPorts": [8080, 8081, 3000, 5000],
+  
+  "remoteUser": "codespace"
+}
