@@ -3,10 +3,10 @@ package cn.qaiu.example.service;
 import cn.qaiu.db.dsl.core.JooqExecutor;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
+import dagger.internal.Provider;
 import dagger.internal.QualifierMetadata;
 import dagger.internal.ScopeMetadata;
 import javax.annotation.processing.Generated;
-import javax.inject.Provider;
 
 @ScopeMetadata("javax.inject.Singleton")
 @QualifierMetadata
@@ -19,12 +19,15 @@ import javax.inject.Provider;
     "unchecked",
     "rawtypes",
     "KotlinInternal",
-    "KotlinInternalInJava"
+    "KotlinInternalInJava",
+    "cast",
+    "deprecation",
+    "nullness:initialization.field.uninitialized"
 })
 public final class ProductServiceImpl_Factory implements Factory<ProductServiceImpl> {
   private final Provider<JooqExecutor> executorProvider;
 
-  public ProductServiceImpl_Factory(Provider<JooqExecutor> executorProvider) {
+  private ProductServiceImpl_Factory(Provider<JooqExecutor> executorProvider) {
     this.executorProvider = executorProvider;
   }
 

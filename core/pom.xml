@@ -178,6 +178,7 @@
                     </annotationProcessorPaths>
                     <annotationProcessors>
                         <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                        <annotationProcessor>dagger.internal.codegen.ComponentProcessor</annotationProcessor>
                     </annotationProcessors>
                     <generatedSourcesDirectory>
                         ${project.basedir}/src/main/generated

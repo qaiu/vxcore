@@ -3,10 +3,10 @@ package cn.qaiu.example.dao;
 import cn.qaiu.db.dsl.core.JooqExecutor;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
+import dagger.internal.Provider;
 import dagger.internal.QualifierMetadata;
 import dagger.internal.ScopeMetadata;
 import javax.annotation.processing.Generated;
-import javax.inject.Provider;
 
 @ScopeMetadata("javax.inject.Singleton")
 @QualifierMetadata
@@ -19,12 +19,15 @@ import javax.inject.Provider;
     "unchecked",
     "rawtypes",
     "KotlinInternal",
-    "KotlinInternalInJava"
+    "KotlinInternalInJava",
+    "cast",
+    "deprecation",
+    "nullness:initialization.field.uninitialized"
 })
 public final class OrderDetailDao_Factory implements Factory<OrderDetailDao> {
   private final Provider<JooqExecutor> executorProvider;
 
-  public OrderDetailDao_Factory(Provider<JooqExecutor> executorProvider) {
+  private OrderDetailDao_Factory(Provider<JooqExecutor> executorProvider) {
     this.executorProvider = executorProvider;
   }
 

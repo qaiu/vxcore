@@ -28,7 +28,7 @@
 
         <vertx.version>4.5.21</vertx.version>
         <org.reflections.version>0.10.2</org.reflections.version>
-        <lombok.version>1.18.38</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <slf4j.version>2.0.5</slf4j.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <commons-beanutils2.version>2.0.0</commons-beanutils2.version>
@@ -38,8 +38,8 @@
         <jooq.version>3.19.11</jooq.version>
         
         <!-- Plugin Versions -->
-        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
-        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>3.2.5</maven.failsafe.plugin.version>
         <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.6.3</maven.javadoc.plugin.version>

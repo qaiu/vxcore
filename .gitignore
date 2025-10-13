@@ -49,6 +49,10 @@ test-output/
 generated-sources/
 generated-test-sources/
 
+# Dagger generated files
+**/src/main/generated/
+**/src/test/generated/
+
 # Database files
 *.db
 *.sqlite
