@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Pool;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,18 +26,33 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MultiDataSourceTest {
     
     private Vertx vertx;
-    private DataSourceManager dataSourceManager;
+    private cn.qaiu.db.datasource.DataSourceManager dataSourceManager;
     
     @BeforeEach
     void setUp() {
         vertx = Vertx.vertx();
-        dataSourceManager = DataSourceManager.getInstance(vertx);
+        dataSourceManager = cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
         
         // 清除之前测试遗留的数据源配置
         try {
             dataSourceManager.closeAllDataSources().toCompletionStage().toCompletableFuture().get(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             // 忽略清除错误
+        }
+    }
+    
+    @AfterEach
+    void tearDown() {
+        // 清理测试数据源
+        if (dataSourceManager != null) {
+            try {
+                dataSourceManager.closeAllDataSources().toCompletionStage().toCompletableFuture().get(5, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                // 忽略清理错误
+            }
+        }
+        if (vertx != null) {
+            vertx.close();
         }
     }
     
@@ -141,7 +157,7 @@ public class MultiDataSourceTest {
         dataSourceManager.registerDataSource("test", config)
             .compose(v -> dataSourceManager.initializeDataSource("test"))
             .onSuccess(v -> {
-                Pool pool = dataSourceManager.getPool("test");
+                Pool pool = (Pool) dataSourceManager.getPool("test");
                 JooqExecutor executor = dataSourceManager.getExecutor("test");
                 
                 assertNotNull(pool);
@@ -218,12 +234,14 @@ public class MultiDataSourceTest {
         
         DataSourceConfigLoader loader = new DataSourceConfigLoader(vertx);
         
+        // 使用唯一的数据源名称避免冲突
+        String uniqueDbName = "testdb_" + System.currentTimeMillis();
         JsonObject config = new JsonObject()
             .put("datasources", new JsonObject()
                 .put("test", new JsonObject()
                     .put("type", "h2")
-                    .put("jdbcUrl", "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1")
-                    .put("user", "sa")
+                    .put("url", "jdbc:h2:mem:" + uniqueDbName + ";DB_CLOSE_DELAY=-1")
+                    .put("username", "sa")
                     .put("password", "")
                     .put("max_pool_size", 5)));
         
@@ -231,7 +249,7 @@ public class MultiDataSourceTest {
             .compose(v -> loader.initializeAllDataSources())
             .onSuccess(v -> {
                 assertTrue(dataSourceManager.getDataSourceNames().contains("test"));
-                Pool pool = dataSourceManager.getPool("test");
+                Pool pool = (Pool) dataSourceManager.getPool("test");
                 assertNotNull(pool);
                 latch.countDown();
             })

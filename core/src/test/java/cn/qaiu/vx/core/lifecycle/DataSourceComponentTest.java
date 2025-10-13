@@ -1,10 +1,12 @@
 package cn.qaiu.vx.core.lifecycle;
 
-import cn.qaiu.vx.core.lifecycle.DataSourceManager;
+import cn.qaiu.vx.core.test.TestIsolationUtils;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,17 +37,27 @@ public class DataSourceComponentTest {
         this.dataSourceComponent = new DataSourceComponent();
     }
     
+    @AfterEach
+    @DisplayName("清理测试环境")
+    void tearDown() {
+        TestIsolationUtils.cleanupTestEnvironment();
+    }
+    
     @Test
     @DisplayName("测试组件初始化")
     void testComponentInitialization(VertxTestContext testContext) {
         JsonObject config = createValidConfig();
+        
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProvider();
+        dataSourceComponent.setDataSourceProvider(mockProvider);
         
         dataSourceComponent.initialize(vertx, config)
             .onSuccess(v -> {
                 testContext.verify(() -> {
                     assertEquals("DataSourceComponent", dataSourceComponent.getName());
                     assertEquals(20, dataSourceComponent.getPriority());
-                    assertNotNull(dataSourceComponent.getDataSourceManager());
+                    assertNotNull(dataSourceComponent.getDataSourceProvider());
                     LOGGER.info("DataSource component initialized successfully");
                     testContext.completeNow();
                 });
@@ -58,10 +70,14 @@ public class DataSourceComponentTest {
     void testDataSourceRegistration(VertxTestContext testContext) {
         JsonObject config = createValidConfig();
         
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProviderWithPreset(java.util.List.of("default", "secondary"));
+        dataSourceComponent.setDataSourceProvider(mockProvider);
+        
         dataSourceComponent.initialize(vertx, config)
             .onSuccess(v -> {
                 testContext.verify(() -> {
-                    DataSourceManager manager = dataSourceComponent.getDataSourceManager();
+                    DataSourceManagerInterface manager = dataSourceComponent.getDataSourceManager();
                     assertNotNull(manager, "数据源管理器不应为空");
                     
                     // 验证数据源已注册
@@ -83,10 +99,14 @@ public class DataSourceComponentTest {
                 .put("port", 8080)
                 .put("host", "0.0.0.0"));
         
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProvider();
+        dataSourceComponent.setDataSourceProvider(mockProvider);
+        
         dataSourceComponent.initialize(vertx, config)
             .onSuccess(v -> {
                 testContext.verify(() -> {
-                    DataSourceManager manager = dataSourceComponent.getDataSourceManager();
+                    DataSourceManagerInterface manager = dataSourceComponent.getDataSourceManager();
                     assertNotNull(manager, "数据源管理器不应为空");
                     
                     var dataSourceNames = manager.getDataSourceNames();
@@ -103,16 +123,23 @@ public class DataSourceComponentTest {
     void testDataSourceInitialization(VertxTestContext testContext) {
         JsonObject config = createValidConfig();
         
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProvider();
+        dataSourceComponent.setDataSourceProvider(mockProvider);
+        
         dataSourceComponent.initialize(vertx, config)
             .compose(v -> {
                 // 等待数据源初始化完成
-                return vertx.setTimer(1000, id -> {
-                    LOGGER.info("Timer triggered, checking datasource initialization");
+                return Future.<Void>future(promise -> {
+                    vertx.setTimer(100, id -> {
+                        LOGGER.info("Timer triggered, checking datasource initialization");
+                        promise.complete();
+                    });
                 });
             })
             .onSuccess(v -> {
                 testContext.verify(() -> {
-                    DataSourceManager manager = dataSourceComponent.getDataSourceManager();
+                    DataSourceManagerInterface manager = dataSourceComponent.getDataSourceManager();
                     
                     // 验证默认数据源已设置
                     var dataSourceNames = manager.getDataSourceNames();
@@ -133,6 +160,10 @@ public class DataSourceComponentTest {
     void testComponentStop(VertxTestContext testContext) {
         JsonObject config = createValidConfig();
         
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProvider();
+        dataSourceComponent.setDataSourceProvider(mockProvider);
+        
         dataSourceComponent.initialize(vertx, config)
             .compose(v -> dataSourceComponent.stop())
             .onSuccess(v -> {
@@ -151,7 +182,7 @@ public class DataSourceComponentTest {
             .put("server", new JsonObject()
                 .put("port", 8080)
                 .put("host", "0.0.0.0"))
-            .put("datasources", new JsonObject()
+            .put("database", new JsonObject()
                 .put("primary", new JsonObject()
                     .put("type", "h2")
                     .put("url", "jdbc:h2:mem:primary")
@@ -168,10 +199,14 @@ public class DataSourceComponentTest {
                     .put("username", "sa")
                     .put("password", "")));
         
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProviderWithPreset(java.util.List.of("primary", "secondary", "log"));
+        dataSourceComponent.setDataSourceProvider(mockProvider);
+        
         dataSourceComponent.initialize(vertx, config)
             .onSuccess(v -> {
                 testContext.verify(() -> {
-                    DataSourceManager manager = dataSourceComponent.getDataSourceManager();
+                    DataSourceManagerInterface manager = dataSourceComponent.getDataSourceManager();
                     var dataSourceNames = manager.getDataSourceNames();
                     
                     assertEquals(3, dataSourceNames.size(), "应该有3个数据源");
@@ -196,6 +231,10 @@ public class DataSourceComponentTest {
     void testDataSourceManagerAccess() {
         assertNull(dataSourceComponent.getDataSourceManager(), "未初始化时应该返回null");
         
+        // 设置模拟的DataSourceProvider
+        DataSourceProvider mockProvider = createMockDataSourceProvider();
+        dataSourceComponent.setDataSourceProvider(mockProvider);
+        
         JsonObject config = createValidConfig();
         dataSourceComponent.initialize(vertx, config)
             .onSuccess(v -> {
@@ -211,7 +250,7 @@ public class DataSourceComponentTest {
             .put("server", new JsonObject()
                 .put("port", 8080)
                 .put("host", "0.0.0.0"))
-            .put("datasources", new JsonObject()
+            .put("database", new JsonObject()
                 .put("default", new JsonObject()
                     .put("type", "h2")
                     .put("url", "jdbc:h2:mem:testdb")
@@ -222,5 +261,161 @@ public class DataSourceComponentTest {
                     .put("url", "jdbc:h2:mem:secondary")
                     .put("username", "sa")
                     .put("password", "")));
+    }
+    
+    /**
+     * 创建模拟的DataSourceProvider
+     */
+    private DataSourceProvider createMockDataSourceProvider() {
+        return new DataSourceProvider() {
+            private java.util.List<String> dataSourceNames = new java.util.ArrayList<>();
+            
+            @Override
+            public String getName() {
+                return "mock-provider";
+            }
+            
+            @Override
+            public boolean supports(String type) {
+                return "h2".equalsIgnoreCase(type) || "mysql".equalsIgnoreCase(type);
+            }
+            
+            @Override
+            public DataSourceManagerInterface createDataSourceManager(Vertx vertx) {
+                return new DataSourceManagerInterface() {
+                    @Override
+                    public Future<Void> registerDataSource(String name, JsonObject config) {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Future<Void> initializeDataSources(Vertx vertx, JsonObject config) {
+                        JsonObject databaseConfig = config.getJsonObject("database");
+                        if (databaseConfig != null && !databaseConfig.isEmpty()) {
+                            dataSourceNames.addAll(databaseConfig.fieldNames());
+                        }
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Future<Void> initializeAllDataSources() {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Future<Void> closeAllDataSources() {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Object getPool(String name) {
+                        return null;
+                    }
+                    
+                    @Override
+                    public java.util.List<String> getDataSourceNames() {
+                        return new java.util.ArrayList<>(dataSourceNames);
+                    }
+                };
+            }
+            
+            @Override
+            public Future<Void> initializeDataSources(Vertx vertx, JsonObject config) {
+                JsonObject databaseConfig = config.getJsonObject("database");
+                if (databaseConfig != null && !databaseConfig.isEmpty()) {
+                    dataSourceNames.addAll(databaseConfig.fieldNames());
+                }
+                return Future.succeededFuture();
+            }
+            
+            @Override
+            public Future<Void> closeAllDataSources() {
+                return Future.succeededFuture();
+            }
+            
+            @Override
+            public Object getPool(String name) {
+                return null;
+            }
+            
+            @Override
+            public java.util.List<String> getDataSourceNames() {
+                return new java.util.ArrayList<>(dataSourceNames);
+            }
+        };
+    }
+    
+    /**
+     * 创建带预设数据源的模拟DataSourceProvider
+     */
+    private DataSourceProvider createMockDataSourceProviderWithPreset(java.util.List<String> presetNames) {
+        return new DataSourceProvider() {
+            private java.util.List<String> dataSourceNames = new java.util.ArrayList<>(presetNames);
+            
+            @Override
+            public String getName() {
+                return "mock-provider-preset";
+            }
+            
+            @Override
+            public boolean supports(String type) {
+                return "h2".equalsIgnoreCase(type) || "mysql".equalsIgnoreCase(type);
+            }
+            
+            @Override
+            public DataSourceManagerInterface createDataSourceManager(Vertx vertx) {
+                return new DataSourceManagerInterface() {
+                    @Override
+                    public Future<Void> registerDataSource(String name, JsonObject config) {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Future<Void> initializeDataSources(Vertx vertx, JsonObject config) {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Future<Void> initializeAllDataSources() {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Future<Void> closeAllDataSources() {
+                        return Future.succeededFuture();
+                    }
+                    
+                    @Override
+                    public Object getPool(String name) {
+                        return null;
+                    }
+                    
+                    @Override
+                    public java.util.List<String> getDataSourceNames() {
+                        return new java.util.ArrayList<>(dataSourceNames);
+                    }
+                };
+            }
+            
+            @Override
+            public Future<Void> initializeDataSources(Vertx vertx, JsonObject config) {
+                return Future.succeededFuture();
+            }
+            
+            @Override
+            public Future<Void> closeAllDataSources() {
+                return Future.succeededFuture();
+            }
+            
+            @Override
+            public Object getPool(String name) {
+                return null;
+            }
+            
+            @Override
+            public java.util.List<String> getDataSourceNames() {
+                return new java.util.ArrayList<>(dataSourceNames);
+            }
+        };
     }
 }

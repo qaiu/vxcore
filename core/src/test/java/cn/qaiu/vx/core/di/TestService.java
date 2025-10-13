@@ -21,6 +21,7 @@ public class TestService implements TestServiceInterface {
 /**
  * 测试服务接口
  */
+@io.vertx.codegen.annotations.ProxyGen
 interface TestServiceInterface {
     Future<String> getValue(String key);
 }

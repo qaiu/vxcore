@@ -16,7 +16,7 @@ public class DataSourceManagerFactory {
      * @param vertx Vertx实例
      * @return DataSourceManager实例
      */
-    public static cn.qaiu.vx.core.lifecycle.DataSourceManager createDataSourceManager(Vertx vertx) {
+    public static cn.qaiu.db.datasource.DataSourceManager createDataSourceManager(Vertx vertx) {
         return cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
     }
     
@@ -26,7 +26,7 @@ public class DataSourceManagerFactory {
      * @param vertx Vertx实例
      * @return DataSourceManager实例
      */
-    public static cn.qaiu.vx.core.lifecycle.DataSourceManager getInstance(Vertx vertx) {
+    public static cn.qaiu.db.datasource.DataSourceManager getInstance(Vertx vertx) {
         return cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
     }
 }

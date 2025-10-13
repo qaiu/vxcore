@@ -1,6 +1,7 @@
 package cn.qaiu.db.datasource;
 
 import cn.qaiu.db.dsl.core.JooqExecutor;
+import cn.qaiu.vx.core.lifecycle.DataSourceManagerInterface;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -17,14 +18,14 @@ import java.util.stream.Collectors;
 /**
  * 数据源管理器实现
  * 支持多数据源的配置、创建、管理和动态切换
- * 实现core模块中的DataSourceManager接口
+ * 实现core模块中的DataSourceManagerInterface接口
  * 
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-public class DataSourceManager implements cn.qaiu.vx.core.lifecycle.DataSourceManager {
-    
+public class DataSourceManager implements DataSourceManagerInterface {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceManager.class);
-    
+
     private static final AtomicReference<DataSourceManager> INSTANCE = new AtomicReference<>();
     
     private final Vertx vertx;

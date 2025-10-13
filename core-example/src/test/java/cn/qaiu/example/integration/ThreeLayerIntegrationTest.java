@@ -2,8 +2,8 @@ package cn.qaiu.example.integration;
 
 import cn.qaiu.example.controller.UserController;
 import cn.qaiu.example.dao.UserDao;
-import cn.qaiu.example.model.User;
-import cn.qaiu.example.service.UserService;
+import cn.qaiu.example.entity.User;
+import cn.qaiu.example.service.UserServiceImpl;
 import cn.qaiu.vx.core.VXCoreApplication;
 import cn.qaiu.vx.core.model.JsonResult;
 import io.vertx.core.Future;
@@ -41,7 +41,7 @@ public class ThreeLayerIntegrationTest {
     private Vertx vertx;
     private HttpClient httpClient;
     private UserController userController;
-    private UserService userService;
+    private UserServiceImpl userService;
     private UserDao userDao;
     
     @BeforeEach
@@ -53,7 +53,7 @@ public class ThreeLayerIntegrationTest {
         
         // 初始化三层组件
         this.userDao = new UserDao();
-        this.userService = new UserService();
+        this.userService = new UserServiceImpl();
         this.userController = new UserController();
         
         // 启动应用
@@ -83,6 +83,17 @@ public class ThreeLayerIntegrationTest {
         }
     }
     
+    /**
+     * 创建User对象的辅助方法
+     */
+    private User createUser(String username, String email, Integer age) {
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setAge(age);
+        return user;
+    }
+    
     @Test
     @DisplayName("测试DAO层 - 基础CRUD操作")
     void testDaoLayerBasicCrud(VertxTestContext testContext) {
@@ -98,22 +109,26 @@ public class ThreeLayerIntegrationTest {
                 // 测试根据ID查找用户
                 return userDao.findById(1L);
             })
-            .compose(user -> {
+            .compose(userOpt -> {
                 testContext.verify(() -> {
-                    assertNotNull(user, "用户不应为空");
+                    assertTrue(userOpt.isPresent(), "用户应该存在");
+                    User user = userOpt.get();
                     assertEquals(1L, user.getId(), "用户ID应该是1");
-                    assertEquals("张三", user.getName(), "用户名应该是张三");
+                    assertEquals("张三", user.getUsername(), "用户名应该是张三");
                     LOGGER.info("Found user: {}", user);
                 });
                 
                 // 测试创建新用户
-                User newUser = new User("测试用户", "test@example.com", 25);
+                User newUser = new User();
+                newUser.setUsername("测试用户");
+                newUser.setEmail("test@example.com");
+                newUser.setAge(25);
                 return userDao.save(newUser);
             })
             .compose(savedUser -> {
                 testContext.verify(() -> {
                     assertNotNull(savedUser.getId(), "保存的用户应该有ID");
-                    assertEquals("测试用户", savedUser.getName(), "用户名应该正确");
+                    assertEquals("测试用户", savedUser.getUsername(), "用户名应该正确");
                     LOGGER.info("Created user: {}", savedUser);
                 });
                 
@@ -121,13 +136,16 @@ public class ThreeLayerIntegrationTest {
                 savedUser.setAge(26);
                 return userDao.update(savedUser);
             })
-            .compose(updatedUser -> {
+            .compose(updatedUserOpt -> {
                 testContext.verify(() -> {
+                    assertTrue(updatedUserOpt.isPresent(), "更新后的用户应该存在");
+                    User updatedUser = updatedUserOpt.get();
                     assertEquals(26, updatedUser.getAge(), "年龄应该已更新");
                     LOGGER.info("Updated user: {}", updatedUser);
                 });
                 
                 // 测试删除用户
+                User updatedUser = updatedUserOpt.get();
                 return userDao.deleteById(updatedUser.getId());
             })
             .onSuccess(deleted -> {
@@ -153,13 +171,16 @@ public class ThreeLayerIntegrationTest {
                 });
                 
                 // 测试创建用户
-                User newUser = new User("服务测试用户", "service@example.com", 30);
+                User newUser = new User();
+                newUser.setUsername("服务测试用户");
+                newUser.setEmail("service@example.com");
+                newUser.setAge(30);
                 return userService.createUser(newUser);
             })
             .compose(createdUser -> {
                 testContext.verify(() -> {
                     assertNotNull(createdUser.getId(), "创建的用户应该有ID");
-                    assertEquals("服务测试用户", createdUser.getName(), "用户名应该正确");
+                    assertEquals("服务测试用户", createdUser.getUsername(), "用户名应该正确");
                     LOGGER.info("Service created user: {}", createdUser);
                 });
                 
@@ -175,9 +196,9 @@ public class ThreeLayerIntegrationTest {
                 
                 // 测试批量创建用户
                 List<User> batchUsers = List.of(
-                    new User("批量用户1", "batch1@example.com", 25),
-                    new User("批量用户2", "batch2@example.com", 26),
-                    new User("批量用户3", "batch3@example.com", 27)
+                    createUser("批量用户1", "batch1@example.com", 25),
+                    createUser("批量用户2", "batch2@example.com", 26),
+                    createUser("批量用户3", "batch3@example.com", 27)
                 );
                 return userService.batchCreateUsers(batchUsers);
             })
@@ -212,7 +233,7 @@ public class ThreeLayerIntegrationTest {
                 
                 // 测试创建用户时缺少邮箱
                 User invalidUser2 = new User();
-                invalidUser2.setName("测试用户");
+                invalidUser2.setUsername("测试用户");
                 
                 userService.createUser(invalidUser2)
                     .onSuccess(user -> {
@@ -237,7 +258,7 @@ public class ThreeLayerIntegrationTest {
             .compose(result -> {
                 testContext.verify(() -> {
                     assertNotNull(result, "结果不应为空");
-                    assertTrue(result.isSuccess(), "应该成功");
+                    assertTrue(result.getSuccess(), "应该成功");
                     assertNotNull(result.getData(), "数据不应为空");
                     LOGGER.info("Controller got all users: {}", result);
                 });
@@ -248,19 +269,19 @@ public class ThreeLayerIntegrationTest {
             .compose(result -> {
                 testContext.verify(() -> {
                     assertNotNull(result, "结果不应为空");
-                    assertTrue(result.isSuccess(), "应该成功");
+                    assertTrue(result.getSuccess(), "应该成功");
                     assertNotNull(result.getData(), "数据不应为空");
                     LOGGER.info("Controller got user by id: {}", result);
                 });
                 
                 // 测试创建用户
-                User newUser = new User("控制器测试用户", "controller@example.com", 28);
+                User newUser = createUser("控制器测试用户", "controller@example.com", 28);
                 return userController.createUser(newUser);
             })
             .compose(result -> {
                 testContext.verify(() -> {
                     assertNotNull(result, "结果不应为空");
-                    assertTrue(result.isSuccess(), "应该成功");
+                    assertTrue(result.getSuccess(), "应该成功");
                     assertNotNull(result.getData(), "数据不应为空");
                     LOGGER.info("Controller created user: {}", result);
                 });
@@ -271,7 +292,7 @@ public class ThreeLayerIntegrationTest {
             .onSuccess(result -> {
                 testContext.verify(() -> {
                     assertNotNull(result, "结果不应为空");
-                    assertTrue(result.isSuccess(), "应该成功");
+                    assertTrue(result.getSuccess(), "应该成功");
                     assertNotNull(result.getData(), "数据不应为空");
                     LOGGER.info("Controller searched users: {}", result);
                     testContext.completeNow();
@@ -284,12 +305,12 @@ public class ThreeLayerIntegrationTest {
     @DisplayName("测试完整业务流程")
     void testCompleteBusinessFlow(VertxTestContext testContext) {
         // 1. 创建用户
-        User newUser = new User("完整流程测试", "complete@example.com", 30);
+        User newUser = createUser("完整流程测试", "complete@example.com", 30);
         
         userController.createUser(newUser)
             .compose(createResult -> {
                 testContext.verify(() -> {
-                    assertTrue(createResult.isSuccess(), "创建用户应该成功");
+                    assertTrue(createResult.getSuccess(), "创建用户应该成功");
                     LOGGER.info("Step 1 - Created user: {}", createResult);
                 });
                 
@@ -299,18 +320,18 @@ public class ThreeLayerIntegrationTest {
             })
             .compose(getResult -> {
                 testContext.verify(() -> {
-                    assertTrue(getResult.isSuccess(), "获取用户应该成功");
+                    assertTrue(getResult.getSuccess(), "获取用户应该成功");
                     LOGGER.info("Step 2 - Got user: {}", getResult);
                 });
                 
                 // 3. 更新用户
                 User userToUpdate = getResult.getData();
                 userToUpdate.setAge(31);
-                return userController.updateUser(userToUpdate);
+                return userController.updateUser(userToUpdate.getId(), userToUpdate);
             })
             .compose(updateResult -> {
                 testContext.verify(() -> {
-                    assertTrue(updateResult.isSuccess(), "更新用户应该成功");
+                    assertTrue(updateResult.getSuccess(), "更新用户应该成功");
                     LOGGER.info("Step 3 - Updated user: {}", updateResult);
                 });
                 
@@ -319,18 +340,19 @@ public class ThreeLayerIntegrationTest {
             })
             .compose(searchResult -> {
                 testContext.verify(() -> {
-                    assertTrue(searchResult.isSuccess(), "搜索用户应该成功");
+                    assertTrue(searchResult.getSuccess(), "搜索用户应该成功");
                     assertNotNull(searchResult.getData(), "搜索结果不应为空");
                     LOGGER.info("Step 4 - Searched users: {}", searchResult);
                 });
                 
                 // 5. 删除用户
-                User userToDelete = searchResult.getData();
+                List<User> searchResults = searchResult.getData();
+                User userToDelete = searchResults.get(0);
                 return userController.deleteUser(userToDelete.getId());
             })
             .onSuccess(deleteResult -> {
                 testContext.verify(() -> {
-                    assertTrue(deleteResult.isSuccess(), "删除用户应该成功");
+                    assertTrue(deleteResult.getSuccess(), "删除用户应该成功");
                     LOGGER.info("Step 5 - Deleted user: {}", deleteResult);
                     testContext.completeNow();
                 });
@@ -345,7 +367,7 @@ public class ThreeLayerIntegrationTest {
         userController.getUserById(999L)
             .onSuccess(result -> {
                 testContext.verify(() -> {
-                    assertFalse(result.isSuccess(), "应该失败");
+                    assertFalse(result.getSuccess(), "应该失败");
                     assertEquals(404, result.getCode(), "应该返回404错误");
                     LOGGER.info("Error handling test - User not found: {}", result);
                 });
@@ -370,12 +392,12 @@ public class ThreeLayerIntegrationTest {
     @DisplayName("测试并发操作")
     void testConcurrentOperations(VertxTestContext testContext) {
         // 并发创建多个用户
-        List<Future<JsonResult>> futures = List.of(
-            userController.createUser(new User("并发用户1", "concurrent1@example.com", 25)),
-            userController.createUser(new User("并发用户2", "concurrent2@example.com", 26)),
-            userController.createUser(new User("并发用户3", "concurrent3@example.com", 27)),
-            userController.createUser(new User("并发用户4", "concurrent4@example.com", 28)),
-            userController.createUser(new User("并发用户5", "concurrent5@example.com", 29))
+        List<Future<JsonResult<User>>> futures = List.of(
+            userController.createUser(createUser("并发用户1", "concurrent1@example.com", 25)),
+            userController.createUser(createUser("并发用户2", "concurrent2@example.com", 26)),
+            userController.createUser(createUser("并发用户3", "concurrent3@example.com", 27)),
+            userController.createUser(createUser("并发用户4", "concurrent4@example.com", 28)),
+            userController.createUser(createUser("并发用户5", "concurrent5@example.com", 29))
         );
         
         Future.all(futures)
@@ -384,8 +406,8 @@ public class ThreeLayerIntegrationTest {
                     assertEquals(5, results.size(), "应该创建5个用户");
                     
                     for (int i = 0; i < results.size(); i++) {
-                        JsonResult result = results.resultAt(i);
-                        assertTrue(result.isSuccess(), "第" + (i+1) + "个用户创建应该成功");
+                        JsonResult<User> result = results.resultAt(i);
+                        assertTrue(result.getSuccess(), "第" + (i+1) + "个用户创建应该成功");
                         LOGGER.info("Concurrent user {} created: {}", i+1, result);
                     }
                     

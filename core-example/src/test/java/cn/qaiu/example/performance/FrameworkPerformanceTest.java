@@ -2,8 +2,8 @@ package cn.qaiu.example.performance;
 
 import cn.qaiu.example.controller.UserController;
 import cn.qaiu.example.dao.UserDao;
-import cn.qaiu.example.model.User;
-import cn.qaiu.example.service.UserService;
+import cn.qaiu.example.entity.User;
+import cn.qaiu.example.service.UserServiceImpl;
 import cn.qaiu.vx.core.VXCoreApplication;
 import cn.qaiu.vx.core.model.JsonResult;
 import io.vertx.core.Future;
@@ -40,7 +40,7 @@ public class FrameworkPerformanceTest {
     private VXCoreApplication application;
     private Vertx vertx;
     private UserController userController;
-    private UserService userService;
+    private UserServiceImpl userService;
     private UserDao userDao;
     
     @BeforeEach
@@ -51,7 +51,7 @@ public class FrameworkPerformanceTest {
         
         // 初始化组件
         this.userDao = new UserDao();
-        this.userService = new UserService();
+        this.userService = new UserServiceImpl();
         this.userController = new UserController();
         
         // 启动应用
@@ -87,15 +87,18 @@ public class FrameworkPerformanceTest {
         
         long startTime = System.currentTimeMillis();
         
-        List<Future<JsonResult>> futures = new ArrayList<>();
+        List<Future<JsonResult<User>>> futures = new ArrayList<>();
         
         for (int i = 0; i < concurrentCount; i++) {
-            User user = new User("性能测试用户" + i, "perf" + i + "@example.com", 20 + (i % 50));
+            User user = new User();
+            user.setUsername("性能测试用户" + i);
+            user.setEmail("perf" + i + "@example.com");
+            user.setAge(20 + (i % 50));
             
-            Future<JsonResult> future = userController.createUser(user)
+            Future<JsonResult<User>> future = userController.createUser(user)
                 .onSuccess(result -> {
                     successCount.incrementAndGet();
-                    if (result.isSuccess()) {
+                    if (result.getSuccess()) {
                         LOGGER.debug("Created user successfully: {}", result.getData());
                     }
                 })
@@ -139,7 +142,10 @@ public class FrameworkPerformanceTest {
         
         // 准备测试数据
         for (int i = 0; i < batchSize; i++) {
-            User user = new User("批量用户" + i, "batch" + i + "@example.com", 20 + (i % 50));
+            User user = new User();
+            user.setUsername("批量用户" + i);
+            user.setEmail("batch" + i + "@example.com");
+            user.setAge(20 + (i % 50));
             users.add(user);
         }
         
@@ -151,7 +157,7 @@ public class FrameworkPerformanceTest {
                 long duration = endTime - startTime;
                 
                 testContext.verify(() -> {
-                    assertTrue(result.isSuccess(), "批量创建应该成功");
+                    assertTrue(result.getSuccess(), "批量创建应该成功");
                     
                     LOGGER.info("批量操作性能测试结果:");
                     LOGGER.info("- 批量大小: {}", batchSize);
@@ -176,10 +182,10 @@ public class FrameworkPerformanceTest {
         
         long startTime = System.currentTimeMillis();
         
-        List<Future<JsonResult>> futures = new ArrayList<>();
+        List<Future<?>> futures = new ArrayList<>();
         
         for (int i = 0; i < queryCount; i++) {
-            Future<JsonResult> future = userController.getAllUsers()
+            Future<JsonResult<List<User>>> future = userController.getAllUsers()
                 .onSuccess(result -> {
                     successCount.incrementAndGet();
                 })
@@ -227,7 +233,10 @@ public class FrameworkPerformanceTest {
         List<User> users = new ArrayList<>();
         
         for (int i = 0; i < userCount; i++) {
-            User user = new User("内存测试用户" + i, "memory" + i + "@example.com", 20 + (i % 50));
+            User user = new User();
+            user.setUsername("内存测试用户" + i);
+            user.setEmail("memory" + i + "@example.com");
+            user.setAge(20 + (i % 50));
             users.add(user);
         }
         
@@ -319,16 +328,18 @@ public class FrameworkPerformanceTest {
         
         long startTime = System.currentTimeMillis();
         
-        List<Future<JsonResult>> futures = new ArrayList<>();
+        List<Future<?>> futures = new ArrayList<>();
         
         // 混合操作：创建、查询、更新、删除
         for (int i = 0; i < stressLevel; i++) {
-            final int index = i;
-            Future<JsonResult> future;
+            Future<?> future;
             
             if (i % 4 == 0) {
                 // 创建用户
-                User user = new User("压力测试用户" + i, "stress" + i + "@example.com", 20 + (i % 50));
+                User user = new User();
+                user.setUsername("压力测试用户" + i);
+                user.setEmail("stress" + i + "@example.com");
+                user.setAge(20 + (i % 50));
                 future = userController.createUser(user);
             } else if (i % 4 == 1) {
                 // 查询所有用户

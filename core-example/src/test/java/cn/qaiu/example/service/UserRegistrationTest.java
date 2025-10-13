@@ -1,6 +1,8 @@
 package cn.qaiu.example.service;
 
+import cn.qaiu.example.entity.User;
 import cn.qaiu.example.model.UserRegistrationRequest;
+import cn.qaiu.example.service.UserServiceImpl;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
@@ -23,7 +25,7 @@ public class UserRegistrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRegistrationTest.class);
 
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @BeforeEach
     void setUp(Vertx vertx, VertxTestContext testContext) {
@@ -55,7 +57,7 @@ public class UserRegistrationTest {
                 .onSuccess(user -> {
                     LOGGER.info("User registered successfully: {}", user);
                     assertNotNull(user);
-                    assertEquals("testuser", user.getName());
+                    assertEquals("testuser", user.getUsername());
                     assertEquals("test@example.com", user.getEmail());
                     testContext.completeNow();
                 })
