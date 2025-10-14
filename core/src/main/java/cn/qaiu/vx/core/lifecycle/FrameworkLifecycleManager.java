@@ -194,8 +194,10 @@ public class FrameworkLifecycleManager {
             String arg = args[0];
             if (arg.startsWith("app-")) {
                 return arg;
-            } else if (arg.equals("dev") || arg.equals("prod") || arg.equals("test")) {
+            } else if (arg.equals("dev") || arg.equals("prod")) {
                 return "application";
+            } else if (arg.equals("test")) {
+                return "application-test";
             } else if (arg.equals("application")) {
                 return "application";
             }

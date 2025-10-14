@@ -31,6 +31,13 @@ public abstract class LambdaDao<T, ID> extends EnhancedDao<T, ID> {
     }
     
     /**
+     * 单参数构造函数 - 支持自动获取JooqExecutor
+     */
+    public LambdaDao(Class<T> entityClass) {
+        super(entityClass);
+    }
+    
+    /**
      * 无参构造函数 - 支持自动获取JooqExecutor
      */
     public LambdaDao() {

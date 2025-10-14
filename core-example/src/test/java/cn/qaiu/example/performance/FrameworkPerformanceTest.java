@@ -49,15 +49,15 @@ public class FrameworkPerformanceTest {
         this.vertx = vertx;
         this.application = new VXCoreApplication();
         
-        // 初始化组件
-        this.userDao = new UserDao();
-        this.userService = new UserServiceImpl();
-        this.userController = new UserController();
-        
-        // 启动应用
+        // 先启动框架
         application.start(new String[]{"test"}, config -> {
-            LOGGER.info("Performance test application started");
-        }).onSuccess(v -> {
+            LOGGER.info("Framework initialized");
+            
+            // 框架启动后再初始化DAO
+            this.userDao = new UserDao();
+            this.userService = new UserServiceImpl();
+            this.userController = new UserController();
+            
             testContext.completeNow();
         }).onFailure(testContext::failNow);
     }

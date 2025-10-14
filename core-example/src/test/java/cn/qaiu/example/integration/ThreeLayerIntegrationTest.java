@@ -48,20 +48,34 @@ public class ThreeLayerIntegrationTest {
     @DisplayName("初始化测试环境")
     void setUp(Vertx vertx, VertxTestContext testContext) {
         this.vertx = vertx;
-        this.application = new VXCoreApplication();
         this.httpClient = vertx.createHttpClient();
         
-        // 初始化三层组件
-        this.userDao = new UserDao();
-        this.userService = new UserServiceImpl();
-        this.userController = new UserController();
-        
-        // 启动应用
-        application.start(new String[]{"test"}, config -> {
-            LOGGER.info("Test application started");
-        }).onSuccess(v -> {
+        // 只在第一次初始化时启动框架
+        if (this.application == null) {
+            this.application = new VXCoreApplication();
+            
+            // 先启动框架
+            application.start(new String[]{"test"}, config -> {
+                LOGGER.info("Framework initialized with config: {}", config);
+            })
+            .onSuccess(v -> {
+                LOGGER.info("Framework started successfully");
+                
+                // 框架启动后再初始化DAO
+                this.userDao = new UserDao();
+                this.userService = new UserServiceImpl();
+                this.userController = new UserController();
+                
+                testContext.completeNow();
+            })
+            .onFailure(error -> {
+                LOGGER.error("Failed to start framework", error);
+                testContext.failNow(error);
+            });
+        } else {
+            // 框架已启动，直接完成
             testContext.completeNow();
-        }).onFailure(testContext::failNow);
+        }
     }
     
     @AfterEach

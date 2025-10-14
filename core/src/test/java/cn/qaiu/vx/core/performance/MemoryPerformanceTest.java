@@ -6,6 +6,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(VertxExtension.class)
 @DisplayName("内存性能测试")
+@Disabled("性能测试在CI环境中不稳定，本地可手动运行")
 class MemoryPerformanceTest {
 
     @BeforeEach

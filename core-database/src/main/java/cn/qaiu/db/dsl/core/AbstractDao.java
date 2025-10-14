@@ -4,7 +4,9 @@ import cn.qaiu.db.dsl.interfaces.JooqDao;
 import cn.qaiu.db.dsl.mapper.EntityMapper;
 import cn.qaiu.db.dsl.mapper.DefaultMapper;
 import cn.qaiu.vx.core.util.StringCase;
+import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -371,6 +373,11 @@ public abstract class AbstractDao<T, ID> implements JooqDao<T, ID> {
             synchronized (this) {
                 if (executor == null) {
                     if (autoExecutorMode) {
+                        // 确保DataSourceManager已初始化
+                        Vertx vertx = VertxHolder.getVertxInstance();
+                        if (vertx == null) {
+                            throw new IllegalStateException("Vertx not initialized");
+                        }
                         executor = initializeExecutor();
                     } else {
                         throw new IllegalStateException("JooqExecutor not initialized in manual mode");

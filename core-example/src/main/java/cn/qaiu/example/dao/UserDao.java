@@ -48,6 +48,16 @@ public class UserDao extends LambdaDao<User, Long> {
     }
     
     /**
+     * 重写getExecutor方法，避免父类尝试初始化数据库连接
+     * UserDao使用内存存储，不需要数据库连接
+     */
+    @Override
+    protected cn.qaiu.db.dsl.core.JooqExecutor getExecutor() {
+        // UserDao使用内存存储，不需要数据库连接
+        throw new UnsupportedOperationException("UserDao uses mock storage, no database connection needed");
+    }
+    
+    /**
      * 初始化测试数据
      */
     private void initializeTestData() {
