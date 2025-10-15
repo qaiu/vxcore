@@ -26,7 +26,9 @@ class DataSourceManagerTest {
     @BeforeEach
     void setUp(Vertx vertx) {
         this.vertx = vertx;
-        this.dataSourceManager = DataSourceManager.getInstance(vertx);
+        // 初始化 VertxHolder
+        cn.qaiu.vx.core.util.VertxHolder.init(vertx);
+        this.dataSourceManager = DataSourceManager.getInstance();
     }
     
     @AfterEach
@@ -48,8 +50,8 @@ class DataSourceManagerTest {
         @Test
         @DisplayName("获取单例实例测试")
         void testGetInstance(VertxTestContext testContext) {
-            DataSourceManager instance1 = DataSourceManager.getInstance(vertx);
-            DataSourceManager instance2 = DataSourceManager.getInstance(vertx);
+            DataSourceManager instance1 = DataSourceManager.getInstance();
+            DataSourceManager instance2 = DataSourceManager.getInstance();
             
             assertSame(instance1, instance2, "DataSourceManager应该是单例");
             testContext.completeNow();
@@ -59,8 +61,8 @@ class DataSourceManagerTest {
         @DisplayName("不同Vertx实例获取相同单例测试")
         void testDifferentVertxInstances(VertxTestContext testContext) {
             Vertx vertx2 = Vertx.vertx();
-            DataSourceManager instance1 = DataSourceManager.getInstance(vertx);
-            DataSourceManager instance2 = DataSourceManager.getInstance(vertx2);
+            DataSourceManager instance1 = DataSourceManager.getInstance();
+            DataSourceManager instance2 = DataSourceManager.getInstance();
             
             assertSame(instance1, instance2, "不同Vertx实例应该返回相同的DataSourceManager（全局单例）");
             

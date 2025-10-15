@@ -31,21 +31,20 @@ public class StartH2DatabaseServer {
 
     public static void init() {
         Vertx vertx = Vertx.vertx();
+        // 先初始化 VertxHolder
+        VertxHolder.init(vertx);
 
         try {
             // 启动H2 TCP服务
             Server server = Server.createTcpServer("-tcp", "-tcpAllowOthers", "-ifNotExists").start();
             H2ServerHolder.init(server);
-            // 在 H2 Server 启动成功后再把 vertx 放入 Holder
-            VertxHolder.init(vertx);
             System.out.println("H2 TCP服务已启动，端口: " + server.getPort());
 
             // 获取并初始化连接池
             // testQuery(vertx);
         } catch (Exception e) {
             System.err.println("H2 TCP服务启动失败: " + e.getMessage());
-            // 仍然把 vertx 注册到 Holder，以便其他组件使用（可根据需要改为退出）
-            VertxHolder.init(vertx);
+            // VertxHolder 已经初始化，其他组件可以正常使用
         }
     }
 

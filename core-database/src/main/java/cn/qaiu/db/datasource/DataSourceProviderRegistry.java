@@ -2,12 +2,13 @@ package cn.qaiu.db.datasource;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
-// import io.vertx.pgclient.PgPool; // 暂时注释掉，避免依赖问题
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import cn.qaiu.vx.core.util.VertxHolder;
 
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -96,10 +97,20 @@ public class DataSourceProviderRegistry {
         public Future<Pool> createPool(DataSourceConfig config) {
             return Future.future(promise -> {
                 try {
-                    Vertx vertx = Vertx.currentContext() != null ? 
-                        Vertx.currentContext().owner() : Vertx.vertx();
+                    // 使用 VertxHolder 获取 Vertx 实例
+                    Vertx vertx = VertxHolder.getVertxInstance();
                     
-                    Pool pool = JDBCPool.pool(vertx, config.toJsonObject());
+                    // 使用新的 JDBCConnectOptions API
+                    JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                        .setJdbcUrl(config.getUrl())
+                        .setUser(config.getUsername())
+                        .setPassword(config.getPassword());
+                    
+                    // 配置连接池选项
+                    PoolOptions poolOptions = new PoolOptions()
+                        .setMaxSize(config.getMaxPoolSize());
+                    
+                    Pool pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
                     promise.complete(pool);
                 } catch (Exception e) {
                     promise.fail(e);
@@ -140,14 +151,20 @@ public class DataSourceProviderRegistry {
         public Future<Pool> createPool(DataSourceConfig config) {
             return Future.future(promise -> {
                 try {
-                    Vertx vertx = Vertx.currentContext() != null ? 
-                        Vertx.currentContext().owner() : Vertx.vertx();
+                    // 使用 VertxHolder 获取 Vertx 实例
+                    Vertx vertx = VertxHolder.getVertxInstance();
                     
+                    // 使用新的 JDBCConnectOptions API for PostgreSQL
+                    JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                        .setJdbcUrl(config.getUrl())
+                        .setUser(config.getUsername())
+                        .setPassword(config.getPassword());
+                    
+                    // 配置连接池选项
                     PoolOptions poolOptions = new PoolOptions()
                         .setMaxSize(config.getMaxPoolSize());
                     
-                    // 使用JDBC Pool for PostgreSQL (暂时使用JDBC，避免依赖问题)
-                    Pool pool = JDBCPool.pool(vertx, config.toJsonObject());
+                    Pool pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
                     promise.complete(pool);
                 } catch (Exception e) {
                     promise.fail(e);
@@ -188,14 +205,20 @@ public class DataSourceProviderRegistry {
         public Future<Pool> createPool(DataSourceConfig config) {
             return Future.future(promise -> {
                 try {
-                    Vertx vertx = Vertx.currentContext() != null ? 
-                        Vertx.currentContext().owner() : Vertx.vertx();
+                    // 使用 VertxHolder 获取 Vertx 实例
+                    Vertx vertx = VertxHolder.getVertxInstance();
                     
+                    // 使用新的 JDBCConnectOptions API for MySQL
+                    JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                        .setJdbcUrl(config.getUrl())
+                        .setUser(config.getUsername())
+                        .setPassword(config.getPassword());
+                    
+                    // 配置连接池选项
                     PoolOptions poolOptions = new PoolOptions()
                         .setMaxSize(config.getMaxPoolSize());
                     
-                    // 使用JDBC Pool for MySQL
-                    Pool pool = JDBCPool.pool(vertx, config.toJsonObject());
+                    Pool pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
                     promise.complete(pool);
                 } catch (Exception e) {
                     promise.fail(e);
@@ -236,14 +259,20 @@ public class DataSourceProviderRegistry {
         public Future<Pool> createPool(DataSourceConfig config) {
             return Future.future(promise -> {
                 try {
-                    Vertx vertx = Vertx.currentContext() != null ? 
-                        Vertx.currentContext().owner() : Vertx.vertx();
+                    // 使用 VertxHolder 获取 Vertx 实例
+                    Vertx vertx = VertxHolder.getVertxInstance();
                     
+                    // 使用新的 JDBCConnectOptions API for H2
+                    JDBCConnectOptions connectOptions = new JDBCConnectOptions()
+                        .setJdbcUrl(config.getUrl())
+                        .setUser(config.getUsername())
+                        .setPassword(config.getPassword());
+                    
+                    // 配置连接池选项
                     PoolOptions poolOptions = new PoolOptions()
                         .setMaxSize(config.getMaxPoolSize());
                     
-                    // 使用JDBC Pool for H2
-                    Pool pool = JDBCPool.pool(vertx, config.toJsonObject());
+                    Pool pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
                     promise.complete(pool);
                 } catch (Exception e) {
                     promise.fail(e);

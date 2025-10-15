@@ -821,7 +821,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
     private JooqExecutor initializeExecutor() {
         try {
             cn.qaiu.db.datasource.DataSourceManager manager = 
-                    cn.qaiu.db.datasource.DataSourceManager.getInstance(VertxHolder.getVertxInstance());
+                    cn.qaiu.db.datasource.DataSourceManager.getInstance();
             JooqExecutor executor = manager.getExecutor(dataSourceName);
             
             if (executor == null) {

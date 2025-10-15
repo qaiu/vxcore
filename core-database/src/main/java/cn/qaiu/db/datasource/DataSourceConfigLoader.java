@@ -26,7 +26,7 @@ public class DataSourceConfigLoader {
     
     public DataSourceConfigLoader(Vertx vertx) {
         this.vertx = vertx;
-        this.dataSourceManager = DataSourceManager.getInstance(vertx);
+        this.dataSourceManager = DataSourceManager.getInstance();
     }
     
     /**

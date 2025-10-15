@@ -41,7 +41,7 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
     @Override
     public DataSourceManagerInterface createDataSourceManager(Vertx vertx) {
         if (dataSourceManager == null) {
-            dataSourceManager = cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
+            dataSourceManager = cn.qaiu.db.datasource.DataSourceManager.getInstance();
         }
         return dataSourceManager;
     }

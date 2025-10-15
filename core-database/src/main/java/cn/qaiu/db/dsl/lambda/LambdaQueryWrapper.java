@@ -1012,8 +1012,13 @@ public class LambdaQueryWrapper<T> {
         
         // 执行查询 - 使用JooqExecutor
         if (executor != null) {
-            // 直接使用DSLContext执行查询，因为LambdaQueryWrapper需要jOOQ Result类型
-            return Future.succeededFuture(dslContext.fetch(finalQuery));
+            // 使用JooqExecutor执行查询，然后转换为jOOQ Result
+            return executor.executeQuery(finalQuery)
+                    .map(rowSet -> {
+                        // 将RowSet转换为jOOQ Result
+                        // 这里我们需要重新构建Result，因为jOOQ需要特定的Result类型
+                        return convertRowSetToResult(rowSet, finalQuery);
+                    });
         } else {
             // 兼容旧版本，直接使用DSLContext
             return Future.succeededFuture(dslContext.fetch(finalQuery));
@@ -1032,5 +1037,42 @@ public class LambdaQueryWrapper<T> {
             // 兼容旧版本，直接使用DSLContext
             return Future.succeededFuture(0L);
         }
+    }
+    
+    /**
+     * 将RowSet转换为jOOQ Result
+     * 
+     * @param rowSet Vert.x SQL Client的查询结果
+     * @param query jOOQ查询对象，用于获取字段信息
+     * @return jOOQ Result对象
+     */
+    private org.jooq.Result<org.jooq.Record> convertRowSetToResult(io.vertx.sqlclient.RowSet<io.vertx.sqlclient.Row> rowSet, SelectForUpdateStep<org.jooq.Record> query) {
+        // 获取查询的字段信息
+        List<Field<?>> select = query.getSelect();
+        
+        // 创建空的Result
+        org.jooq.Result<org.jooq.Record> result = dslContext.newResult(select);
+        
+        // 遍历RowSet中的每一行
+        for (io.vertx.sqlclient.Row row : rowSet) {
+            // 创建新的Record
+            org.jooq.Record record = dslContext.newRecord(select);
+            
+            // 将Row中的数据填充到Record中
+            for (int i = 0; i < select.size(); i++) {
+                Field<?> field = select.get(i);
+                Object value = row.getValue(i);
+                
+                // 设置Record中的值 - 使用类型转换避免泛型警告
+                @SuppressWarnings("unchecked")
+                Field<Object> objectField = (Field<Object>) field;
+                record.setValue(objectField, value);
+            }
+            
+            // 将Record添加到Result中
+            result.add(record);
+        }
+        
+        return result;
     }
 }

@@ -198,7 +198,7 @@ class DatabasePerformanceTest {
                     
                     for (int j = 0; j < OPERATIONS_PER_THREAD; j++) {
                         // 测试DataSourceManager操作
-                        DataSourceManager manager = DataSourceManager.getInstance(vertx);
+                        DataSourceManager manager = DataSourceManager.getInstance();
                         
                         // 模拟获取数据源操作
                         String dataSourceName = "test" + j;
@@ -275,7 +275,7 @@ class DatabasePerformanceTest {
                         String javaFieldName = FieldNameConverter.toJavaFieldName(columnName);
                         
                         // 3. DataSourceManager操作
-                        DataSourceManager manager = DataSourceManager.getInstance(vertx);
+                        DataSourceManager manager = DataSourceManager.getInstance();
                         
                         successCount.incrementAndGet();
                     }

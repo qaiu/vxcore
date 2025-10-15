@@ -30,7 +30,9 @@ public class MultiDataSourceTest {
     @BeforeEach
     void setUp() {
         vertx = Vertx.vertx();
-        dataSourceManager = cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
+        // 初始化 VertxHolder
+        cn.qaiu.vx.core.util.VertxHolder.init(vertx);
+        dataSourceManager = cn.qaiu.db.datasource.DataSourceManager.getInstance();
         
         // 清除之前测试遗留的数据源配置
         try {

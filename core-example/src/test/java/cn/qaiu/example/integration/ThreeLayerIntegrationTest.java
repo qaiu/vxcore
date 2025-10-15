@@ -50,6 +50,9 @@ public class ThreeLayerIntegrationTest {
         this.vertx = vertx;
         this.httpClient = vertx.createHttpClient();
         
+        // 重置框架状态，确保测试隔离
+        VXCoreApplication.resetForTesting();
+        
         // 只在第一次初始化时启动框架
         if (this.application == null) {
             this.application = new VXCoreApplication();

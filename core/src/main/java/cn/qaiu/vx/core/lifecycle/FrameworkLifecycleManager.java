@@ -48,7 +48,16 @@ public class FrameworkLifecycleManager {
      * 重置实例（仅用于测试）
      */
     public static void resetInstance() {
-        INSTANCE.set(null);
+        FrameworkLifecycleManager oldInstance = INSTANCE.getAndSet(null);
+        if (oldInstance != null) {
+            // 清理旧实例的状态
+            oldInstance.state.set(LifecycleState.INITIAL);
+            oldInstance.vertx = null;
+            oldInstance.globalConfig = null;
+            oldInstance.userHandler = null;
+            oldInstance.components.clear();
+            oldInstance.verticles.clear();
+        }
     }
     
     /**

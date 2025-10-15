@@ -47,11 +47,22 @@ public class DataSourceComponent implements LifecycleComponent {
                 if (provider != null) {
                     this.dataSourceProvider = provider;
                     LOGGER.info("Found DataSource provider: {} for database configuration", provider.getName());
+                    
+                    // 在initialize阶段就完成数据源和SQL执行器的初始化
+                    LOGGER.info("Initializing datasources and SQL executors during component initialization...");
+                    provider.initializeDataSources(vertx, config)
+                        .onSuccess(v -> {
+                            LOGGER.info("DataSources and SQL executors initialized successfully during component initialization");
+                            promise.complete();
+                        })
+                        .onFailure(error -> {
+                            LOGGER.error("Failed to initialize datasources during component initialization", error);
+                            promise.fail(error);
+                        });
                 } else {
                     LOGGER.warn("No DataSource provider found for database configuration, datasource will not be initialized");
+                    promise.complete();
                 }
-                
-                promise.complete();
             } catch (Exception e) {
                 LOGGER.error("Failed to initialize datasource component", e);
                 promise.fail(e);
@@ -66,17 +77,10 @@ public class DataSourceComponent implements LifecycleComponent {
                 LOGGER.info("Starting DataSource component...");
                 
                 if (dataSourceProvider != null) {
-                    // 使用提供者初始化数据源
-                    dataSourceProvider.initializeDataSources(vertx, globalConfig)
-                        .onSuccess(v -> {
-                            LOGGER.info("DataSource component started successfully with provider: {}", 
-                                       dataSourceProvider.getName());
-                            promise.complete();
-                        })
-                        .onFailure(error -> {
-                            LOGGER.error("Failed to start datasource component", error);
-                            promise.fail(error);
-                        });
+                    // 数据源已经在initialize阶段初始化完成，这里只需要验证状态
+                    LOGGER.info("DataSource component started successfully with provider: {} (already initialized)", 
+                               dataSourceProvider.getName());
+                    promise.complete();
                 } else {
                     LOGGER.info("No DataSource provider available, component started without datasource");
                     promise.complete();

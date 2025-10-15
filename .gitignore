@@ -59,7 +59,6 @@ generated-test-sources/
 *.sqlite3
 
 # Configuration files with sensitive data
-**/test.properties
 **/application.properties
 **/application-*.properties
 **/database.properties

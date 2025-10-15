@@ -104,8 +104,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
                 generateServiceInterfaceFromInterface(basePackage, serviceName, entityName, entityPackage, interfaceMethods);
             }
             
-            // 生成基础实现类
-            generateServiceImplFromInterface(basePackage, implName, serviceName, entityName, entityPackage, idType, interfaceMethods);
+            // 不再生成基础实现类
         } else {
             // 处理实体类：检查是否有参照接口
             Class<?> referenceInterface = getReferenceInterface(annotation);
@@ -123,8 +122,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
                     generateServiceInterfaceFromReferenceInterface(basePackage, serviceName, entityName, entityPackage, referenceMethods);
                 }
                 
-                // 生成基础实现类
-                generateServiceImplFromReferenceInterface(basePackage, implName, serviceName, entityName, entityPackage, idType, referenceMethods);
+                // 不再生成基础实现类
             } else if (referenceInterface == TestReferenceInterface.class) {
                 // 使用内置 JooqDao 方法
                 List<MethodInfo> builtInMethods = generateBuiltInJooqDaoMethods();
@@ -136,8 +134,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
                     generateServiceInterfaceFromReferenceInterface(basePackage, serviceName, entityName, entityPackage, builtInMethods);
                 }
                 
-                // 生成基础实现类
-                generateServiceImplFromReferenceInterface(basePackage, implName, serviceName, entityName, entityPackage, idType, builtInMethods);
+                // 不再生成基础实现类
             } else {
                 // 使用原有逻辑
                 List<String> genericTypes = analyzeGenericTypes(entityElement);
@@ -147,8 +144,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
                     generateServiceInterface(basePackage, serviceName, entityName, entityPackage, genericTypes);
                 }
                 
-                // 生成基础实现类
-                generateServiceImpl(basePackage, implName, serviceName, entityName, entityPackage, idType, genericTypes);
+                // 不再生成基础实现类
             }
         }
     }
@@ -510,6 +506,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
             writer.println("import " + entityPackage + "." + entityName + ";");
             writer.println("import java.util.List;");
             writer.println("import java.util.Optional;");
+            writer.println("import javax.annotation.Generated;");
             writer.println();
             
             writer.println("/**");
@@ -549,66 +546,6 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
         }
     }
     
-    /**
-     * 从参照接口生成服务实现类
-     * 
-     * @param basePackage 基础包名
-     * @param implName 实现类名称
-     * @param serviceName 服务名称
-     * @param entityName 实体名称
-     * @param entityPackage 实体包名
-     * @param idType ID类型
-     * @param referenceMethods 参照接口方法列表
-     * @throws IOException 文件操作异常
-     */
-    private void generateServiceImplFromReferenceInterface(String basePackage, String implName, String serviceName, 
-                                                          String entityName, String entityPackage, String idType, 
-                                                          List<MethodInfo> referenceMethods) throws IOException {
-        JavaFileObject file = filer.createSourceFile(basePackage + "." + implName);
-        try (PrintWriter writer = new PrintWriter(file.openWriter())) {
-            writer.println("package " + basePackage + ";");
-            writer.println();
-            writer.println("import io.vertx.core.Future;");
-            writer.println("import io.vertx.core.json.JsonObject;");
-            writer.println("import " + entityPackage + "." + entityName + ";");
-            writer.println("import " + basePackage + "." + serviceName + ";");
-            writer.println("import java.util.List;");
-            writer.println("import java.util.Optional;");
-            writer.println();
-            
-            writer.println("/**");
-            writer.println(" * 基于参照接口动态生成的服务实现类");
-            writer.println(" * 提供参照接口方法的默认实现");
-            writer.println(" * 用户可以继承此类并重写方法来实现具体的业务逻辑");
-            writer.println(" */");
-            writer.println("@javax.annotation.Generated(\"cn.qaiu.vx.core.processor.CustomServiceGenProcessor\")");
-            writer.println("public abstract class " + implName + " implements " + serviceName + " {");
-            writer.println();
-            
-            // 生成参照接口方法的实现
-            generateReferenceInterfaceMethodImplementations(writer, referenceMethods);
-            
-            writer.println("}");
-        }
-    }
-    
-    /**
-     * 生成参照接口方法的实现
-     * 
-     * @param writer 写入器
-     * @param referenceMethods 参照接口方法列表
-     */
-    private void generateReferenceInterfaceMethodImplementations(PrintWriter writer, List<MethodInfo> referenceMethods) {
-        for (MethodInfo method : referenceMethods) {
-            writer.println("    @Override");
-            writer.println("    public Future<" + convertToFutureType(method.getReturnType()) + "> " + method.getMethodName() + "() {");
-            writer.println("        // TODO: 实现 " + method.getMethodName() + " 方法（基于参照接口）");
-            writer.println("        // 示例：实现具体的业务逻辑");
-            writer.println("        return Future.succeededFuture(null); // 占位符实现");
-            writer.println("    }");
-            writer.println();
-        }
-    }
     
     /**
      * 从接口生成服务接口
@@ -634,6 +571,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
             writer.println("import " + entityPackage + "." + entityName + ";");
             writer.println("import java.util.List;");
             writer.println("import java.util.Optional;");
+            writer.println("import javax.annotation.Generated;");
             writer.println();
             
             writer.println("/**");
@@ -748,6 +686,7 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
             writer.println("import " + entityPackage + "." + entityName + ";");
             writer.println("import java.util.List;");
             writer.println("import java.util.Optional;");
+            writer.println("import javax.annotation.Generated;");
             writer.println();
             
             // 生成泛型参数
@@ -891,236 +830,5 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
         }
     }
     
-    /**
-     * 从接口生成服务实现类
-     * 
-     * @param basePackage 基础包名
-     * @param implName 实现类名称
-     * @param serviceName 服务名称
-     * @param entityName 实体名称
-     * @param entityPackage 实体包名
-     * @param idType ID类型
-     * @param interfaceMethods 接口方法列表
-     * @throws IOException 文件操作异常
-     */
-    private void generateServiceImplFromInterface(String basePackage, String implName, String serviceName, 
-                                                  String entityName, String entityPackage, String idType, 
-                                                  List<MethodInfo> interfaceMethods) throws IOException {
-        JavaFileObject file = filer.createSourceFile(basePackage + "." + implName);
-        try (PrintWriter writer = new PrintWriter(file.openWriter())) {
-            writer.println("package " + basePackage + ";");
-            writer.println();
-            writer.println("import io.vertx.core.Future;");
-            writer.println("import io.vertx.core.json.JsonObject;");
-            writer.println("import " + entityPackage + "." + entityName + ";");
-            writer.println("import " + basePackage + "." + serviceName + ";");
-            writer.println("import java.util.List;");
-            writer.println("import java.util.Optional;");
-            writer.println();
-            
-            writer.println("/**");
-            writer.println(" * 从接口动态生成的服务实现类");
-            writer.println(" * 提供接口方法的默认实现");
-            writer.println(" * 用户可以继承此类并重写方法来实现具体的业务逻辑");
-            writer.println(" */");
-            writer.println("@javax.annotation.Generated(\"cn.qaiu.vx.core.processor.CustomServiceGenProcessor\")");
-            writer.println("public abstract class " + implName + " implements " + serviceName + " {");
-            writer.println();
-            
-            // 生成接口方法的实现
-            generateInterfaceMethodImplementations(writer, interfaceMethods);
-            
-            writer.println("}");
-        }
-    }
     
-    /**
-     * 生成接口方法的实现
-     * 
-     * @param writer 写入器
-     * @param interfaceMethods 接口方法列表
-     */
-    private void generateInterfaceMethodImplementations(PrintWriter writer, List<MethodInfo> interfaceMethods) {
-        for (MethodInfo method : interfaceMethods) {
-            writer.println("    @Override");
-            writer.println("    public Future<" + convertToFutureType(method.getReturnType()) + "> " + method.getMethodName() + "() {");
-            writer.println("        // TODO: 实现 " + method.getMethodName() + " 方法");
-            writer.println("        // 示例：实现具体的业务逻辑");
-            writer.println("        return Future.succeededFuture(null); // 占位符实现");
-            writer.println("    }");
-            writer.println();
-        }
-    }
-    
-    /**
-     * 生成服务实现类
-     * 
-     * @param basePackage 基础包名
-     * @param implName 实现类名称
-     * @param serviceName 服务名称
-     * @param entityName 实体名称
-     * @param entityPackage 实体包名
-     * @param idType ID类型
-     * @param genericTypes 泛型类型列表
-     * @throws IOException 文件操作异常
-     */
-    private void generateServiceImpl(String basePackage, String implName, String serviceName, 
-                                   String entityName, String entityPackage, String idType, 
-                                   List<String> genericTypes) throws IOException {
-        JavaFileObject file = filer.createSourceFile(basePackage + "." + implName);
-        try (PrintWriter writer = new PrintWriter(file.openWriter())) {
-            writer.println("package " + basePackage + ";");
-            writer.println();
-            writer.println("import io.vertx.core.Future;");
-            writer.println("import io.vertx.core.json.JsonObject;");
-            writer.println("import " + entityPackage + "." + entityName + ";");
-            writer.println("import " + basePackage + "." + serviceName + ";");
-            writer.println("import java.util.List;");
-            writer.println("import java.util.Optional;");
-            writer.println();
-            
-            // 生成泛型参数
-            String genericParams = "";
-            String genericBounds = "";
-            if (!genericTypes.isEmpty()) {
-                genericParams = "<" + genericTypes.stream()
-                    .map(type -> "T" + genericTypes.indexOf(type))
-                    .collect(Collectors.joining(", ")) + ">";
-                genericBounds = " implements " + serviceName;
-            } else {
-                genericBounds = " implements " + serviceName;
-            }
-            
-            writer.println("/**");
-            writer.println(" * 动态生成的服务实现类");
-            writer.println(" * 提供基础CRUD操作和自定义查询方法的默认实现");
-            writer.println(" * 用户可以继承此类并重写方法来实现具体的业务逻辑");
-            writer.println(" */");
-            writer.println("@javax.annotation.Generated(\"cn.qaiu.vx.core.processor.CustomServiceGenProcessor\")");
-            writer.println("public abstract class " + implName + genericParams + genericBounds + " {");
-            writer.println();
-            
-            // 生成基础CRUD方法实现
-            generateBasicCrudMethodImplementations(writer, serviceName, entityName, genericTypes);
-            
-            // 生成自定义查询方法实现
-            generateCustomQueryMethodImplementations(writer, serviceName, genericTypes);
-            
-            writer.println("}");
-        }
-    }
-    
-    /**
-     * 生成基础CRUD方法实现
-     * 
-     * @param writer 写入器
-     * @param serviceName 服务名称
-     * @param entityName 实体名称
-     * @param genericTypes 泛型类型列表
-     */
-    private void generateBasicCrudMethodImplementations(PrintWriter writer, String serviceName, 
-                                                       String entityName, List<String> genericTypes) {
-        // 创建方法实现
-        writer.println("    @Override");
-        writer.println("    public Future<JsonObject> create(JsonObject entity) {");
-        writer.println("        // TODO: 实现创建逻辑");
-        writer.println("        // 示例：将JsonObject转换为实体对象并保存");
-        writer.println("        return Future.succeededFuture(entity);");
-        writer.println("    }");
-        writer.println();
-        
-        // 根据ID查找实现
-        writer.println("    @Override");
-        writer.println("    public Future<JsonObject> findById(Long id) {");
-        writer.println("        // TODO: 实现根据ID查找逻辑");
-        writer.println("        // 示例：从数据库查询并转换为JsonObject");
-        writer.println("        JsonObject result = new JsonObject().put(\"id\", id);");
-        writer.println("        return Future.succeededFuture(result);");
-        writer.println("    }");
-        writer.println();
-        
-        // 查找所有实现
-        writer.println("    @Override");
-        writer.println("    public Future<List<JsonObject>> findAll() {");
-        writer.println("        // TODO: 实现查找所有逻辑");
-        writer.println("        // 示例：从数据库查询所有记录并转换为JsonObject列表");
-        writer.println("        return Future.succeededFuture(List.of());");
-        writer.println("    }");
-        writer.println();
-        
-        // 根据状态查找实现
-        writer.println("    @Override");
-        writer.println("    public Future<List<JsonObject>> findByStatus(String status) {");
-        writer.println("        // TODO: 实现根据状态查找逻辑");
-        writer.println("        // 示例：根据状态字段查询");
-        writer.println("        return Future.succeededFuture(List.of());");
-        writer.println("    }");
-        writer.println();
-        
-        // 条件查询实现
-        writer.println("    @Override");
-        writer.println("    public Future<JsonObject> findOne(JsonObject query) {");
-        writer.println("        // TODO: 实现条件查询逻辑");
-        writer.println("        // 示例：根据查询条件查找单个记录");
-        writer.println("        return Future.succeededFuture(null);");
-        writer.println("    }");
-        writer.println();
-        
-        // 更新实现
-        writer.println("    @Override");
-        writer.println("    public Future<Integer> update(JsonObject entity) {");
-        writer.println("        // TODO: 实现更新逻辑");
-        writer.println("        // 示例：更新数据库记录");
-        writer.println("        return Future.succeededFuture(0);");
-        writer.println("    }");
-        writer.println();
-        
-        // 删除实现
-        writer.println("    @Override");
-        writer.println("    public Future<Integer> deleteById(Long id) {");
-        writer.println("        // TODO: 实现删除逻辑");
-        writer.println("        // 示例：根据ID删除数据库记录");
-        writer.println("        return Future.succeededFuture(0);");
-        writer.println("    }");
-        writer.println();
-        
-        // 计数实现
-        writer.println("    @Override");
-        writer.println("    public Future<Long> count() {");
-        writer.println("        // TODO: 实现计数逻辑");
-        writer.println("        // 示例：统计数据库记录数量");
-        writer.println("        return Future.succeededFuture(0L);");
-        writer.println("    }");
-        writer.println();
-    }
-    
-    /**
-     * 生成自定义查询方法实现
-     * 
-     * @param writer 写入器
-     * @param serviceName 服务名称
-     * @param genericTypes 泛型类型列表
-     */
-    private void generateCustomQueryMethodImplementations(PrintWriter writer, String serviceName, 
-                                                        List<String> genericTypes) {
-        // 自定义查询方法实现
-        writer.println("    @Override");
-        writer.println("    public Future<List<JsonObject>> customQuery(String param) {");
-        writer.println("        // TODO: 实现自定义查询逻辑");
-        writer.println("        // 示例：根据参数执行自定义查询");
-        writer.println("        return Future.succeededFuture(List.of());");
-        writer.println("    }");
-        writer.println();
-        
-        // 根据泛型类型生成特定的查询方法实现
-        for (String genericType : genericTypes) {
-            writer.println("    @Override");
-            writer.println("    public Future<List<JsonObject>> findBy" + genericType + "(JsonObject " + genericType.toLowerCase() + ") {");
-            writer.println("        // TODO: 实现根据" + genericType + "类型查询逻辑");
-            writer.println("        // 示例：根据" + genericType + "对象查询相关记录");
-            writer.println("        return Future.succeededFuture(List.of());");
-            writer.println("    }");
-            writer.println();
-        }
-    }
 }

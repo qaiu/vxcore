@@ -18,6 +18,10 @@ public class DefaultAppRun implements AppRun {
 
     @Override
     public void execute(JsonObject config) {
+        if (config == null) {
+            LOGGER.warn("config is null");
+            return;
+        }
         LOGGER.info("======> AppRun实现类开始执行，配置数: {}", config.size());
     }
 }

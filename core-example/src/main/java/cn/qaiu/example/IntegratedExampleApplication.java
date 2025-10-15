@@ -1,14 +1,11 @@
 package cn.qaiu.example;
 
 import cn.qaiu.db.datasource.DataSourceConfig;
-import cn.qaiu.db.datasource.DataSourceManagerFactory;
 import cn.qaiu.vx.core.VXCoreApplication;
 import cn.qaiu.vx.core.lifecycle.DataSourceComponent;
 import cn.qaiu.vx.core.lifecycle.FrameworkLifecycleManager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +65,7 @@ public class IntegratedExampleApplication extends AbstractVerticle {
                 }
                 
                 // 创建core-database模块的DataSourceManager实现
-                cn.qaiu.db.datasource.DataSourceManager databaseManager = cn.qaiu.db.datasource.DataSourceManager.getInstance(vertx);
+                cn.qaiu.db.datasource.DataSourceManager databaseManager = cn.qaiu.db.datasource.DataSourceManager.getInstance();
                 
                 // 注入实现
                 dataSourceComponent.setDataSourceManager(databaseManager);

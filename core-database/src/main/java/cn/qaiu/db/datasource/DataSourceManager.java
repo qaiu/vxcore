@@ -28,7 +28,6 @@ public class DataSourceManager implements DataSourceManagerInterface {
 
     private static final AtomicReference<DataSourceManager> INSTANCE = new AtomicReference<>();
     
-    private final Vertx vertx;
     private final Map<String, Pool> pools = new ConcurrentHashMap<>();
     private final Map<String, JooqExecutor> executors = new ConcurrentHashMap<>();
     private final Map<String, DataSourceConfig> configs = new ConcurrentHashMap<>();
@@ -36,8 +35,7 @@ public class DataSourceManager implements DataSourceManagerInterface {
     
     private String defaultDataSource = "default";
     
-    private DataSourceManager(Vertx vertx) {
-        this.vertx = vertx;
+    private DataSourceManager() {
         this.providerRegistry = new DataSourceProviderRegistry();
         this.providerRegistry.registerBuiltinProviders();
     }
@@ -45,9 +43,9 @@ public class DataSourceManager implements DataSourceManagerInterface {
     /**
      * 获取单例实例
      */
-    public static DataSourceManager getInstance(Vertx vertx) {
+    public static DataSourceManager getInstance() {
         return INSTANCE.updateAndGet(manager -> 
-            manager == null ? new DataSourceManager(vertx) : manager);
+            manager == null ? new DataSourceManager() : manager);
     }
     
     /**

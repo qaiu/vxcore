@@ -41,7 +41,7 @@ public class ProductDao extends LambdaDao<Product, Long> {
      * 默认构造函数 - 使用自动管理模式
      */
     public ProductDao() {
-        super(Product.class);
+        super();
     }
 
     /**

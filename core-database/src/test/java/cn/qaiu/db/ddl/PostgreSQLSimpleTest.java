@@ -3,7 +3,6 @@ package cn.qaiu.db.ddl;
 import cn.qaiu.db.pool.JDBCType;
 import cn.qaiu.db.ddl.example.ExampleUser;
 import io.vertx.core.Vertx;
-import io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider;
 import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.AfterEach;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,6 +42,15 @@ public class PostgreSQLSimpleTest {
         pool = JDBCPool.pool(vertx, connectOptions, poolOptions);
         
         testContext.completeNow();
+    }
+
+    @AfterEach
+    void tearDown(VertxTestContext testContext) {
+        if (pool != null) {
+            pool.close().onComplete(testContext.succeedingThenComplete());
+        } else {
+            testContext.completeNow();
+        }
     }
 
     /**

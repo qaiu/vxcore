@@ -42,6 +42,10 @@ public class ThreeLayerFrameworkTest {
     @DisplayName("初始化测试环境")
     void setUp(Vertx vertx, VertxTestContext testContext) {
         this.vertx = vertx;
+        
+        // 重置框架状态，确保测试隔离
+        VXCoreApplication.resetForTesting();
+        
         this.application = new VXCoreApplication();
         
         // 启动应用

@@ -111,11 +111,9 @@ public class VXCoreApplication {
     }
     
     /**
-     * 静态方法：快速启动（无用户回调）
-     * 
-     * @param args 启动参数
+     * 重置应用状态（仅用于测试）
      */
-    public static void run(String[] args) {
-        run(args, null);
+    public static void resetForTesting() {
+        FrameworkLifecycleManager.resetInstance();
     }
 }
