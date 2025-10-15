@@ -140,10 +140,27 @@
             </resource>
         </resources>
         <plugins>
+            <!-- Javadoc Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <sourcepath>
+                        ${project.build.sourceDirectory};
+                        ${project.basedir}/src/main/generated
+                    </sourcepath>
+                    <failOnError>false</failOnError>
+                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                    <quiet>true</quiet>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <charset>${project.build.sourceEncoding}</charset>
+                    <docencoding>${project.build.sourceEncoding}</docencoding>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
                 <configuration>
                     <release>${java.version}</release>
                     <!-- 代码生成器 -->
@@ -154,14 +171,26 @@
                             <version>${vertx.version}</version>
                         </path>
                         <path>
+                            <groupId>io.vertx</groupId>
+                            <artifactId>vertx-service-proxy</artifactId>
+                            <version>${vertx.version}</version>
+                        </path>
+                        <path>
                             <groupId>com.google.dagger</groupId>
                             <artifactId>dagger-compiler</artifactId>
-                            <version>2.50</version>
+                            <version>2.57.2</version>
                         </path>
                     </annotationProcessorPaths>
+                    <annotationProcessors>
+                        <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                        <annotationProcessor>dagger.internal.codegen.ComponentProcessor</annotationProcessor>
+                    </annotationProcessors>
                     <generatedSourcesDirectory>
                         ${project.basedir}/src/main/generated
                     </generatedSourcesDirectory>
+                    <generatedTestSourcesDirectory>
+                        ${project.basedir}/src/test/generated
+                    </generatedTestSourcesDirectory>
                 </configuration>
             </plugin>
             

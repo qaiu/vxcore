@@ -6,6 +6,7 @@ import cn.qaiu.generator.model.GeneratorContext;
 import cn.qaiu.generator.reader.ConfigMetadataReader;
 import cn.qaiu.vx.core.codegen.ColumnInfo;
 import cn.qaiu.vx.core.codegen.TableInfo;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -172,21 +173,55 @@ public class CodeGeneratorFacadeTest {
     @Test
     void testGenerateTable(VertxTestContext testContext) {
         CodeGeneratorFacade generator = new CodeGeneratorFacade(vertx, context);
-        TableInfo tableInfo = createTestTableInfo();
         
-        generator.generateTable("test_table")
-                .onSuccess(files -> {
-                    assertNotNull(files);
-                    assertFalse(files.isEmpty());
-                    
-                    // 验证生成的文件
-                    for (String filePath : files) {
-                        assertTrue(Files.exists(Paths.get(filePath)));
-                    }
-                    
-                    testContext.completeNow();
-                })
-                .onFailure(testContext::failNow);
+        // 先创建测试表
+        createTestTable().compose(v -> {
+            // 然后生成代码
+            return generator.generateTable("test_user");
+        }).onSuccess(files -> {
+            assertNotNull(files);
+            assertFalse(files.isEmpty());
+            
+            // 验证生成的文件
+            for (String filePath : files) {
+                assertTrue(Files.exists(Paths.get(filePath)));
+            }
+            
+            testContext.completeNow();
+        }).onFailure(testContext::failNow);
+    }
+    
+    /**
+     * 创建测试表
+     */
+    private Future<Void> createTestTable() {
+        return Future.future(promise -> {
+            try {
+                java.sql.Connection conn = java.sql.DriverManager.getConnection(
+                    "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE", 
+                    "sa", "");
+                java.sql.Statement stmt = conn.createStatement();
+                
+                // 创建测试表
+                stmt.execute("DROP TABLE IF EXISTS test_user");
+                stmt.execute("""
+                    CREATE TABLE test_user (
+                        id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                        name VARCHAR(100) NOT NULL,
+                        email VARCHAR(255),
+                        age INTEGER,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """);
+                
+                stmt.close();
+                conn.close();
+                promise.complete();
+            } catch (Exception e) {
+                promise.fail(e);
+            }
+        });
     }
     
     /**
@@ -212,11 +247,18 @@ public class CodeGeneratorFacadeTest {
         featureConfig.setGenerateDto(true);
         featureConfig.setDaoStyle(DaoStyle.LAMBDA);
         
+        // 数据库配置（用于testGenerateTable测试）
+        DatabaseConfig databaseConfig = new DatabaseConfig();
+        databaseConfig.setUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE");
+        databaseConfig.setUsername("sa");
+        databaseConfig.setPassword("");
+        
         return GeneratorContext.builder()
                 .packageConfig(packageConfig)
                 .templateConfig(templateConfig)
                 .outputConfig(outputConfig)
                 .featureConfig(featureConfig)
+                .databaseConfig(databaseConfig)
                 .build();
     }
     

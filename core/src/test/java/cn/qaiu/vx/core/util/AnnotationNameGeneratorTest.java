@@ -82,12 +82,14 @@ public class AnnotationNameGeneratorTest {
         assertTrue(true, "ServiceModule name mapping test placeholder");
     }
 
+
     // 测试用的内部类
 
     @Service
     public static class UserService implements UserServiceInterface {
     }
     
+    // 移除@ProxyGen注解，避免在测试中生成代理类
     interface UserServiceInterface {
     }
 
@@ -111,10 +113,12 @@ public class AnnotationNameGeneratorTest {
     public static class CustomUserService implements CustomUserServiceInterface {
     }
     
+    // 移除@ProxyGen注解，避免在测试中生成代理类
     interface CustomUserServiceInterface {
     }
 
     @Dao(name = "customUserDao")
     public static class CustomUserDao {
     }
+
 }

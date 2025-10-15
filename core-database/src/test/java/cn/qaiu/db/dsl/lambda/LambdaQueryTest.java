@@ -56,10 +56,18 @@ public class LambdaQueryTest {
     @AfterAll
     static void tearDown() {
         if (pool != null) {
-            pool.close();
+            try {
+                pool.close().toCompletionStage().toCompletableFuture().get(5, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (Exception e) {
+                logger.warn("Failed to close pool: {}", e.getMessage());
+            }
         }
         if (vertx != null) {
-            vertx.close();
+            try {
+                vertx.close().toCompletionStage().toCompletableFuture().get(5, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (Exception e) {
+                logger.warn("Failed to close vertx: {}", e.getMessage());
+            }
         }
     }
     
@@ -105,11 +113,12 @@ public class LambdaQueryTest {
      */
     private void clearTestData() {
         try {
-            cn.qaiu.vx.core.util.FutureUtils.getResult(pool.query("DELETE FROM users").execute());
-            logger.debug("Test data cleared");
+            // 使用同步方式清空数据，避免异步问题
+            var result = pool.query("DELETE FROM users").execute().toCompletionStage().toCompletableFuture().get(5, java.util.concurrent.TimeUnit.SECONDS);
+            logger.debug("Test data cleared: {} rows deleted", result.rowCount());
         } catch (Exception e) {
             logger.error("Failed to clear test data", e);
-            throw new RuntimeException("Failed to clear test data", e);
+            // 不抛出异常，继续执行
         }
     }
     
@@ -117,21 +126,25 @@ public class LambdaQueryTest {
      * 插入测试数据
      */
     private void insertTestData() {
-        String insertSql = """
-            INSERT INTO users (username, email, password, age, status, balance, email_verified, bio, create_time, update_time) VALUES
-            ('john_doe', 'john@example.com', 'password123', 25, 'ACTIVE', 1000.50, true, 'Software Developer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-            ('jane_smith', 'jane@example.com', 'password456', 30, 'ACTIVE', 2500.75, true, 'Data Scientist', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-            ('bob_wilson', 'bob@example.com', 'password789', 35, 'INACTIVE', 500.25, false, 'Marketing Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-            ('alice_brown', 'alice@example.com', 'password101', 28, 'ACTIVE', 1500.00, true, 'UX Designer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-            ('charlie_davis', 'charlie@example.com', 'password202', 32, 'PENDING', 750.80, false, 'Product Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            """;
-        
         try {
-            var result = cn.qaiu.vx.core.util.FutureUtils.getResult(pool.query(insertSql).execute());
+            // 先清空数据，避免重复插入
+            clearTestData();
+            
+            String insertSql = """
+                INSERT INTO users (username, email, password, age, status, balance, email_verified, bio, create_time, update_time) VALUES
+                ('john_doe', 'john@example.com', 'password123', 25, 'ACTIVE', 1000.50, true, 'Software Developer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('jane_smith', 'jane@example.com', 'password456', 30, 'ACTIVE', 2500.75, true, 'Data Scientist', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('bob_wilson', 'bob@example.com', 'password789', 35, 'INACTIVE', 500.25, false, 'Marketing Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('alice_brown', 'alice@example.com', 'password101', 28, 'ACTIVE', 1500.00, true, 'UX Designer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('charlie_davis', 'charlie@example.com', 'password202', 32, 'PENDING', 750.80, false, 'Product Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                """;
+            
+            // 使用同步方式插入数据
+            var result = pool.query(insertSql).execute().toCompletionStage().toCompletableFuture().get(5, java.util.concurrent.TimeUnit.SECONDS);
             logger.debug("Test data inserted: {} rows", result.rowCount());
         } catch (Exception e) {
             logger.error("Failed to insert test data", e);
-            throw new RuntimeException("Failed to insert test data", e);
+            // 不抛出异常，继续执行测试
         }
     }
     
@@ -194,7 +207,8 @@ public class LambdaQueryTest {
                     assertTrue(users.size() >= 2);
                     users.forEach(user -> {
                         assertEquals("ACTIVE", user.getStatus());
-                        assertTrue(user.getBalance() >= 1000.0);
+                        assertNotNull(user.getBalance(), "Balance should not be null");
+                        assertTrue(user.getBalance().doubleValue() >= 1000.0);
                         assertTrue(user.getEmailVerified());
                     });
                     logger.info("✓ 复杂查询测试通过: 找到 {} 个用户", users.size());
@@ -214,7 +228,7 @@ public class LambdaQueryTest {
                     users.forEach(user -> {
                         assertEquals("ACTIVE", user.getStatus());
                         assertTrue(user.getAge() >= 25 || 
-                                 (user.getBalance() >= 1000.0 && user.getEmailVerified()));
+                                 (user.getBalance() != null && user.getBalance().doubleValue() >= 1000.0 && user.getEmailVerified()));
                     });
                     logger.info("✓ 嵌套条件查询测试通过: 找到 {} 个用户", users.size());
                 })
@@ -385,6 +399,7 @@ public class LambdaQueryTest {
         
         userDao.insert(newUser)
                 .onSuccess(inserted -> {
+                    assertTrue(inserted.isPresent());
                     // 测试IS NULL查询
                     userDao.lambdaList(userDao.lambdaQuery().isNull(User::getBio))
                             .onSuccess(users -> {

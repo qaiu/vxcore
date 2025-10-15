@@ -1,6 +1,7 @@
 package cn.qaiu.db.dsl.lambda.example;
 
 import cn.qaiu.db.dsl.core.JooqExecutor;
+import cn.qaiu.vx.core.util.VertxHolder;
 // import cn.qaiu.db.dsl.lambda.LambdaPageResult; // 未使用
 // import cn.qaiu.db.dsl.lambda.LambdaQueryWrapper; // 未使用
 // import cn.qaiu.db.dsl.lambda.LambdaUtils; // 未使用
@@ -27,7 +28,9 @@ public class LambdaQueryDemo {
     private static final Logger logger = LoggerFactory.getLogger(LambdaQueryDemo.class);
     
     public static void main(String[] args) {
+        // 初始化 Vertx 实例到 VertxHolder
         Vertx vertx = Vertx.vertx();
+        VertxHolder.init(vertx);
         
         // 创建H2内存数据库连接池
         io.vertx.jdbcclient.JDBCConnectOptions connectOptions = new io.vertx.jdbcclient.JDBCConnectOptions()

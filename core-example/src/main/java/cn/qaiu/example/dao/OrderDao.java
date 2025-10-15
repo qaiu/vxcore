@@ -40,7 +40,7 @@ public class OrderDao extends LambdaDao<Order, Long> {
      * 默认构造函数
      */
     public OrderDao() {
-        super(null, Order.class);
+        super();
     }
 
     /**

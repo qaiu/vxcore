@@ -20,6 +20,7 @@ public class TestServiceWithoutName implements TestServiceWithoutNameInterface {
 
 /**
  * 测试服务接口（无名称）
+ * 移除@ProxyGen注解，避免在测试中生成代理类
  */
 interface TestServiceWithoutNameInterface {
     Future<String> process(String input);

@@ -65,7 +65,7 @@ public class SimpleExampleApplication extends AbstractVerticle {
         executor = new JooqExecutor(pool);
 
         // 创建DAO
-        userDao = new UserDao(executor);
+        userDao = new UserDao();
         userService = new UserServiceImpl();
 
         // 初始化数据库表

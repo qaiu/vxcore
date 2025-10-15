@@ -270,47 +270,4 @@ public class EnhancedCreateTable {
             
         return promise.future();
     }
-    
-    /**
-     * 解析数据库类型字符串（已过时，保留用于向后兼容）
-     * @deprecated 现在优先使用Pool的数据库类型自动检测
-     * @param dbtypeStr 数据库类型字符串
-     * @return JDBCType枚举值
-     */
-    @Deprecated(since = "0.1.9", forRemoval = true)
-    private static JDBCType parseDbType(String dbtypeStr) {
-        if (dbtypeStr == null || dbtypeStr.trim().isEmpty()) {
-            return JDBCType.MySQL; // 默认MySQL
-        }
-        
-        String type = dbtypeStr.trim().toLowerCase();
-        switch (type) {
-            case "mysql":
-                return JDBCType.MySQL;
-            case "postgresql":
-            case "postgres":
-                return JDBCType.PostgreSQL;
-            case "h2":
-                return JDBCType.H2DB;
-            case "oracle":
-                return JDBCType.MySQL; // 暂时使用MySQL，后续可以添加Oracle支持
-            case "sqlserver":
-            case "mssql":
-                return JDBCType.MySQL; // 暂时使用MySQL，后续可以添加SQL Server支持
-            default:
-                // 如果无法识别，尝试通过字符串匹配
-                if (type.contains("mysql")) {
-                    return JDBCType.MySQL;
-                } else if (type.contains("postgres")) {
-                    return JDBCType.PostgreSQL;
-                } else if (type.contains("h2")) {
-                    return JDBCType.H2DB;
-                } else if (type.contains("oracle")) {
-                    return JDBCType.MySQL; // 暂时使用MySQL
-                } else if (type.contains("sqlserver") || type.contains("mssql")) {
-                    return JDBCType.MySQL; // 暂时使用MySQL
-                }
-                return JDBCType.MySQL; // 默认返回MySQL
-        }
-    }
 }

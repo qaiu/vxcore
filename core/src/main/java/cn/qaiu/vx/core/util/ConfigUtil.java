@@ -83,7 +83,12 @@ public class ConfigUtil {
      * @return JsonObject的Future
      */
     synchronized public static Future<JsonObject> readYamlConfig(String path, Vertx vertx) {
-        return readConfig("yaml", path+".yml", vertx);
+        // 如果路径已经以.yml结尾，不再添加后缀
+        if (path.endsWith(".yml")) {
+            return readConfig("yaml", path, vertx);
+        } else {
+            return readConfig("yaml", path+".yml", vertx);
+        }
     }
 
     /**
