@@ -30,22 +30,22 @@ public class ServiceInterfaceBuilder {
     /**
      * 生成Service接口
      */
-    public void generateServiceInterface(GeneratorContext context) throws IOException, TemplateException {
-        String entityName = context.getEntityName();
+    public void generateServiceInterface(GeneratorContext context, String entityName) throws IOException, TemplateException {
         String serviceName = entityName + "Service";
-        String packageName = context.getPackageName() + ".service";
+        String packageName = context.getPackageConfig().getServicePackage();
         
         // 准备模板数据
         Map<String, Object> data = new HashMap<>();
         data.put("packageName", packageName);
         data.put("serviceName", serviceName);
         data.put("entityName", entityName);
-        data.put("entityPackage", context.getPackageName() + ".entity");
-        data.put("daoStyle", context.getDaoStyle());
+        data.put("entityPackage", context.getPackageConfig().getEntityPackage());
+        data.put("daoStyle", context.getFeatureConfig() != null ? context.getFeatureConfig().getDaoStyle() : DaoStyle.JOOQ);
         
         // 生成Service接口
+        String outputDir = context.getOutputConfig().getOutputPath();
         generateFromTemplate("service-interface.ftl", data, 
-            getOutputPath(context.getOutputDir(), packageName, serviceName + ".java"));
+            getOutputPath(outputDir, packageName, serviceName + ".java"));
     }
     
     /**

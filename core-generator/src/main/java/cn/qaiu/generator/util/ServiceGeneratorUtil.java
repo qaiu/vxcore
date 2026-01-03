@@ -3,6 +3,9 @@ package cn.qaiu.generator.util;
 import cn.qaiu.generator.builder.ServiceInterfaceBuilder;
 import cn.qaiu.generator.model.GeneratorContext;
 import cn.qaiu.generator.model.DaoStyle;
+import cn.qaiu.generator.config.PackageConfig;
+import cn.qaiu.generator.config.OutputConfig;
+import cn.qaiu.generator.config.FeatureConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,13 +32,17 @@ public class ServiceGeneratorUtil {
      */
     public void generateServiceForEntity(String entityName, String packageName, String outputDir) {
         try {
-            GeneratorContext context = new GeneratorContext();
-            context.setEntityName(entityName);
-            context.setPackageName(packageName);
-            context.setOutputDir(outputDir);
-            context.setDaoStyle(DaoStyle.JOOQ);
+            PackageConfig packageConfig = new PackageConfig(packageName);
+            OutputConfig outputConfig = new OutputConfig(outputDir);
+            FeatureConfig featureConfig = new FeatureConfig().setDaoStyle(DaoStyle.JOOQ);
             
-            serviceBuilder.generateServiceInterface(context);
+            GeneratorContext context = GeneratorContext.builder()
+                .packageConfig(packageConfig)
+                .outputConfig(outputConfig)
+                .featureConfig(featureConfig)
+                .build();
+            
+            serviceBuilder.generateServiceInterface(context, entityName);
             
             System.out.println("✅ 成功生成 " + entityName + "Service 接口");
             

@@ -1,6 +1,6 @@
 package cn.qaiu.example.service;
 
-import cn.qaiu.db.dsl.lambda.SimpleJService;
+import cn.qaiu.db.dsl.lambda.JService;
 import cn.qaiu.example.entity.User;
 import cn.qaiu.example.model.UserRegistrationRequest;
 import io.vertx.core.Future;
