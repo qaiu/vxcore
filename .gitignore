@@ -75,3 +75,5 @@ generated-test-sources/
 # Backup files
 *.bak
 *.backup
+
+.github_token

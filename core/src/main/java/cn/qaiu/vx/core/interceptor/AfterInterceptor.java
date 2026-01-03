@@ -10,12 +10,11 @@ import io.vertx.ext.web.RoutingContext;
  */
 public interface AfterInterceptor {
 
-    /**
-     * 处理后置拦截逻辑
-     * 
-     * @param ctx 路由上下文
-     * @param responseData 响应数据
-     */
-    void handle(RoutingContext ctx, JsonObject responseData);
-
+  /**
+   * 处理后置拦截逻辑
+   *
+   * @param ctx 路由上下文
+   * @param responseData 响应数据
+   */
+  void handle(RoutingContext ctx, JsonObject responseData);
 }

@@ -5,302 +5,283 @@ import cn.qaiu.example.service.ProductService;
 import cn.qaiu.vx.core.annotaions.Controller;
 import cn.qaiu.vx.core.annotaions.RouteHandler;
 import cn.qaiu.vx.core.annotaions.RouteMapping;
-import cn.qaiu.vx.core.annotaions.param.RequestParam;
+import cn.qaiu.vx.core.annotaions.exception.ExceptionHandler;
 import cn.qaiu.vx.core.annotaions.param.PathVariable;
 import cn.qaiu.vx.core.annotaions.param.RequestBody;
-import cn.qaiu.vx.core.annotaions.exception.ExceptionHandler;
+import cn.qaiu.vx.core.annotaions.param.RequestParam;
 import cn.qaiu.vx.core.enums.RouteMethod;
 import cn.qaiu.vx.core.exception.BusinessException;
 import cn.qaiu.vx.core.exception.ValidationException;
 import cn.qaiu.vx.core.model.JsonResult;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.function.Function;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
- * 产品控制器
- * 演示复杂查询、聚合查询等功能
- * 
+ * 产品控制器 演示复杂查询、聚合查询等功能
+ *
  * @author QAIU
  */
 @Controller
 @Singleton
 @RouteHandler("/product")
 public class ProductController {
-    
-    private ProductService productService;
-    
-    /**
-     * 构造函数 - 使用依赖注入
-     */
-    @Inject
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+
+  private ProductService productService;
+
+  /** 构造函数 - 使用依赖注入 */
+  @Inject
+  public ProductController(ProductService productService) {
+    this.productService = productService;
+  }
+
+  /** 无参构造函数 - VXCore框架要求 */
+  public ProductController() {
+    // 框架会通过setter注入ProductService
+    // 注意：不要在这里实例化任何需要JooqExecutor的DAO
+  }
+
+  /** 设置ProductService - 由框架调用 */
+  public void setProductService(ProductService productService) {
+    this.productService = productService;
+  }
+
+  /** 获取产品列表 - 支持复杂查询条件 */
+  @RouteMapping(value = "/", method = RouteMethod.GET)
+  public Future<List<Product>> getProducts(
+      @RequestParam(value = "page", defaultValue = "1") Integer page,
+      @RequestParam(value = "size", defaultValue = "10") Integer size,
+      @RequestParam(value = "name", required = false) String name,
+      @RequestParam(value = "category", required = false) String category,
+      @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
+      @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
+      @RequestParam(value = "status", defaultValue = "ACTIVE") String status) {
+
+    if (productService == null) {
+      return Future.failedFuture("ProductService not available");
     }
-    
-    /**
-     * 无参构造函数 - VXCore框架要求
-     */
-    public ProductController() {
-        // 框架会通过setter注入ProductService
-        // 注意：不要在这里实例化任何需要JooqExecutor的DAO
+
+    // 简化实现：直接返回所有产品
+    return productService.getAll();
+  }
+
+  /** 根据ID获取产品 */
+  @RouteMapping(value = "/{id}", method = RouteMethod.GET)
+  public Future<Product> getProductById(@PathVariable("id") Long id) {
+    if (id == null || id <= 0) {
+      throw new ValidationException("产品ID不能为空或小于等于0");
     }
-    
-    /**
-     * 设置ProductService - 由框架调用
-     */
-    public void setProductService(ProductService productService) {
-        this.productService = productService;
+
+    return productService
+        .getById(id)
+        .map(
+            product -> {
+              if (product == null) {
+                throw new BusinessException("产品不存在");
+              }
+              return product;
+            });
+  }
+
+  /** 创建产品 */
+  @RouteMapping(value = "/", method = RouteMethod.POST)
+  public Future<Product> createProduct(@RequestBody JsonObject productData) {
+    if (productData == null || productData.isEmpty()) {
+      throw new ValidationException("产品数据不能为空");
     }
-    
-    /**
-     * 获取产品列表 - 支持复杂查询条件
-     */
-    @RouteMapping(value = "/", method = RouteMethod.GET)
-    public Future<List<Product>> getProducts(
-            @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "status", defaultValue = "ACTIVE") String status) {
-        
-        if (productService == null) {
-            return Future.failedFuture("ProductService not available");
-        }
-        
-        // 简化实现：直接返回所有产品
-        return productService.getAll();
+
+    String name = productData.getString("name");
+    String category = productData.getString("category");
+    Object priceObj = productData.getValue("price");
+    BigDecimal price = BigDecimal.ZERO;
+    if (priceObj instanceof Number) {
+      price = new BigDecimal(priceObj.toString());
     }
-    
-    /**
-     * 根据ID获取产品
-     */
-    @RouteMapping(value = "/{id}", method = RouteMethod.GET)
-    public Future<Product> getProductById(@PathVariable("id") Long id) {
-        if (id == null || id <= 0) {
-            throw new ValidationException("产品ID不能为空或小于等于0");
-        }
-        
-        return productService.getById(id)
-                .map(product -> {
-                    if (product == null) {
-                        throw new BusinessException("产品不存在");
-                    }
-                    return product;
-                });
+
+    if (name == null || name.trim().isEmpty()) {
+      throw new ValidationException("产品名称不能为空");
     }
-    
-    /**
-     * 创建产品
-     */
-    @RouteMapping(value = "/", method = RouteMethod.POST)
-    public Future<Product> createProduct(@RequestBody JsonObject productData) {
-        if (productData == null || productData.isEmpty()) {
-            throw new ValidationException("产品数据不能为空");
-        }
-        
-        String name = productData.getString("name");
-        String category = productData.getString("category");
-        Object priceObj = productData.getValue("price");
-        BigDecimal price = BigDecimal.ZERO;
-        if (priceObj instanceof Number) {
-            price = new BigDecimal(priceObj.toString());
-        }
-        
-        if (name == null || name.trim().isEmpty()) {
-            throw new ValidationException("产品名称不能为空");
-        }
-        
-        if (category == null || category.trim().isEmpty()) {
-            throw new ValidationException("产品分类不能为空");
-        }
-        
-        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ValidationException("产品价格必须大于0");
-        }
-        
-        Product product = new Product();
-        product.setName(name);
-        product.setCategory(category);
-        product.setPrice(price);
-        product.setStatus(Product.ProductStatus.ACTIVE);
-        product.setStock(0); // 默认库存为0
-        
-        return productService.create(product)
-                .map(result -> {
-                    if (result == null) {
-                        throw new RuntimeException("Failed to create product");
-                    }
-                    return result;
-                });
+
+    if (category == null || category.trim().isEmpty()) {
+      throw new ValidationException("产品分类不能为空");
     }
-    
-    /**
-     * 更新产品
-     */
-    @RouteMapping(value = "/{id}", method = RouteMethod.PUT)
-    public Future<Product> updateProduct(
-            @PathVariable("id") Long id,
-            @RequestBody JsonObject productData) {
-        
-        if (id == null || id <= 0) {
-            throw new ValidationException("产品ID不能为空或小于等于0");
-        }
-        
-        if (productData == null || productData.isEmpty()) {
-            throw new ValidationException("产品数据不能为空");
-        }
-        
-        return productService.getById(id)
-                .compose(product -> {
-                    if (product == null) {
-                        throw new BusinessException("产品不存在");
-                    }
-                    Product existingProduct = product;
-                    
-                    // 更新字段
-                    if (productData.containsKey("name")) {
-                        existingProduct.setName(productData.getString("name"));
-                    }
-                    if (productData.containsKey("category")) {
-                        existingProduct.setCategory(productData.getString("category"));
-                    }
-                    if (productData.containsKey("price")) {
-                        Object priceObj = productData.getValue("price");
-                        if (priceObj instanceof Number) {
-                            BigDecimal price = new BigDecimal(priceObj.toString());
-                            if (price.compareTo(BigDecimal.ZERO) > 0) {
-                                existingProduct.setPrice(price);
-                            }
+
+    if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new ValidationException("产品价格必须大于0");
+    }
+
+    Product product = new Product();
+    product.setName(name);
+    product.setCategory(category);
+    product.setPrice(price);
+    product.setStatus(Product.ProductStatus.ACTIVE);
+    product.setStock(0); // 默认库存为0
+
+    return productService
+        .create(product)
+        .map(
+            result -> {
+              if (result == null) {
+                throw new RuntimeException("Failed to create product");
+              }
+              return result;
+            });
+  }
+
+  /** 更新产品 */
+  @RouteMapping(value = "/{id}", method = RouteMethod.PUT)
+  public Future<Product> updateProduct(
+      @PathVariable("id") Long id, @RequestBody JsonObject productData) {
+
+    if (id == null || id <= 0) {
+      throw new ValidationException("产品ID不能为空或小于等于0");
+    }
+
+    if (productData == null || productData.isEmpty()) {
+      throw new ValidationException("产品数据不能为空");
+    }
+
+    return productService
+        .getById(id)
+        .compose(
+            product -> {
+              if (product == null) {
+                throw new BusinessException("产品不存在");
+              }
+              Product existingProduct = product;
+
+              // 更新字段
+              if (productData.containsKey("name")) {
+                existingProduct.setName(productData.getString("name"));
+              }
+              if (productData.containsKey("category")) {
+                existingProduct.setCategory(productData.getString("category"));
+              }
+              if (productData.containsKey("price")) {
+                Object priceObj = productData.getValue("price");
+                if (priceObj instanceof Number) {
+                  BigDecimal price = new BigDecimal(priceObj.toString());
+                  if (price.compareTo(BigDecimal.ZERO) > 0) {
+                    existingProduct.setPrice(price);
+                  }
+                }
+              }
+              if (productData.containsKey("stock")) {
+                Integer stock = productData.getInteger("stock");
+                if (stock != null && stock >= 0) {
+                  existingProduct.setStock(stock);
+                }
+              }
+              if (productData.containsKey("status")) {
+                String statusStr = productData.getString("status");
+                if (statusStr != null) {
+                  try {
+                    existingProduct.setStatus(Product.ProductStatus.valueOf(statusStr));
+                  } catch (IllegalArgumentException e) {
+                    // 忽略无效的状态值
+                  }
+                }
+              }
+
+              return productService
+                  .update(existingProduct)
+                  .map(
+                      success -> {
+                        if (!success) {
+                          throw new RuntimeException("Failed to update product");
                         }
-                    }
-                    if (productData.containsKey("stock")) {
-                        Integer stock = productData.getInteger("stock");
-                        if (stock != null && stock >= 0) {
-                            existingProduct.setStock(stock);
-                        }
-                    }
-                    if (productData.containsKey("status")) {
-                        String statusStr = productData.getString("status");
-                        if (statusStr != null) {
-                            try {
-                                existingProduct.setStatus(Product.ProductStatus.valueOf(statusStr));
-                            } catch (IllegalArgumentException e) {
-                                // 忽略无效的状态值
-                            }
-                        }
-                    }
-                    
-                    return productService.update(existingProduct)
-                            .map(success -> {
-                                if (!success) {
-                                    throw new RuntimeException("Failed to update product");
-                                }
-                                return existingProduct;
-                            });
-                });
+                        return existingProduct;
+                      });
+            });
+  }
+
+  /** 删除产品 */
+  @RouteMapping(value = "/{id}", method = RouteMethod.DELETE)
+  public Future<Boolean> deleteProduct(@PathVariable("id") Long id) {
+    if (id == null || id <= 0) {
+      throw new ValidationException("产品ID不能为空或小于等于0");
     }
-    
-    /**
-     * 删除产品
-     */
-    @RouteMapping(value = "/{id}", method = RouteMethod.DELETE)
-    public Future<Boolean> deleteProduct(@PathVariable("id") Long id) {
-        if (id == null || id <= 0) {
-            throw new ValidationException("产品ID不能为空或小于等于0");
-        }
-        
-        return productService.getById(id)
-                .compose(product -> {
-                    if (product == null) {
-                        throw new BusinessException("产品不存在");
-                    }
-                    return productService.delete(id);
-                });
+
+    return productService
+        .getById(id)
+        .compose(
+            product -> {
+              if (product == null) {
+                throw new BusinessException("产品不存在");
+              }
+              return productService.delete(id);
+            });
+  }
+
+  /** 按分类统计产品数量 */
+  @RouteMapping(value = "/stats/category", method = RouteMethod.GET)
+  public Future<JsonObject> getProductStatsByCategory() {
+    // 简化实现：返回空统计信息
+    return Future.succeededFuture(
+        new JsonObject()
+            .put("totalProducts", 0)
+            .put("totalValue", 0)
+            .put("avgPrice", 0)
+            .put("maxPrice", 0)
+            .put("minPrice", 0)
+            .put("totalStock", 0));
+  }
+
+  /** 按分类统计产品价格 */
+  @RouteMapping(value = "/stats/price", method = RouteMethod.GET)
+  public Future<JsonObject> getProductPriceStats(
+      @RequestParam(value = "category", required = false) String category) {
+
+    // 简化实现：返回空统计信息
+    return Future.succeededFuture(
+        new JsonObject()
+            .put("totalProducts", 0)
+            .put("totalValue", 0)
+            .put("avgPrice", 0)
+            .put("maxPrice", 0)
+            .put("minPrice", 0)
+            .put("totalStock", 0));
+  }
+
+  /** 批量更新产品状态 */
+  @RouteMapping(value = "/batch/status", method = RouteMethod.PUT)
+  public Future<Boolean> batchUpdateStatus(@RequestBody JsonObject updateData) {
+
+    @SuppressWarnings("unchecked")
+    List<Long> ids = (List<Long>) updateData.getJsonArray("ids").getList();
+    String status = updateData.getString("status");
+
+    if (ids == null || ids.isEmpty()) {
+      throw new ValidationException("产品ID列表不能为空");
     }
-    
-    /**
-     * 按分类统计产品数量
-     */
-    @RouteMapping(value = "/stats/category", method = RouteMethod.GET)
-    public Future<JsonObject> getProductStatsByCategory() {
-        // 简化实现：返回空统计信息
-        return Future.succeededFuture(new JsonObject()
-                .put("totalProducts", 0)
-                .put("totalValue", 0)
-                .put("avgPrice", 0)
-                .put("maxPrice", 0)
-                .put("minPrice", 0)
-                .put("totalStock", 0));
+
+    if (status == null || status.trim().isEmpty()) {
+      throw new ValidationException("状态不能为空");
     }
-    
-    /**
-     * 按分类统计产品价格
-     */
-    @RouteMapping(value = "/stats/price", method = RouteMethod.GET)
-    public Future<JsonObject> getProductPriceStats(
-            @RequestParam(value = "category", required = false) String category) {
-        
-        // 简化实现：返回空统计信息
-        return Future.succeededFuture(new JsonObject()
-                .put("totalProducts", 0)
-                .put("totalValue", 0)
-                .put("avgPrice", 0)
-                .put("maxPrice", 0)
-                .put("minPrice", 0)
-                .put("totalStock", 0));
+
+    if (ids.size() > 100) {
+      throw new ValidationException("批量更新数量不能超过100个");
     }
-    
-    /**
-     * 批量更新产品状态
-     */
-    @RouteMapping(value = "/batch/status", method = RouteMethod.PUT)
-    public Future<Boolean> batchUpdateStatus(
-            @RequestBody JsonObject updateData) {
-        
-        @SuppressWarnings("unchecked")
-        List<Long> ids = (List<Long>) updateData.getJsonArray("ids").getList();
-        String status = updateData.getString("status");
-        
-        if (ids == null || ids.isEmpty()) {
-            throw new ValidationException("产品ID列表不能为空");
-        }
-        
-        if (status == null || status.trim().isEmpty()) {
-            throw new ValidationException("状态不能为空");
-        }
-        
-        if (ids.size() > 100) {
-            throw new ValidationException("批量更新数量不能超过100个");
-        }
-        
-        // 批量更新产品状态
-        // 简化实现：返回成功
-        return Future.succeededFuture(true);
-    }
-    
-    // ========== 异常处理器 ==========
-    
-    /**
-     * 处理验证异常
-     */
-    @ExceptionHandler(ValidationException.class)
-    public JsonResult<String> handleValidationException(ValidationException e) {
-        return JsonResult.error("参数验证失败: " + e.getMessage(), 400);
-    }
-    
-    /**
-     * 处理业务异常
-     */
-    @ExceptionHandler(BusinessException.class)
-    public JsonResult<String> handleBusinessException(BusinessException e) {
-        return JsonResult.error("业务错误: " + e.getMessage(), 404);
-    }
+
+    // 批量更新产品状态
+    // 简化实现：返回成功
+    return Future.succeededFuture(true);
+  }
+
+  // ========== 异常处理器 ==========
+
+  /** 处理验证异常 */
+  @ExceptionHandler(ValidationException.class)
+  public JsonResult<String> handleValidationException(ValidationException e) {
+    return JsonResult.error("参数验证失败: " + e.getMessage(), 400);
+  }
+
+  /** 处理业务异常 */
+  @ExceptionHandler(BusinessException.class)
+  public JsonResult<String> handleBusinessException(BusinessException e) {
+    return JsonResult.error("业务错误: " + e.getMessage(), 404);
+  }
 }

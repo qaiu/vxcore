@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 字段长度属性
+ *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 @Documented
@@ -11,6 +12,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Length {
-    int[] decimalSize() default {22,2}; //bigDecimal精度
-    int varcharSize() default 255; //varchar大小
+  int[] decimalSize() default {22, 2}; // bigDecimal精度
+
+  int varcharSize() default 255; // varchar大小
 }

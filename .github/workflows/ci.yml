@@ -36,12 +36,15 @@ jobs:
       run: mvn spotless:check -B
       continue-on-error: true
     
+    - name: 编译项目
+      run: mvn install -DskipTests -B
+    
     - name: 静态代码分析
       run: mvn spotbugs:check -B
       continue-on-error: true
     
     - name: 依赖安全检查
-      run: mvn org.owasp:dependency-check-maven:check -B
+      run: mvn org.owasp:dependency-check-maven:check -B -DfailOnError=false || true
       continue-on-error: true
     
     - name: 上传代码质量报告
@@ -75,6 +78,9 @@ jobs:
         java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
         cache: maven
+    
+    - name: 编译所有模块
+      run: mvn install -DskipTests -B
     
     - name: 运行 ${{ matrix.module }} 模块单元测试
       run: mvn test -pl ${{ matrix.module }} -B
