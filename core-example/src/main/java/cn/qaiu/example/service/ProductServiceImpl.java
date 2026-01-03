@@ -129,10 +129,10 @@ public class ProductServiceImpl extends JServiceImpl<Product, Long> implements P
             });
   }
 
-  // =================== SimpleJService接口方法实现 ===================
+  // =================== ProductService接口方法实现 ===================
 
   @Override
-  public Future<Product> getById(Long id) {
+  public Future<Product> getProductById(Long id) {
     LOGGER.info("根据ID获取产品: {}", id);
     return lambdaOne(lambdaQuery().eq(Product::getId, id)).map(opt -> opt.orElse(null));
   }
@@ -156,13 +156,13 @@ public class ProductServiceImpl extends JServiceImpl<Product, Long> implements P
   }
 
   @Override
-  public Future<Boolean> update(Product entity) {
+  public Future<Boolean> updateProduct(Product entity) {
     LOGGER.info("更新产品: {}", entity);
     return super.update(entity).map(opt -> opt.isPresent());
   }
 
   @Override
-  public Future<Boolean> delete(Long id) {
+  public Future<Boolean> deleteProduct(Long id) {
     LOGGER.info("删除产品: {}", id);
     return super.delete(id);
   }
