@@ -434,6 +434,39 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- CI 测试配置 - 排除需要完整环境的测试 -->
+        <profile>
+            <id>ci</id>
+            <activation>
+                <property>
+                    <name>env.CI</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>${skipTests}</skipTests>
+                            <includes>
+                                <include>**/*Test.java</include>
+                                <include>**/*Tests.java</include>
+                            </includes>
+                            <excludes>
+                                <!-- 排除需要完整环境的集成测试 -->
+                                <exclude>**/StartupSequenceTest.java</exclude>
+                                <exclude>**/ThreeLayerFrameworkTest.java</exclude>
+                                <exclude>**/ThreeLayerIntegrationTest.java</exclude>
+                                <exclude>**/*PerformanceTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
