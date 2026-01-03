@@ -121,4 +121,64 @@ public class ProductServiceImpl extends JServiceImpl<Product, Long> implements P
                     return BigDecimal.ZERO;
                 });
     }
+
+    // =================== SimpleJService接口方法实现 ===================
+
+    @Override
+    public Future<Product> getById(Long id) {
+        LOGGER.info("根据ID获取产品: {}", id);
+        return lambdaOne(lambdaQuery().eq(Product::getId, id))
+                .map(opt -> opt.orElse(null));
+    }
+
+    @Override
+    public Future<List<Product>> getAll() {
+        LOGGER.info("获取所有产品");
+        return list();
+    }
+
+    @Override
+    public Future<LambdaPageResult<Product>> page(long page, long size) {
+        LOGGER.info("分页获取产品: page={}, size={}", page, size);
+        return lambdaPage(lambdaQuery().orderByDesc(Product::getCreateTime), page, size);
+    }
+
+    @Override
+    public Future<Product> create(Product entity) {
+        LOGGER.info("创建产品: {}", entity);
+        return insert(entity).map(opt -> opt.orElse(null));
+    }
+
+    @Override
+    public Future<Boolean> update(Product entity) {
+        LOGGER.info("更新产品: {}", entity);
+        return super.update(entity).map(opt -> opt.isPresent());
+    }
+
+    @Override
+    public Future<Boolean> delete(Long id) {
+        LOGGER.info("删除产品: {}", id);
+        return super.delete(id);
+    }
+
+    @Override
+    public Future<List<Product>> search(String keyword) {
+        LOGGER.info("搜索产品: {}", keyword);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Future.succeededFuture(List.of());
+        }
+        return lambdaList(lambdaQuery()
+                .like(Product::getName, keyword)
+                .orderByDesc(Product::getCreateTime));
+    }
+
+    @Override
+    public Future<io.vertx.core.json.JsonObject> getStatistics() {
+        LOGGER.info("获取产品统计信息");
+        return count().map(total -> {
+            io.vertx.core.json.JsonObject stats = new io.vertx.core.json.JsonObject();
+            stats.put("totalProducts", total);
+            return stats;
+        });
+    }
 }

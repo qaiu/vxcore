@@ -121,7 +121,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public Future<OrderDetail> getById(Long id) {
         LOGGER.info("根据ID获取订单详情: {}", id);
-        return orderDetailDao.findById(id);
+        return orderDetailDao.findById(id)
+                .map(opt -> opt.orElse(null));
     }
 
     @Override
@@ -133,7 +134,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public Future<LambdaPageResult<OrderDetail>> page(long page, long size) {
         LOGGER.info("分页获取订单详情: page={}, size={}", page, size);
-        return orderDetailDao.findPage(page, size);
+        return orderDetailDao.lambdaPage(orderDetailDao.lambdaQuery(), page, size);
     }
 
     @Override
@@ -145,32 +146,41 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public Future<OrderDetail> create(OrderDetail entity) {
         LOGGER.info("创建订单详情: {}", entity);
-        return orderDetailDao.save(entity);
+        return orderDetailDao.insert(entity)
+                .map(opt -> opt.orElse(null));
     }
 
     @Override
     public Future<Boolean> update(OrderDetail entity) {
         LOGGER.info("更新订单详情: {}", entity);
         return orderDetailDao.update(entity)
-                .map(result -> result > 0);
+                .map(opt -> opt.isPresent());
     }
 
     @Override
     public Future<Boolean> delete(Long id) {
         LOGGER.info("删除订单详情: {}", id);
-        return orderDetailDao.deleteById(id)
-                .map(result -> result > 0);
+        return orderDetailDao.delete(id);
     }
 
     @Override
     public Future<List<OrderDetail>> search(String keyword) {
         LOGGER.info("搜索订单详情: {}", keyword);
-        return orderDetailDao.search(keyword);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Future.succeededFuture(List.of());
+        }
+        return orderDetailDao.lambdaList(orderDetailDao.lambdaQuery()
+                .like(OrderDetail::getProductName, keyword));
     }
 
     @Override
     public Future<JsonObject> getStatistics() {
         LOGGER.info("获取订单详情统计信息");
-        return orderDetailDao.getStatistics();
+        return orderDetailDao.count()
+                .map(total -> {
+                    JsonObject stats = new JsonObject();
+                    stats.put("totalOrderDetails", total);
+                    return stats;
+                });
     }
 }

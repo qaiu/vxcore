@@ -52,7 +52,7 @@ public class AutoTableManager {
         
         // 获取Pool - 从DataSourceManager获取
         cn.qaiu.db.datasource.DataSourceManager manager = 
-            cn.qaiu.db.datasource.DataSourceManager.getInstance(null);
+            cn.qaiu.db.datasource.DataSourceManager.getInstance();
         io.vertx.sqlclient.Pool pool = manager.getDefaultPool();
         
         if (pool == null) {

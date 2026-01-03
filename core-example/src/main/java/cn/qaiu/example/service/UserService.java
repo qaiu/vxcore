@@ -82,7 +82,7 @@ public interface UserService extends JService<User, Long> {
     /**
      * 更新用户余额
      */
-    Future<Boolean> updateUserBalance(Long id, BigDecimal balance);
+    Future<Boolean> updateUserBalance(Long id, String balance);
     
     /**
      * 验证用户邮箱

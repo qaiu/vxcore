@@ -76,7 +76,7 @@ public class ProductController {
         }
         
         // 简化实现：直接返回所有产品
-        return productService.list();
+        return productService.getAll();
     }
     
     /**
@@ -89,11 +89,11 @@ public class ProductController {
         }
         
         return productService.getById(id)
-                .map(productOptional -> {
-                    if (!productOptional.isPresent()) {
+                .map(product -> {
+                    if (product == null) {
                         throw new BusinessException("产品不存在");
                     }
-                    return productOptional.get();
+                    return product;
                 });
     }
     
@@ -133,12 +133,12 @@ public class ProductController {
         product.setStatus(Product.ProductStatus.ACTIVE);
         product.setStock(0); // 默认库存为0
         
-        return productService.save(product)
+        return productService.create(product)
                 .map(result -> {
-                    if (!result.isPresent()) {
+                    if (result == null) {
                         throw new RuntimeException("Failed to create product");
                     }
-                    return result.get();
+                    return result;
                 });
     }
     
@@ -159,11 +159,11 @@ public class ProductController {
         }
         
         return productService.getById(id)
-                .compose(productOptional -> {
-                    if (!productOptional.isPresent()) {
+                .compose(product -> {
+                    if (product == null) {
                         throw new BusinessException("产品不存在");
                     }
-                    Product existingProduct = productOptional.get();
+                    Product existingProduct = product;
                     
                     // 更新字段
                     if (productData.containsKey("name")) {
@@ -198,12 +198,12 @@ public class ProductController {
                         }
                     }
                     
-                    return productService.updateById(existingProduct)
-                            .map(updatedProduct -> {
-                                if (!updatedProduct.isPresent()) {
+                    return productService.update(existingProduct)
+                            .map(success -> {
+                                if (!success) {
                                     throw new RuntimeException("Failed to update product");
                                 }
-                                return updatedProduct.get();
+                                return existingProduct;
                             });
                 });
     }
@@ -218,11 +218,11 @@ public class ProductController {
         }
         
         return productService.getById(id)
-                .compose(productOptional -> {
-                    if (!productOptional.isPresent()) {
+                .compose(product -> {
+                    if (product == null) {
                         throw new BusinessException("产品不存在");
                     }
-                    return productService.removeById(id);
+                    return productService.delete(id);
                 });
     }
     
