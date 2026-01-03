@@ -76,7 +76,7 @@ public class ProductController {
     }
 
     return productService
-        .getById(id)
+        .getProductById(id)
         .map(
             product -> {
               if (product == null) {
@@ -145,7 +145,7 @@ public class ProductController {
     }
 
     return productService
-        .getById(id)
+        .getProductById(id)
         .compose(
             product -> {
               if (product == null) {
@@ -187,7 +187,7 @@ public class ProductController {
               }
 
               return productService
-                  .update(existingProduct)
+                  .updateProduct(existingProduct)
                   .map(
                       success -> {
                         if (!success) {
@@ -206,13 +206,13 @@ public class ProductController {
     }
 
     return productService
-        .getById(id)
+        .getProductById(id)
         .compose(
             product -> {
               if (product == null) {
                 throw new BusinessException("产品不存在");
               }
-              return productService.delete(id);
+              return productService.deleteProduct(id);
             });
   }
 
