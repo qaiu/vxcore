@@ -153,6 +153,9 @@ jobs:
           timeout 60 bash -c 'until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do sleep 2; done'
         fi
     
+    - name: 编译所有模块
+      run: mvn install -DskipTests -B
+    
     - name: 运行集成测试
       run: mvn verify -pl core-example -B
       env:
@@ -192,6 +195,9 @@ jobs:
         java-version: 17
         distribution: 'temurin'
         cache: maven
+    
+    - name: 编译所有模块
+      run: mvn install -DskipTests -B
     
     - name: 运行性能测试
       run: mvn test -Dtest=*PerformanceTest -pl core-example -B

@@ -77,3 +77,4 @@ generated-test-sources/
 *.backup
 
 .github_token
+.tmp/
