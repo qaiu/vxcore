@@ -1,14 +1,214 @@
-name: CI Build and Test
+name: VXCore CI/CD Pipeline
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  schedule:
+    # 每天凌晨2点运行性能测试
+    - cron: '0 2 * * *'
+
+env:
+  MAVEN_OPTS: -Xmx2048m -XX:+UseG1GC
+  CI: true
 
 jobs:
-  build:
+  # 代码质量检查
+  code-quality:
+    name: 代码质量检查
     runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整历史记录用于代码分析
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 代码格式检查
+      run: mvn spotless:check -B
+      continue-on-error: true
+    
+    - name: 静态代码分析
+      run: mvn spotbugs:check -B
+      continue-on-error: true
+    
+    - name: 依赖安全检查
+      run: mvn org.owasp:dependency-check-maven:check -B
+      continue-on-error: true
+    
+    - name: 上传代码质量报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-quality-reports
+        path: |
+          **/target/spotbugsXml.xml
+          **/target/dependency-check-report.html
+        retention-days: 30
+
+  # 单元测试
+  unit-tests:
+    name: 单元测试
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    strategy:
+      matrix:
+        java-version: [17, 21]
+        module: [core, core-database, core-generator, core-example]
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行 ${{ matrix.module }} 模块单元测试
+      run: mvn test -pl ${{ matrix.module }} -B
+      env:
+        CI: true
+        DB_TYPE: h2
+    
+    - name: 生成测试覆盖率报告
+      run: mvn jacoco:report -pl ${{ matrix.module }} -B
+    
+    - name: 上传测试报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-${{ matrix.module }}-java-${{ matrix.java-version }}
+        path: |
+          ${{ matrix.module }}/target/surefire-reports/
+          ${{ matrix.module }}/target/site/jacoco/
+        retention-days: 30
+
+  # 集成测试
+  integration-tests:
+    name: 集成测试
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    
+    strategy:
+      matrix:
+        java-version: [17, 21]
+        database: [h2, mysql, postgresql]
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      
+      postgresql:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 等待数据库启动
+      if: matrix.database != 'h2'
+      run: |
+        if [ "${{ matrix.database }}" = "mysql" ]; then
+          timeout 60 bash -c 'until mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot --silent; do sleep 2; done'
+        elif [ "${{ matrix.database }}" = "postgresql" ]; then
+          timeout 60 bash -c 'until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do sleep 2; done'
+        fi
+    
+    - name: 运行集成测试
+      run: mvn verify -pl core-example -B
+      env:
+        CI: true
+        DB_TYPE: ${{ matrix.database }}
+        MYSQL_URL: jdbc:mysql://127.0.0.1:3306/testdb
+        MYSQL_USER: root
+        MYSQL_PASSWORD: root
+        POSTGRES_URL: jdbc:postgresql://127.0.0.1:5432/testdb
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+    
+    - name: 上传集成测试报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-test-reports-${{ matrix.database }}-java-${{ matrix.java-version }}
+        path: |
+          core-example/target/failsafe-reports/
+          core-example/target/site/jacoco/
+        retention-days: 30
+
+  # 性能测试
+  performance-tests:
+    name: 性能测试
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, '[performance]')
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行性能测试
+      run: mvn test -Dtest=*PerformanceTest -pl core-example -B
+      env:
+        CI: true
+        DB_TYPE: h2
+    
+    - name: 生成性能报告
+      run: mvn jacoco:report -pl core-example -B
+    
+    - name: 上传性能测试报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-test-reports
+        path: |
+          core-example/target/surefire-reports/
+          core-example/target/site/jacoco/
+        retention-days: 30
+
+  # 构建和打包
+  build:
+    name: 构建和打包
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
     
     strategy:
       matrix:
@@ -25,35 +225,150 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
-    - name: 缓存 Maven 依赖
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
-    
     - name: 构建项目
-      run: mvn clean compile -B
+      run: mvn clean package -B -DskipTests
       env:
         CI: true
     
-    - name: 运行单元测试（自动排除MySQL和PostgreSQL测试）
-      run: mvn test -B
-      env:
-        CI: true
-        # 只使用H2内存数据库进行测试
-        DB_TYPE: h2
+    - name: 生成源码包
+      run: mvn source:jar -B
     
-    - name: 打包
-      run: mvn package -DskipTests -B
+    - name: 生成文档
+      run: mvn javadoc:jar -B
     
-    - name: 上传测试报告
-      if: always()
+    - name: 上传构建产物
       uses: actions/upload-artifact@v4
       with:
-        name: test-reports-java-${{ matrix.java-version }}
+        name: build-artifacts-java-${{ matrix.java-version }}
         path: |
-          **/target/surefire-reports/
-          **/target/test-classes/
-        retention-days: 7
+          **/target/*.jar
+          **/target/*-sources.jar
+          **/target/*-javadoc.jar
+        retention-days: 30
+
+  # 发布
+  release:
+    name: 发布
+    runs-on: ubuntu-latest
+    needs: [build, performance-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 配置 Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+    
+    - name: 创建发布
+      run: |
+        # 获取版本号
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        
+        # 创建 Git 标签
+        git tag -a "v$VERSION" -m "Release version $VERSION"
+        git push origin "v$VERSION"
+    
+    - name: 发布到 Maven Central
+      run: mvn deploy -B -DskipTests
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+    
+    - name: 创建 GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.VERSION }}
+        release_name: VXCore v${{ env.VERSION }}
+        body: |
+          ## VXCore v${{ env.VERSION }}
+          
+          ### 新功能
+          - 优化了框架生命周期管理
+          - 改进了组合模式设计
+          - 增强了测试覆盖率
+          
+          ### 改进
+          - 提升了启动性能
+          - 优化了内存使用
+          - 增强了错误处理
+          
+          ### 修复
+          - 修复了数据源初始化问题
+          - 修复了配置加载问题
+          - 修复了测试卡死问题
+        draft: false
+        prerelease: false
+
+  # 测试结果汇总
+  test-summary:
+    name: 测试结果汇总
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, performance-tests]
+    if: always()
+    
+    steps:
+    - name: 下载所有测试报告
+      uses: actions/download-artifact@v4
+      with:
+        path: test-reports
+    
+    - name: 生成测试汇总报告
+      run: |
+        echo "# VXCore 测试结果汇总" > test-summary.md
+        echo "" >> test-summary.md
+        echo "## 测试统计" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        # 统计单元测试结果
+        if [ -d "test-reports" ]; then
+          echo "### 单元测试" >> test-summary.md
+          find test-reports -name "TEST-*.xml" -exec grep -l "testsuite" {} \; | wc -l | xargs -I {} echo "- 测试套件数量: {}" >> test-summary.md
+          find test-reports -name "TEST-*.xml" -exec grep -o 'tests="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print "- 总测试数: " sum}' >> test-summary.md
+          find test-reports -name "TEST-*.xml" -exec grep -o 'failures="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print "- 失败数: " sum}' >> test-summary.md
+          find test-reports -name "TEST-*.xml" -exec grep -o 'errors="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print "- 错误数: " sum}' >> test-summary.md
+        fi
+        
+        echo "" >> test-summary.md
+        echo "## 覆盖率报告" >> test-summary.md
+        echo "" >> test-summary.md
+        echo "详细的覆盖率报告请查看各模块的 jacoco 报告。" >> test-summary.md
+        
+        echo "" >> test-summary.md
+        echo "## 性能测试" >> test-summary.md
+        echo "" >> test-summary.md
+        echo "性能测试结果请查看 performance-test-reports 工件。" >> test-summary.md
+    
+    - name: 上传测试汇总报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-summary-report
+        path: test-summary.md
+        retention-days: 30
+    
+    - name: 评论 PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('test-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });

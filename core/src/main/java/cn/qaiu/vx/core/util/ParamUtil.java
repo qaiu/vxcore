@@ -135,11 +135,6 @@ public final class ParamUtil {
         }
         
         try {
-            // 使用类型转换器注册表
-            if (TypeConverterRegistry.isSupported(targetType)) {
-                return TypeConverterRegistry.convert(value, targetType);
-            }
-            
             // 基本类型转换
             if (targetType == String.class) {
                 return value;
@@ -160,7 +155,7 @@ public final class ParamUtil {
             } else if (targetType == Byte.class || targetType == byte.class) {
                 return Byte.valueOf(value);
             } else if (Enum.class.isAssignableFrom(targetType)) {
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({"unchecked", "rawtypes"})
                 Class<? extends Enum> enumClass = (Class<? extends Enum>) targetType;
                 return Enum.valueOf(enumClass, value);
             }

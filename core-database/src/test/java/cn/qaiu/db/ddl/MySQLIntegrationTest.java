@@ -3,15 +3,14 @@ package cn.qaiu.db.ddl;
 import cn.qaiu.db.pool.JDBCType;
 import cn.qaiu.db.ddl.example.ExampleUser;
 import io.vertx.core.Vertx;
-import io.vertx.jdbcclient.JDBCConnectOptions;
 import io.vertx.jdbcclient.JDBCPool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.AfterEach;
 
 import static org.junit.jupiter.api.Assertions.*;
 import cn.qaiu.db.test.MySQLTestConfig;
@@ -40,6 +39,15 @@ public class MySQLIntegrationTest {
         }
         
         testContext.completeNow();
+    }
+
+    @AfterEach
+    void tearDown(VertxTestContext testContext) {
+        if (pool != null) {
+            pool.close().onComplete(testContext.succeedingThenComplete());
+        } else {
+            testContext.completeNow();
+        }
     }
 
     /**

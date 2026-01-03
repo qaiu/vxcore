@@ -241,6 +241,7 @@ public class PageResult implements Serializable {
      * 
      * @return List形式的数据列表
      */
+    @SuppressWarnings("unchecked")
     public List<JsonObject> getDataAsList() {
         return data.getList();
     }

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
@@ -25,36 +26,40 @@ import static org.junit.jupiter.api.Assertions.*;
 public class JdbcMetadataReaderTest {
     
     private JdbcMetadataReader reader;
-    private static final String H2_URL = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1";
+    private static final String H2_URL = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE";
     private static final String H2_USER = "sa";
     private static final String H2_PASSWORD = "";
     
     @BeforeEach
     void setUp(VertxTestContext testContext) throws Exception {
-        // 创建 H2 内存数据库
-        Connection conn = DriverManager.getConnection(H2_URL, H2_USER, H2_PASSWORD);
-        Statement stmt = conn.createStatement();
-        
-        // 创建测试表
-        stmt.execute("DROP TABLE IF EXISTS test_user");
-        stmt.execute("""
-            CREATE TABLE test_user (
-                id BIGINT PRIMARY KEY AUTO_INCREMENT,
-                name VARCHAR(100) NOT NULL,
-                email VARCHAR(255),
-                age INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )
-        """);
-        
-        stmt.close();
-        conn.close();
-        
         // 创建读取器
         reader = new JdbcMetadataReader(H2_URL, H2_USER, H2_PASSWORD);
         
-        testContext.completeNow();
+        // 直接创建测试表，使用同步方式确保表创建成功
+        try {
+            Connection conn = DriverManager.getConnection(H2_URL, H2_USER, H2_PASSWORD);
+            Statement stmt = conn.createStatement();
+            
+            // 创建测试表
+            stmt.execute("DROP TABLE IF EXISTS test_user");
+            stmt.execute("""
+                CREATE TABLE test_user (
+                    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                    name VARCHAR(100) NOT NULL,
+                    email VARCHAR(255),
+                    age INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """);
+            
+            stmt.close();
+            conn.close();
+            
+            testContext.completeNow();
+        } catch (SQLException e) {
+            testContext.failNow(e);
+        }
     }
     
     @Test
@@ -97,7 +102,8 @@ public class JdbcMetadataReaderTest {
                             .findFirst()
                             .orElse(null);
                     assertNotNull(nameColumn);
-                    assertEquals("VARCHAR", nameColumn.getColumnType());
+                    // H2数据库可能返回VARCHAR或CHARACTER VARYING
+                    assertTrue("VARCHAR".equals(nameColumn.getColumnType()) || "CHARACTER VARYING".equals(nameColumn.getColumnType()));
                     assertEquals("String", nameColumn.getJavaFieldType());
                     assertFalse(nameColumn.isNullable());
                     

@@ -1,16 +1,12 @@
 package cn.qaiu.db.ddl;
 
 import cn.qaiu.db.pool.JDBCType;
-import cn.qaiu.vx.core.util.ConfigConstant;
 import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
-import io.vertx.jdbcclient.JDBCConnectOptions;
-import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;

@@ -26,6 +26,24 @@ public class StringCase {
      */
     public static String toUnderlineCase(String str) {
         if (StringUtils.isEmpty(str)) return str;
+        
+        // 如果字符串已经包含下划线，先按驼峰规则处理，然后合并下划线
+        if (str.contains("_")) {
+            // 先按驼峰规则分割
+            StringBuilder sb = new StringBuilder();
+            for (String s : StringUtils.splitByCharacterTypeCamelCase(str)) {
+                if (!s.startsWith("_")) {
+                    sb.append(s.toLowerCase()).append("_");
+                } else {
+                    sb.append(s);
+                }
+            }
+            String result = sb.substring(0, sb.length() - 1);
+            // 合并连续的下划线为单个下划线
+            return result.replaceAll("_+", "_");
+        }
+        
+        // 标准驼峰转下划线逻辑
         StringBuilder sb = new StringBuilder();
         for (String s : StringUtils.splitByCharacterTypeCamelCase(str)) {
             if (!s.startsWith("_")) {

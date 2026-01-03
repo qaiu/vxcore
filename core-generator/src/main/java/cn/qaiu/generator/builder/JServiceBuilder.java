@@ -48,6 +48,9 @@ public class JServiceBuilder {
         serviceInfo.setDescription(entityInfo.getDescription() + "业务服务接口");
         serviceInfo.setPackageName(packageConfig.getServicePackage());
         
+        // 设置字段信息（模板需要访问entity.fields）
+        serviceInfo.setFields(entityInfo.getFields());
+        
         // 构建导入语句
         Set<String> imports = buildJServiceImports(entityInfo);
         serviceInfo.setImports(new ArrayList<>(imports));
@@ -74,6 +77,9 @@ public class JServiceBuilder {
         serviceImplInfo.setTableName(tableInfo.getTableName());
         serviceImplInfo.setDescription(entityInfo.getDescription() + "业务服务实现");
         serviceImplInfo.setPackageName(packageConfig.getServicePackage() + ".impl");
+        
+        // 设置字段信息（模板需要访问entity.fields）
+        serviceImplInfo.setFields(entityInfo.getFields());
         
         // 构建导入语句
         Set<String> imports = buildJServiceImplementationImports(entityInfo);

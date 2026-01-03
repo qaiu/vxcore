@@ -3,160 +3,267 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version'
+        description: '发布版本'
         required: true
         default: '1.0.0'
+        type: string
+      release_type:
+        description: '发布类型'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - prerelease
+          - draft
 
 env:
-  MAVEN_OPTS: -Xmx1024m
+  MAVEN_OPTS: -Xmx2048m -XX:+UseG1GC
+  CI: true
 
 jobs:
-  release:
-    name: Create Release
+  # 构建和测试
+  build-and-test:
+    name: 构建和测试
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
+    - name: 检出代码
       uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
+      with:
+        fetch-depth: 0
+    
+    - name: 设置 JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: 17
         distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Set version
+        cache: maven
+    
+    - name: 运行所有测试
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-        else
-          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        fi
-        
-    - name: Update version in pom.xml
-      run: mvn versions:set -DnewVersion=${{ env.VERSION }}
-      
-    - name: Run full test suite
-      run: mvn clean test
+        mvn clean test -B
+        mvn verify -B
       env:
         CI: true
-      
-    - name: Build project
-      run: mvn clean package -DskipTests=false
-      env:
-        CI: true
-      
-    - name: Generate changelog
-      id: changelog
-      run: |
-        if [ -f CHANGELOG.md ]; then
-          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-          cat CHANGELOG.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        else
-          echo "CHANGELOG=No changelog available" >> $GITHUB_OUTPUT
-        fi
-        
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DB_TYPE: h2
+    
+    - name: 生成测试报告
+      run: mvn jacoco:report -B
+    
+    - name: 构建项目
+      run: mvn clean package -B -DskipTests
+    
+    - name: 生成源码包
+      run: mvn source:jar -B
+    
+    - name: 生成文档
+      run: mvn javadoc:jar -B
+    
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v4
       with:
-        tag_name: v${{ env.VERSION }}
-        release_name: VXCore v${{ env.VERSION }}
-        body: |
-          ## VXCore v${{ env.VERSION }}
-          
-          ### Changes
-          ${{ steps.changelog.outputs.CHANGELOG }}
-          
-          ### Downloads
-          - JAR files are attached to this release
-          - Documentation is available in the site artifacts
-        draft: false
-        prerelease: false
-        
-    - name: Upload Release Assets
-      uses: actions/upload-release-asset@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: target/vxcore-core-${{ env.VERSION }}.jar
-        asset_name: vxcore-core-${{ env.VERSION }}.jar
-        asset_content_type: application/java-archive
-        
-    - name: Upload Database Module
-      uses: actions/upload-release-asset@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: target/vxcore-database-${{ env.VERSION }}.jar
-        asset_name: vxcore-database-${{ env.VERSION }}.jar
-        asset_content_type: application/java-archive
-        
-    - name: Upload Example Module
-      uses: actions/upload-release-asset@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: target/vxcore-example-${{ env.VERSION }}.jar
-        asset_name: vxcore-example-${{ env.VERSION }}.jar
-        asset_content_type: application/java-archive
+        name: release-artifacts
+        path: |
+          **/target/*.jar
+          **/target/*-sources.jar
+          **/target/*-javadoc.jar
+        retention-days: 30
 
-  publish:
-    name: Publish to Maven Central
+  # 发布到 Maven Central
+  publish-maven:
+    name: 发布到 Maven Central
     runs-on: ubuntu-latest
-    needs: release
+    needs: build-and-test
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     
     steps:
-    - name: Checkout code
+    - name: 检出代码
       uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
+    
+    - name: 设置 JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: 17
         distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Set version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-      
-    - name: Update version in pom.xml
-      run: mvn versions:set -DnewVersion=${{ env.VERSION }}
-      
-    - name: Configure GPG
+        cache: maven
+    
+    - name: 配置 Maven 设置
       run: |
-        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d > private.key
-        gpg --import private.key
-        gpg --list-secret-keys
-        
-    - name: Publish to Maven Central
-      run: mvn clean deploy -P release
+        mkdir -p ~/.m2
+        cat > ~/.m2/settings.xml << EOF
+        <settings>
+          <servers>
+            <server>
+              <id>ossrh</id>
+              <username>\${env.OSSRH_USERNAME}</username>
+              <password>\${env.OSSRH_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+    
+    - name: 发布到 Maven Central
+      run: mvn deploy -B -DskipTests
       env:
-        CI: true
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+
+  # 创建 GitHub Release
+  create-release:
+    name: 创建 GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-and-test, publish-maven]
+    if: always() && (needs.build-and-test.result == 'success')
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 获取版本号
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: 生成发布说明
+      id: changelog
+      run: |
+        # 获取上一个标签
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        
+        if [ -n "$PREVIOUS_TAG" ]; then
+          # 生成变更日志
+          echo "## 变更日志" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+        else
+          # 首次发布
+          echo "## 首次发布" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "这是 VXCore 框架的首次发布。" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+        fi
+        
+        # 添加功能特性
+        echo "## 主要特性" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "- 🚀 基于 Vert.x 的高性能异步框架" >> CHANGELOG.md
+        echo "- 🗄️ 支持 H2、MySQL、PostgreSQL 数据库" >> CHANGELOG.md
+        echo "- 🔧 完整的代码生成器" >> CHANGELOG.md
+        echo "- 🌐 WebSocket 和反向代理支持" >> CHANGELOG.md
+        echo "- 📊 完善的测试覆盖" >> CHANGELOG.md
+        echo "- 🔒 企业级安全特性" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # 添加使用说明
+        echo "## 快速开始" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "\`\`\`xml" >> CHANGELOG.md
+        echo "<dependency>" >> CHANGELOG.md
+        echo "    <groupId>cn.qaiu</groupId>" >> CHANGELOG.md
+        echo "    <artifactId>core</artifactId>" >> CHANGELOG.md
+        echo "    <version>${{ steps.get_version.outputs.VERSION }}</version>" >> CHANGELOG.md
+        echo "</dependency>" >> CHANGELOG.md
+        echo "\`\`\`" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # 添加文档链接
+        echo "## 文档" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "- [快速开始](https://github.com/qaiu/vxcore/blob/main/docs/02-quick-start.md)" >> CHANGELOG.md
+        echo "- [架构设计](https://github.com/qaiu/vxcore/blob/main/docs/04-architecture.md)" >> CHANGELOG.md
+        echo "- [API 文档](https://github.com/qaiu/vxcore/blob/main/docs/)" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # 输出变更日志
+        cat CHANGELOG.md
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        cat CHANGELOG.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: 下载构建产物
+      uses: actions/download-artifact@v4
+      with:
+        name: release-artifacts
+        path: artifacts
+    
+    - name: 创建 GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.get_version.outputs.VERSION }}
+        name: VXCore v${{ steps.get_version.outputs.VERSION }}
+        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        draft: ${{ github.event.inputs.release_type == 'draft' }}
+        prerelease: ${{ github.event.inputs.release_type == 'prerelease' }}
+        files: |
+          artifacts/**/*.jar
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 发布到 Docker Hub
+  publish-docker:
+    name: 发布到 Docker Hub
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: 登录 Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+    
+    - name: 构建并推送 Docker 镜像
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: |
+          qaiu/vxcore:latest
+          qaiu/vxcore:${{ github.ref_name }}
+        platforms: linux/amd64,linux/arm64
+
+  # 发布通知
+  notify:
+    name: 发布通知
+    runs-on: ubuntu-latest
+    needs: [create-release, publish-maven, publish-docker]
+    if: always()
+    
+    steps:
+    - name: 发送 Slack 通知
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: "🎉 VXCore v${{ github.ref_name }} 发布成功！"
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+    
+    - name: 发送失败通知
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: "❌ VXCore v${{ github.ref_name }} 发布失败！"
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}

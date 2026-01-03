@@ -20,7 +20,14 @@ public final class VertxHolder {
     }
 
     public static Vertx getVertxInstance() {
-        Objects.requireNonNull(singletonVertx, "未初始化Vertx");
+        // 从当前Vertx上下文获取 如果获取不到就创建新的Vertx实例
+        if (singletonVertx == null) {
+            if (Vertx.currentContext() == null) {
+                singletonVertx = Vertx.vertx();
+            } else {
+                singletonVertx = Vertx.currentContext().owner();
+            }
+        }
         return singletonVertx;
     }
 }

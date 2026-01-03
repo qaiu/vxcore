@@ -1,2 +1,1 @@
-cn.qaiu.vx.core.codegen.ServiceProxyGenerator
-
+cn.qaiu.vx.core.processor.CustomServiceGenProcessor

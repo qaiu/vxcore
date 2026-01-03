@@ -4,6 +4,7 @@ import cn.qaiu.generator.config.*;
 import cn.qaiu.generator.core.CodeGeneratorFacade;
 import cn.qaiu.generator.model.DaoStyle;
 import cn.qaiu.generator.model.GeneratorContext;
+import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.Vertx;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -113,8 +114,11 @@ public class GeneratorCli implements Callable<Integer> {
             // 创建配置
             GeneratorContext context = createContext();
             
-            // 创建生成器
+            // 初始化 Vertx 实例到 VertxHolder
             Vertx vertx = Vertx.vertx();
+            VertxHolder.init(vertx);
+            
+            // 创建生成器
             CodeGeneratorFacade generator = new CodeGeneratorFacade(vertx, context);
             
             // 生成代码

@@ -33,9 +33,9 @@ class StringCaseTest {
             @Test
             @DisplayName("包含下划线的驼峰转下划线")
             void testCamelWithUnderscoreToUnderline() {
-                assertEquals("hello__world", StringCase.toUnderlineCase("Hello_World"));
-                assertEquals("hello_world__test", StringCase.toUnderlineCase("HelloWorld_test"));
-                assertEquals("my_name__qaiu", StringCase.toUnderlineCase("MyName_Qaiu"));
+                assertEquals("hello_world", StringCase.toUnderlineCase("Hello_World"));
+                assertEquals("hello_world_test", StringCase.toUnderlineCase("HelloWorld_test"));
+                assertEquals("my_name_qaiu", StringCase.toUnderlineCase("MyName_Qaiu"));
             }
 
         @ParameterizedTest
@@ -62,7 +62,7 @@ class StringCaseTest {
             @Test
             @DisplayName("特殊字符测试")
             void testSpecialCharacters() {
-                assertEquals("__my__name_qaiu___", StringCase.toUnderlineCase("__my_nameQaiu___"));
+                assertEquals("_my_name_qaiu_", StringCase.toUnderlineCase("__my_nameQaiu___"));
                 assertEquals("abc", StringCase.toUnderlineCase("ABC"));
                 assertEquals("test_123", StringCase.toUnderlineCase("test123"));
             }
@@ -172,7 +172,7 @@ class StringCaseTest {
         @Test
         @DisplayName("特殊字符测试")
         void testSpecialCharacters() {
-            assertEquals("__MY__NAME_QAIU___", StringCase.toUnderlineUpperCase("__my_nameQaiu___"));
+            assertEquals("_MY_NAME_QAIU_", StringCase.toUnderlineUpperCase("__my_nameQaiu___"));
             assertEquals("ABC", StringCase.toUnderlineUpperCase("ABC"));
             assertEquals("TEST_123", StringCase.toUnderlineUpperCase("test123"));
         }

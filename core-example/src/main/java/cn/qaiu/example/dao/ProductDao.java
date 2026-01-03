@@ -38,10 +38,10 @@ public class ProductDao extends LambdaDao<Product, Long> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductDao.class);
 
     /**
-     * 默认构造函数
+     * 默认构造函数 - 使用自动管理模式
      */
     public ProductDao() {
-        super(null, Product.class);
+        super();
     }
 
     /**

@@ -52,7 +52,7 @@ public class ExampleApplication extends AbstractVerticle {
      */
     private io.vertx.core.Future<Void> initializeDataSource() {
         // 获取DataSourceManager实例
-        DataSourceManager manager = DataSourceManager.getInstance(vertx);
+        cn.qaiu.db.datasource.DataSourceManager manager = cn.qaiu.db.datasource.DataSourceManager.getInstance();
         
         // 创建H2内存数据库配置
         DataSourceConfig h2Config = new DataSourceConfig(

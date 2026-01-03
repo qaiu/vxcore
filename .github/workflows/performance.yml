@@ -2,87 +2,360 @@ name: Performance Tests
 
 on:
   schedule:
-    - cron: '0 3 * * 0'  # 每周日凌晨3点运行
+    # 每天凌晨3点运行性能测试
+    - cron: '0 3 * * *'
   workflow_dispatch:
+    inputs:
+      test_type:
+        description: '测试类型'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - unit
+          - integration
+          - stress
+          - memory
+      java_version:
+        description: 'Java版本'
+        required: true
+        default: '17'
+        type: choice
+        options:
+          - '17'
+          - '21'
+
+env:
+  MAVEN_OPTS: -Xmx4096m -XX:+UseG1GC -XX:+UseStringDeduplication
+  CI: true
 
 jobs:
-  performance-test:
-    name: Performance Benchmark
+  # 单元性能测试
+  unit-performance:
+    name: 单元性能测试
     runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'unit' || github.event_name == 'schedule'
     
     steps:
-    - name: Checkout code
+    - name: 检出代码
       uses: actions/checkout@v4
-      
-    - name: Set up JDK 17
+    
+    - name: 设置 JDK ${{ github.event.inputs.java_version || '17' }}
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: ${{ github.event.inputs.java_version || '17' }}
         distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Build project
-      run: mvn clean package -DskipTests=true
+        cache: maven
+    
+    - name: 运行单元性能测试
+      run: |
+        mvn test -Dtest=*PerformanceTest -pl core -B
+        mvn test -Dtest=*PerformanceTest -pl core-database -B
       env:
         CI: true
-      
-    - name: Start application
-      run: |
-        java -jar target/vxcore-example-*.jar &
-        sleep 15
-        
-    - name: Install Apache Bench
-      run: sudo apt-get update && sudo apt-get install -y apache2-utils
-        
-    - name: Run HTTP performance test
-      run: |
-        ab -n 10000 -c 100 http://localhost:8080/api/hello?name=Test > http-performance.txt
-        
-    - name: Run database performance test
-      run: |
-        ab -n 5000 -c 50 http://localhost:8080/api/users > db-performance.txt
-        
-    - name: Stop application
-      run: pkill -f "vxcore-example"
-      
-    - name: Upload performance results
+        DB_TYPE: h2
+    
+    - name: 生成性能报告
+      run: mvn jacoco:report -B
+    
+    - name: 上传单元性能测试报告
       uses: actions/upload-artifact@v4
       with:
-        name: performance-results
+        name: unit-performance-reports
         path: |
-          http-performance.txt
-          db-performance.txt
+          **/target/surefire-reports/
+          **/target/site/jacoco/
         retention-days: 30
+
+  # 集成性能测试
+  integration-performance:
+    name: 集成性能测试
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration' || github.event_name == 'schedule'
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      
+      postgresql:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ github.event.inputs.java_version || '17' }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ github.event.inputs.java_version || '17' }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 等待数据库启动
+      run: |
+        timeout 60 bash -c 'until mysqladmin ping -h 127.0.0.1 -P 3306 -u root -proot --silent; do sleep 2; done'
+        timeout 60 bash -c 'until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do sleep 2; done'
+    
+    - name: 运行集成性能测试
+      run: |
+        # H2 性能测试
+        mvn test -Dtest=*PerformanceTest -pl core-example -B -DDB_TYPE=h2
         
-    - name: Comment performance results
-      if: github.event_name == 'workflow_dispatch'
-      uses: actions/github-script@v6
+        # MySQL 性能测试
+        mvn test -Dtest=*PerformanceTest -pl core-example -B -DDB_TYPE=mysql \
+          -DMYSQL_URL=jdbc:mysql://127.0.0.1:3306/testdb \
+          -DMYSQL_USER=root -DMYSQL_PASSWORD=root
+        
+        # PostgreSQL 性能测试
+        mvn test -Dtest=*PerformanceTest -pl core-example -B -DDB_TYPE=postgresql \
+          -DPOSTGRES_URL=jdbc:postgresql://127.0.0.1:5432/testdb \
+          -DPOSTGRES_USER=postgres -DPOSTGRES_PASSWORD=postgres
+      env:
+        CI: true
+    
+    - name: 生成集成性能报告
+      run: mvn jacoco:report -B
+    
+    - name: 上传集成性能测试报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-performance-reports
+        path: |
+          **/target/surefire-reports/
+          **/target/site/jacoco/
+        retention-days: 30
+
+  # 压力测试
+  stress-test:
+    name: 压力测试
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'stress' || github.event_name == 'schedule'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ github.event.inputs.java_version || '17' }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ github.event.inputs.java_version || '17' }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行压力测试
+      run: |
+        # 并发测试
+        mvn test -Dtest=*StressTest -pl core-example -B -Dconcurrent.users=1000
+        
+        # 内存压力测试
+        mvn test -Dtest=*MemoryTest -pl core-example -B -Dmemory.test.size=10000
+        
+        # 长时间运行测试
+        mvn test -Dtest=*LongRunningTest -pl core-example -B -Dtest.duration=300
+      env:
+        CI: true
+        DB_TYPE: h2
+    
+    - name: 生成压力测试报告
+      run: mvn jacoco:report -B
+    
+    - name: 上传压力测试报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: stress-test-reports
+        path: |
+          **/target/surefire-reports/
+          **/target/site/jacoco/
+        retention-days: 30
+
+  # 内存测试
+  memory-test:
+    name: 内存测试
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'memory' || github.event_name == 'schedule'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK ${{ github.event.inputs.java_version || '17' }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ github.event.inputs.java_version || '17' }}
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行内存测试
+      run: |
+        # 内存泄漏测试
+        mvn test -Dtest=*MemoryLeakTest -pl core-example -B
+        
+        # 内存使用测试
+        mvn test -Dtest=*MemoryUsageTest -pl core-example -B
+        
+        # 垃圾回收测试
+        mvn test -Dtest=*GarbageCollectionTest -pl core-example -B
+      env:
+        CI: true
+        DB_TYPE: h2
+        JAVA_OPTS: -Xmx2g -XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails
+    
+    - name: 生成内存测试报告
+      run: mvn jacoco:report -B
+    
+    - name: 上传内存测试报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: memory-test-reports
+        path: |
+          **/target/surefire-reports/
+          **/target/site/jacoco/
+        retention-days: 30
+
+  # 性能基准测试
+  benchmark:
+    name: 性能基准测试
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行基准测试
+      run: |
+        # 启动性能基准
+        mvn test -Dtest=*StartupPerformanceTest -pl core-example -B
+        
+        # 响应时间基准
+        mvn test -Dtest=*ResponseTimeBenchmark -pl core-example -B
+        
+        # 吞吐量基准
+        mvn test -Dtest=*ThroughputBenchmark -pl core-example -B
+      env:
+        CI: true
+        DB_TYPE: h2
+    
+    - name: 生成基准测试报告
+      run: mvn jacoco:report -B
+    
+    - name: 上传基准测试报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-reports
+        path: |
+          **/target/surefire-reports/
+          **/target/site/jacoco/
+        retention-days: 30
+
+  # 性能测试汇总
+  performance-summary:
+    name: 性能测试汇总
+    runs-on: ubuntu-latest
+    needs: [unit-performance, integration-performance, stress-test, memory-test, benchmark]
+    if: always()
+    
+    steps:
+    - name: 下载所有性能测试报告
+      uses: actions/download-artifact@v4
+      with:
+        path: performance-reports
+    
+    - name: 生成性能汇总报告
+      run: |
+        echo "# VXCore 性能测试汇总" > performance-summary.md
+        echo "" >> performance-summary.md
+        echo "## 测试时间" >> performance-summary.md
+        echo "$(date)" >> performance-summary.md
+        echo "" >> performance-summary.md
+        
+        # 统计性能测试结果
+        if [ -d "performance-reports" ]; then
+          echo "## 性能测试统计" >> performance-summary.md
+          echo "" >> performance-summary.md
+          
+          # 统计各类型测试结果
+          for report_dir in performance-reports/*/; do
+            if [ -d "$report_dir" ]; then
+              test_type=$(basename "$report_dir")
+              echo "### $test_type" >> performance-summary.md
+              echo "" >> performance-summary.md
+              
+              # 统计测试数量
+              test_count=$(find "$report_dir" -name "TEST-*.xml" | wc -l)
+              echo "- 测试套件数量: $test_count" >> performance-summary.md
+              
+              # 统计测试结果
+              if [ $test_count -gt 0 ]; then
+                total_tests=$(find "$report_dir" -name "TEST-*.xml" -exec grep -o 'tests="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print sum+0}')
+                failures=$(find "$report_dir" -name "TEST-*.xml" -exec grep -o 'failures="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print sum+0}')
+                errors=$(find "$report_dir" -name "TEST-*.xml" -exec grep -o 'errors="[0-9]*"' {} \; | grep -o '[0-9]*' | awk '{sum+=$1} END {print sum+0}')
+                
+                echo "- 总测试数: $total_tests" >> performance-summary.md
+                echo "- 失败数: $failures" >> performance-summary.md
+                echo "- 错误数: $errors" >> performance-summary.md
+                
+                if [ $total_tests -gt 0 ]; then
+                  success_rate=$(( (total_tests - failures - errors) * 100 / total_tests ))
+                  echo "- 成功率: $success_rate%" >> performance-summary.md
+                fi
+              fi
+              echo "" >> performance-summary.md
+            fi
+          done
+        fi
+        
+        echo "## 性能指标" >> performance-summary.md
+        echo "" >> performance-summary.md
+        echo "详细的性能指标请查看各测试报告。" >> performance-summary.md
+        echo "" >> performance-summary.md
+        echo "## 建议" >> performance-summary.md
+        echo "" >> performance-summary.md
+        echo "基于测试结果，建议关注以下方面：" >> performance-summary.md
+        echo "- 启动时间优化" >> performance-summary.md
+        echo "- 内存使用优化" >> performance-summary.md
+        echo "- 并发性能提升" >> performance-summary.md
+        echo "- 数据库连接池优化" >> performance-summary.md
+    
+    - name: 上传性能汇总报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-summary-report
+        path: performance-summary.md
+        retention-days: 30
+    
+    - name: 创建性能测试 Issue
+      if: failure()
+      uses: actions/github-script@v7
       with:
         script: |
           const fs = require('fs');
-          const httpPerf = fs.readFileSync('http-performance.txt', 'utf8');
-          const dbPerf = fs.readFileSync('db-performance.txt', 'utf8');
+          const summary = fs.readFileSync('performance-summary.md', 'utf8');
           
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
+          github.rest.issues.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: `## Performance Test Results
-            
-            ### HTTP Performance
-            \`\`\`
-            ${httpPerf}
-            \`\`\`
-            
-            ### Database Performance
-            \`\`\`
-            ${dbPerf}
-            \`\`\`
-            `
+            title: `性能测试失败 - ${new Date().toISOString().split('T')[0]}`,
+            body: `性能测试执行失败，请查看详细报告：\n\n${summary}`,
+            labels: ['performance', 'test-failure']
           });

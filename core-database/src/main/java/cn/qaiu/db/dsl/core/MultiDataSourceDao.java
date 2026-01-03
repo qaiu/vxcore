@@ -4,7 +4,6 @@ import cn.qaiu.db.datasource.DataSource;
 import cn.qaiu.db.datasource.DataSourceContext;
 import cn.qaiu.db.datasource.DataSourceManager;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.RowSet;
 import org.jooq.Query;
@@ -28,8 +27,7 @@ public abstract class MultiDataSourceDao {
     
     public MultiDataSourceDao(Class<?> entityClass) {
         this.entityClass = entityClass;
-        this.dataSourceManager = DataSourceManager.getInstance(Vertx.currentContext() != null ? 
-            Vertx.currentContext().owner() : Vertx.vertx());
+        this.dataSourceManager = DataSourceManager.getInstance();
     }
     
     /**
@@ -91,7 +89,8 @@ public abstract class MultiDataSourceDao {
      */
     protected Pool getCurrentPool() {
         String dataSourceName = getCurrentDataSource();
-        Pool pool = dataSourceManager.getPool(dataSourceName);
+        Object poolObj = dataSourceManager.getPool(dataSourceName);
+        Pool pool = poolObj instanceof Pool ? (Pool) poolObj : null;
         if (pool == null) {
             LOGGER.warn("Pool not found for datasource: {}, using default", dataSourceName);
             pool = dataSourceManager.getDefaultPool();

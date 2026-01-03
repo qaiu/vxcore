@@ -36,5 +36,5 @@ logs/
 Thumbs.db
 
 # 数据库连接配置文件（包含敏感信息）
-src/test/resources/postgresql-test.properties
-src/test/resources/mysql-test.properties
+src/test/resources/postgresql*.properties
+src/test/resources/mysql*.properties

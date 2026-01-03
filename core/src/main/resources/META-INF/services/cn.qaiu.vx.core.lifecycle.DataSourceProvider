@@ -1,0 +1,3 @@
+# VXCore DataSource Provider SPI Configuration
+# 数据源提供者SPI配置
+# 由core-database模块提供具体实现

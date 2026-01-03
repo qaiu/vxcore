@@ -13,7 +13,7 @@ import io.vertx.core.shareddata.SharedData;
  */
 public class SharedDataUtil {
 
-    private static final SharedData sharedData = VertxHolder.getVertxInstance().sharedData();
+    private static SharedData sharedData;
 
     /**
      * 获取共享数据对象
@@ -21,6 +21,14 @@ public class SharedDataUtil {
      * @return Vert.x共享数据对象
      */
     public static SharedData shareData() {
+        if (sharedData == null) {
+            try {
+                sharedData = VertxHolder.getVertxInstance().sharedData();
+            } catch (Exception e) {
+                // 在测试环境中可能没有初始化Vertx，返回null
+                return null;
+            }
+        }
         return sharedData;
     }
 
@@ -31,7 +39,11 @@ public class SharedDataUtil {
      * @return 本地映射对象
      */
     public static LocalMap<String, Object> getLocalMap(String key) {
-        return shareData().getLocalMap(key);
+        SharedData data = shareData();
+        if (data == null) {
+            return null;
+        }
+        return data.getLocalMap(key);
     }
 
     /**
@@ -42,7 +54,11 @@ public class SharedDataUtil {
      * @return 本地映射对象
      */
     public static <T> LocalMap<String, T> getLocalMapWithCast(String key) {
-        return  sharedData.getLocalMap(key);
+        SharedData data = shareData();
+        if (data == null) {
+            return null;
+        }
+        return data.getLocalMap(key);
     }
 
     /**
@@ -53,6 +69,9 @@ public class SharedDataUtil {
      */
     public static JsonObject getJsonConfig(String key) {
         LocalMap<String, Object> localMap = getLocalMap("local");
+        if (localMap == null) {
+            return null;
+        }
         return (JsonObject) localMap.get(key);
     }
 
@@ -69,20 +88,22 @@ public class SharedDataUtil {
      * 获取自定义配置中的字符串值
      * 
      * @param key 配置键
-     * @return 字符串值
+     * @return 字符串值，如果配置不存在则返回null
      */
     public static String getStringForCustomConfig(String key) {
-        return getJsonConfig("customConfig").getString(key);
+        JsonObject config = getJsonConfig("customConfig");
+        return config != null ? config.getString(key) : null;
     }
 
     /**
      * 获取自定义配置中的JSON数组
      * 
      * @param key 配置键
-     * @return JSON数组
+     * @return JSON数组，如果配置不存在则返回null
      */
     public static JsonArray getJsonArrayForCustomConfig(String key) {
-        return getJsonConfig("customConfig").getJsonArray(key);
+        JsonObject config = getJsonConfig("customConfig");
+        return config != null ? config.getJsonArray(key) : null;
     }
 
     /**
@@ -90,40 +111,44 @@ public class SharedDataUtil {
      * 
      * @param key 配置键
      * @param <T> 值类型
-     * @return 配置值
+     * @return 配置值，如果配置不存在则返回null
      */
     public static <T> T getValueForCustomConfig(String key) {
-        return CastUtil.cast(getJsonConfig("customConfig").getValue(key));
+        JsonObject config = getJsonConfig("customConfig");
+        return config != null ? CastUtil.cast(config.getValue(key)) : null;
     }
 
     /**
      * 获取服务器配置中的JSON对象
      * 
      * @param key 配置键
-     * @return JSON对象
+     * @return JSON对象，如果配置不存在则返回null
      */
     public static JsonObject getJsonObjectForServerConfig(String key) {
-        return getJsonConfig("server").getJsonObject(key);
+        JsonObject config = getJsonConfig("server");
+        return config != null ? config.getJsonObject(key) : null;
     }
 
     /**
      * 获取服务器配置中的JSON数组
      * 
      * @param key 配置键
-     * @return JSON数组
+     * @return JSON数组，如果配置不存在则返回null
      */
     public static JsonArray getJsonArrayForServerConfig(String key) {
-        return getJsonConfig("server").getJsonArray(key);
+        JsonObject config = getJsonConfig("server");
+        return config != null ? config.getJsonArray(key) : null;
     }
 
     /**
      * 获取服务器配置中的字符串值
      * 
      * @param key 配置键
-     * @return 字符串值
+     * @return 字符串值，如果配置不存在则返回null
      */
     public static String getJsonStringForServerConfig(String key) {
-        return getJsonConfig("server").getString(key);
+        JsonObject config = getJsonConfig("server");
+        return config != null ? config.getString(key) : null;
     }
 
     /**
@@ -131,10 +156,11 @@ public class SharedDataUtil {
      * 
      * @param key 配置键
      * @param <T> 值类型
-     * @return 配置值
+     * @return 配置值，如果配置不存在则返回null
      */
     public static <T> T getValueForServerConfig(String key) {
-        return CastUtil.cast(getJsonConfig("server").getValue(key));
+        JsonObject config = getJsonConfig("server");
+        return config != null ? CastUtil.cast(config.getValue(key)) : null;
     }
 
 }

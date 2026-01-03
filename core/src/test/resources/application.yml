@@ -1,0 +1,31 @@
+# VXCore 测试配置文件
+server:
+  port: 8080
+  host: localhost
+
+# 数据库配置
+database:
+  default:
+    type: h2
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password: ""
+    max_pool_size: 10
+    min_pool_size: 1
+    initial_pool_size: 1
+    max_idle_time: 30
+    validation_query: SELECT 1
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    cn.qaiu: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 应用配置
+app:
+  name: vxcore-test
+  version: 1.0.0
+  description: VXCore Framework Test Application

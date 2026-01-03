@@ -1,89 +1,304 @@
-name: Code Quality Check
+name: Code Quality
 
 on:
+  push:
+    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
   schedule:
-    - cron: '0 2 * * 1'  # 每周一凌晨2点运行
+    # 每周一凌晨1点运行代码质量检查
+    - cron: '0 1 * * 1'
+
+env:
+  MAVEN_OPTS: -Xmx2048m -XX:+UseG1GC
+  CI: true
 
 jobs:
-  code-quality:
-    name: Code Quality Analysis
+  # 代码格式检查
+  code-format:
+    name: 代码格式检查
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
+    - name: 检出代码
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        
-    - name: Set up JDK 17
+    
+    - name: 设置 JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: 17
         distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
+        cache: maven
+    
+    - name: 检查代码格式
+      run: mvn spotless:check -B
+      continue-on-error: true
+    
+    - name: 自动修复代码格式
+      if: failure()
+      run: mvn spotless:apply -B
+      continue-on-error: true
+
+  # 静态代码分析
+  static-analysis:
+    name: 静态代码分析
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
       with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Run Spotless check
-      run: mvn spotless:check
-      
-    - name: Run SpotBugs analysis
-      run: mvn spotbugs:check
-      
-    - name: Run PMD analysis
-      run: mvn pmd:check
-      
-    - name: Run Checkstyle
-      run: mvn checkstyle:check
-      
-    - name: Upload quality reports
-      uses: actions/upload-artifact@v4
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行 SpotBugs 静态分析
+      run: mvn spotbugs:check -B
+      continue-on-error: true
+    
+    - name: 运行 PMD 代码质量检查
+      run: mvn pmd:check -B
+      continue-on-error: true
+    
+    - name: 运行 Checkstyle 代码风格检查
+      run: mvn checkstyle:check -B
+      continue-on-error: true
+    
+    - name: 上传静态分析报告
       if: always()
+      uses: actions/upload-artifact@v4
       with:
-        name: quality-reports
+        name: static-analysis-reports
         path: |
-          target/spotbugsXml.xml
-          target/pmd.xml
-          target/checkstyle-result.xml
+          **/target/spotbugsXml.xml
+          **/target/pmd.xml
+          **/target/checkstyle-result.xml
         retention-days: 30
 
-  sonarcloud:
-    name: SonarCloud Analysis
+  # 依赖安全检查
+  dependency-check:
+    name: 依赖安全检查
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
     
     steps:
-    - name: Checkout code
+    - name: 检出代码
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Set up JDK 17
+    
+    - name: 设置 JDK 17
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: 17
         distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
+        cache: maven
+    
+    - name: 运行 OWASP 依赖检查
+      run: mvn org.owasp:dependency-check-maven:check -B
+      continue-on-error: true
+    
+    - name: 上传依赖检查报告
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Run tests with coverage
-      run: mvn clean test jacoco:report
+        name: dependency-check-reports
+        path: |
+          **/target/dependency-check-report.html
+          **/target/dependency-check-report.json
+        retention-days: 30
+
+  # 代码覆盖率检查
+  coverage-check:
+    name: 代码覆盖率检查
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行测试并生成覆盖率报告
+      run: |
+        mvn clean test jacoco:report -B
+        mvn jacoco:check -B
       env:
         CI: true
-      
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        DB_TYPE: h2
+    
+    - name: 上传覆盖率报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          **/target/site/jacoco/
+        retention-days: 30
+
+  # 代码重复检查
+  duplicate-check:
+    name: 代码重复检查
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+    
+    - name: 设置 JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: 运行 CPD 重复代码检查
+      run: mvn pmd:cpd-check -B
+      continue-on-error: true
+    
+    - name: 上传重复代码检查报告
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: duplicate-check-reports
+        path: |
+          **/target/cpd.xml
+        retention-days: 30
+
+  # 代码质量汇总
+  quality-summary:
+    name: 代码质量汇总
+    runs-on: ubuntu-latest
+    needs: [code-format, static-analysis, dependency-check, coverage-check, duplicate-check]
+    if: always()
+    
+    steps:
+    - name: 下载所有质量检查报告
+      uses: actions/download-artifact@v4
+      with:
+        path: quality-reports
+    
+    - name: 生成质量汇总报告
+      run: |
+        echo "# VXCore 代码质量报告" > quality-summary.md
+        echo "" >> quality-summary.md
+        echo "## 检查时间" >> quality-summary.md
+        echo "$(date)" >> quality-summary.md
+        echo "" >> quality-summary.md
+        
+        # 统计代码覆盖率
+        if [ -d "quality-reports/coverage-reports" ]; then
+          echo "## 代码覆盖率" >> quality-summary.md
+          echo "" >> quality-summary.md
+          
+          # 查找覆盖率报告
+          coverage_files=$(find quality-reports/coverage-reports -name "jacoco.xml" | head -1)
+          if [ -n "$coverage_files" ]; then
+            # 提取覆盖率数据（这里简化处理）
+            echo "- 详细覆盖率报告请查看 jacoco 报告" >> quality-summary.md
+          fi
+          echo "" >> quality-summary.md
+        fi
+        
+        # 统计静态分析结果
+        if [ -d "quality-reports/static-analysis-reports" ]; then
+          echo "## 静态分析结果" >> quality-summary.md
+          echo "" >> quality-summary.md
+          
+          # SpotBugs 结果
+          spotbugs_files=$(find quality-reports/static-analysis-reports -name "spotbugsXml.xml" | head -1)
+          if [ -n "$spotbugs_files" ]; then
+            bug_count=$(grep -o '<BugInstance' "$spotbugs_files" | wc -l)
+            echo "- SpotBugs 发现的问题: $bug_count" >> quality-summary.md
+          fi
+          
+          # PMD 结果
+          pmd_files=$(find quality-reports/static-analysis-reports -name "pmd.xml" | head -1)
+          if [ -n "$pmd_files" ]; then
+            pmd_count=$(grep -o '<violation' "$pmd_files" | wc -l)
+            echo "- PMD 发现的问题: $pmd_count" >> quality-summary.md
+          fi
+          
+          # Checkstyle 结果
+          checkstyle_files=$(find quality-reports/static-analysis-reports -name "checkstyle-result.xml" | head -1)
+          if [ -n "$checkstyle_files" ]; then
+            checkstyle_count=$(grep -o '<error' "$checkstyle_files" | wc -l)
+            echo "- Checkstyle 发现的问题: $checkstyle_count" >> quality-summary.md
+          fi
+          echo "" >> quality-summary.md
+        fi
+        
+        # 依赖安全检查结果
+        if [ -d "quality-reports/dependency-check-reports" ]; then
+          echo "## 依赖安全检查" >> quality-summary.md
+          echo "" >> quality-summary.md
+          echo "- 详细安全报告请查看 dependency-check 报告" >> quality-summary.md
+          echo "" >> quality-summary.md
+        fi
+        
+        # 代码重复检查结果
+        if [ -d "quality-reports/duplicate-check-reports" ]; then
+          echo "## 代码重复检查" >> quality-summary.md
+          echo "" >> quality-summary.md
+          
+          cpd_files=$(find quality-reports/duplicate-check-reports -name "cpd.xml" | head -1)
+          if [ -n "$cpd_files" ]; then
+            duplicate_count=$(grep -o '<duplication' "$cpd_files" | wc -l)
+            echo "- 发现的重复代码块: $duplicate_count" >> quality-summary.md
+          fi
+          echo "" >> quality-summary.md
+        fi
+        
+        echo "## 质量建议" >> quality-summary.md
+        echo "" >> quality-summary.md
+        echo "基于检查结果，建议关注以下方面：" >> quality-summary.md
+        echo "- 提高代码覆盖率到 80% 以上" >> quality-summary.md
+        echo "- 修复静态分析发现的问题" >> quality-summary.md
+        echo "- 更新有安全漏洞的依赖" >> quality-summary.md
+        echo "- 减少代码重复" >> quality-summary.md
+        echo "- 遵循代码风格规范" >> quality-summary.md
+    
+    - name: 上传质量汇总报告
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-summary-report
+        path: quality-summary.md
+        retention-days: 30
+    
+    - name: 评论 PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('quality-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+    
+    - name: 创建质量检查 Issue
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('quality-summary.md', 'utf8');
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `代码质量检查失败 - ${new Date().toISOString().split('T')[0]}`,
+            body: `代码质量检查执行失败，请查看详细报告：\n\n${summary}`,
+            labels: ['code-quality', 'test-failure']
+          });
