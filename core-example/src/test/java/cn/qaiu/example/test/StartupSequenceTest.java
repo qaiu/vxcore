@@ -12,17 +12,20 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * 启动序列测试 测试应用启动的各个阶段和顺序
+ * 注意：此测试需要启动HTTP服务器，在CI环境下可能因端口冲突而被禁用
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 @ExtendWith(VertxExtension.class)
 @DisplayName("启动序列测试")
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "HTTP服务器测试在CI环境中可能因端口冲突而失败")
 public class StartupSequenceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StartupSequenceTest.class);

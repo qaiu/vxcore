@@ -263,8 +263,8 @@ public class ColumnMetadata {
       sb.append(" PRIMARY KEY");
     }
 
-    // 添加注释（PostgreSQL不支持在列定义中包含注释）
-    if (dbType != JDBCType.PostgreSQL && comment != null && !comment.isEmpty()) {
+    // 添加注释（只有MySQL支持在列定义中包含注释，PostgreSQL和H2不支持）
+    if (dbType == JDBCType.MySQL && comment != null && !comment.isEmpty()) {
       sb.append(" COMMENT '").append(comment).append("'");
     }
 

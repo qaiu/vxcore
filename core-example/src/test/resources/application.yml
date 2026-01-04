@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 0  # 使用随机端口避免测试时端口冲突
 
 datasources:
   default:
