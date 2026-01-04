@@ -24,7 +24,7 @@ class GeneratorConfigTest {
     @DisplayName("无参构造函数 - 默认值")
     void testDefaultConstructor() {
       GeneratorConfig config = new GeneratorConfig();
-      
+
       assertNull(config.getTemplatePath());
       assertNull(config.getOutputPath());
       assertNull(config.getPackageName());
@@ -45,7 +45,7 @@ class GeneratorConfigTest {
     @DisplayName("双参数构造函数")
     void testTwoArgConstructor() {
       GeneratorConfig config = new GeneratorConfig("/output", "com.example");
-      
+
       assertEquals("/output", config.getOutputPath());
       assertEquals("com.example", config.getPackageName());
     }
@@ -58,22 +58,23 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("链式设置所有属性")
     void testFluentSetters() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setTemplatePath("/templates")
-          .setOutputPath("/output/User.java")
-          .setPackageName("com.example.entity")
-          .setClassName("User")
-          .setTableName("t_user")
-          .setDescription("用户实体")
-          .setOverwriteExisting(true)
-          .setGenerateComments(false)
-          .setGenerateToString(false)
-          .setGenerateEquals(false)
-          .setGenerateHashCode(false)
-          .setGenerateGetters(false)
-          .setGenerateSetters(false)
-          .setGenerateConstructors(false)
-          .setEncoding("GBK");
+      GeneratorConfig config =
+          new GeneratorConfig()
+              .setTemplatePath("/templates")
+              .setOutputPath("/output/User.java")
+              .setPackageName("com.example.entity")
+              .setClassName("User")
+              .setTableName("t_user")
+              .setDescription("用户实体")
+              .setOverwriteExisting(true)
+              .setGenerateComments(false)
+              .setGenerateToString(false)
+              .setGenerateEquals(false)
+              .setGenerateHashCode(false)
+              .setGenerateGetters(false)
+              .setGenerateSetters(false)
+              .setGenerateConstructors(false)
+              .setEncoding("GBK");
 
       assertEquals("/templates", config.getTemplatePath());
       assertEquals("/output/User.java", config.getOutputPath());
@@ -100,10 +101,9 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("添加和获取自定义属性")
     void testAddAndGetCustomProperty() {
-      GeneratorConfig config = new GeneratorConfig()
-          .addCustomProperty("author", "QAIU")
-          .addCustomProperty("version", 1);
-      
+      GeneratorConfig config =
+          new GeneratorConfig().addCustomProperty("author", "QAIU").addCustomProperty("version", 1);
+
       assertEquals("QAIU", config.getCustomProperty("author"));
       assertEquals(1, config.getCustomProperty("version"));
     }
@@ -111,10 +111,9 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("getCustomPropertyAsString")
     void testGetCustomPropertyAsString() {
-      GeneratorConfig config = new GeneratorConfig()
-          .addCustomProperty("name", "test")
-          .addCustomProperty("count", 42);
-      
+      GeneratorConfig config =
+          new GeneratorConfig().addCustomProperty("name", "test").addCustomProperty("count", 42);
+
       assertEquals("test", config.getCustomPropertyAsString("name"));
       assertEquals("42", config.getCustomPropertyAsString("count"));
       assertNull(config.getCustomPropertyAsString("notExist"));
@@ -123,9 +122,8 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("getCustomPropertyAsString 带默认值")
     void testGetCustomPropertyAsStringWithDefault() {
-      GeneratorConfig config = new GeneratorConfig()
-          .addCustomProperty("name", "test");
-      
+      GeneratorConfig config = new GeneratorConfig().addCustomProperty("name", "test");
+
       assertEquals("test", config.getCustomPropertyAsString("name", "default"));
       assertEquals("default", config.getCustomPropertyAsString("notExist", "default"));
     }
@@ -136,9 +134,9 @@ class GeneratorConfigTest {
       Map<String, Object> props = new HashMap<>();
       props.put("key1", "value1");
       props.put("key2", 123);
-      
+
       GeneratorConfig config = new GeneratorConfig().setCustomProperties(props);
-      
+
       assertEquals("value1", config.getCustomProperty("key1"));
       assertEquals(123, config.getCustomProperty("key2"));
     }
@@ -151,27 +149,24 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("getOutputDirectory - Unix 路径")
     void testGetOutputDirectoryUnix() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setOutputPath("/home/user/output/User.java");
-      
+      GeneratorConfig config = new GeneratorConfig().setOutputPath("/home/user/output/User.java");
+
       assertEquals("/home/user/output", config.getOutputDirectory());
     }
 
     @Test
     @DisplayName("getOutputDirectory - Windows 路径")
     void testGetOutputDirectoryWindows() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setOutputPath("C:\\Users\\output\\User.java");
-      
+      GeneratorConfig config = new GeneratorConfig().setOutputPath("C:\\Users\\output\\User.java");
+
       assertEquals("C:\\Users\\output", config.getOutputDirectory());
     }
 
     @Test
     @DisplayName("getOutputDirectory - 无路径分隔符")
     void testGetOutputDirectoryNoSeparator() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setOutputPath("User.java");
-      
+      GeneratorConfig config = new GeneratorConfig().setOutputPath("User.java");
+
       assertEquals(".", config.getOutputDirectory());
     }
 
@@ -185,18 +180,16 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("getOutputFileName - Unix 路径")
     void testGetOutputFileNameUnix() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setOutputPath("/home/user/output/User.java");
-      
+      GeneratorConfig config = new GeneratorConfig().setOutputPath("/home/user/output/User.java");
+
       assertEquals("User.java", config.getOutputFileName());
     }
 
     @Test
     @DisplayName("getOutputFileName - 无路径分隔符")
     void testGetOutputFileNameNoSeparator() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setOutputPath("User.java");
-      
+      GeneratorConfig config = new GeneratorConfig().setOutputPath("User.java");
+
       assertEquals("User.java", config.getOutputFileName());
     }
 
@@ -210,9 +203,8 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("getPackagePath")
     void testGetPackagePath() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setPackageName("com.example.entity");
-      
+      GeneratorConfig config = new GeneratorConfig().setPackageName("com.example.entity");
+
       assertEquals("com/example/entity", config.getPackagePath());
     }
 
@@ -238,16 +230,14 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("缺少 outputPath 返回 false")
     void testMissingOutputPath() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setPackageName("com.example");
+      GeneratorConfig config = new GeneratorConfig().setPackageName("com.example");
       assertFalse(config.isValid());
     }
 
     @Test
     @DisplayName("缺少 packageName 返回 false")
     void testMissingPackageName() {
-      GeneratorConfig config = new GeneratorConfig()
-          .setOutputPath("/output/User.java");
+      GeneratorConfig config = new GeneratorConfig().setOutputPath("/output/User.java");
       assertFalse(config.isValid());
     }
 
@@ -273,20 +263,21 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("复制所有属性")
     void testCopyAllProperties() {
-      GeneratorConfig original = new GeneratorConfig()
-          .setTemplatePath("/templates")
-          .setOutputPath("/output/User.java")
-          .setPackageName("com.example")
-          .setClassName("User")
-          .setTableName("t_user")
-          .setDescription("用户")
-          .setOverwriteExisting(true)
-          .setGenerateComments(false)
-          .setEncoding("GBK")
-          .addCustomProperty("author", "test");
-      
+      GeneratorConfig original =
+          new GeneratorConfig()
+              .setTemplatePath("/templates")
+              .setOutputPath("/output/User.java")
+              .setPackageName("com.example")
+              .setClassName("User")
+              .setTableName("t_user")
+              .setDescription("用户")
+              .setOverwriteExisting(true)
+              .setGenerateComments(false)
+              .setEncoding("GBK")
+              .addCustomProperty("author", "test");
+
       GeneratorConfig copy = original.copy();
-      
+
       assertEquals(original.getTemplatePath(), copy.getTemplatePath());
       assertEquals(original.getOutputPath(), copy.getOutputPath());
       assertEquals(original.getPackageName(), copy.getPackageName());
@@ -302,14 +293,13 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("修改副本不影响原始对象")
     void testCopyIsIndependent() {
-      GeneratorConfig original = new GeneratorConfig()
-          .setOutputPath("/original")
-          .addCustomProperty("key", "original");
-      
+      GeneratorConfig original =
+          new GeneratorConfig().setOutputPath("/original").addCustomProperty("key", "original");
+
       GeneratorConfig copy = original.copy();
       copy.setOutputPath("/copy");
       copy.addCustomProperty("key", "copy");
-      
+
       assertEquals("/original", original.getOutputPath());
       assertEquals("original", original.getCustomProperty("key"));
       assertEquals("/copy", copy.getOutputPath());
@@ -324,12 +314,11 @@ class GeneratorConfigTest {
     @Test
     @DisplayName("toString 包含主要信息")
     void testToString() {
-      GeneratorConfig config = new GeneratorConfig("/output", "com.example")
-          .setClassName("User")
-          .setTableName("t_user");
-      
+      GeneratorConfig config =
+          new GeneratorConfig("/output", "com.example").setClassName("User").setTableName("t_user");
+
       String str = config.toString();
-      
+
       assertTrue(str.contains("outputPath='/output'"));
       assertTrue(str.contains("packageName='com.example'"));
       assertTrue(str.contains("className='User'"));

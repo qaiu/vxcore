@@ -48,7 +48,8 @@ class EnumTest {
     @DisplayName("表单类型值应正确")
     void formUrlEncodedTypeShouldBeCorrect() {
       assertEquals(
-          "application/x-www-form-urlencoded", MIMEType.APPLICATION_X_WWW_FORM_URLENCODED.getValue());
+          "application/x-www-form-urlencoded",
+          MIMEType.APPLICATION_X_WWW_FORM_URLENCODED.getValue());
     }
 
     @Test
@@ -131,7 +132,8 @@ class EnumTest {
     @DisplayName("values() 应返回所有枚举值")
     void valuesShouldReturnAllEnums() {
       RouteMethod[] values = RouteMethod.values();
-      assertEquals(10, values.length); // OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT, PATCH, ROUTE
+      assertEquals(
+          10, values.length); // OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT, PATCH, ROUTE
     }
 
     @Test

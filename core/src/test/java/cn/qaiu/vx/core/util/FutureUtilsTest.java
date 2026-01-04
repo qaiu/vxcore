@@ -57,9 +57,9 @@ class FutureUtilsTest {
     @DisplayName("获取失败的 Future 结果 - 抛出 RuntimeException")
     void testGetFailedFutureResult() {
       Future<String> future = Future.failedFuture(new IllegalStateException("Test error"));
-      
-      RuntimeException exception = assertThrows(RuntimeException.class, 
-          () -> FutureUtils.getResult(future));
+
+      RuntimeException exception =
+          assertThrows(RuntimeException.class, () -> FutureUtils.getResult(future));
       assertTrue(exception.getCause() instanceof java.util.concurrent.ExecutionException);
     }
   }
@@ -110,9 +110,9 @@ class FutureUtilsTest {
     void testGetFailedPromiseResult() {
       Promise<String> promise = Promise.promise();
       promise.fail(new RuntimeException("Promise failed"));
-      
-      assertThrows(java.util.concurrent.CompletionException.class, 
-          () -> FutureUtils.getResult(promise));
+
+      assertThrows(
+          java.util.concurrent.CompletionException.class, () -> FutureUtils.getResult(promise));
     }
   }
 
@@ -137,7 +137,7 @@ class FutureUtilsTest {
     void testDifferentPromiseTypes() {
       Promise<String> stringPromise = Promise.promise();
       Promise<Double> doublePromise = Promise.promise();
-      
+
       stringPromise.complete("test");
       doublePromise.complete(3.14);
 

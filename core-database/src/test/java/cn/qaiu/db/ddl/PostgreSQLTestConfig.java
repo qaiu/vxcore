@@ -9,8 +9,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * PostgreSQL测试配置
- * 支持从环境变量（CI环境）或配置文件（本地开发）读取配置
+ * PostgreSQL测试配置 支持从环境变量（CI环境）或配置文件（本地开发）读取配置
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -29,13 +28,13 @@ public class PostgreSQLTestConfig {
 
   private static Properties loadProperties() {
     Properties props = new Properties();
-    
+
     // 优先从环境变量加载（CI环境）
     if (isInCiEnvironment()) {
       String postgresUrl = System.getenv("POSTGRES_URL");
       String postgresUser = getEnvOrDefault("POSTGRES_USER", "postgres");
       String postgresPassword = getEnvOrDefault("POSTGRES_PASSWORD", "postgres");
-      
+
       if (postgresUrl != null && !postgresUrl.isEmpty()) {
         props.setProperty("postgresql.url", postgresUrl);
         props.setProperty("postgresql.user", postgresUser);
@@ -45,7 +44,7 @@ public class PostgreSQLTestConfig {
         return props;
       }
     }
-    
+
     // 从配置文件加载（本地开发环境）
     try (InputStream input =
         PostgreSQLTestConfig.class

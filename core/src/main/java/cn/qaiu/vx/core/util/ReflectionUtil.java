@@ -22,6 +22,8 @@ import org.reflections.scanners.MemberUsageScanner;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 基于org.reflection和javassist的反射工具包 通过包扫描实现路由地址的注解映射 <br>
@@ -30,6 +32,8 @@ import org.reflections.util.ConfigurationBuilder;
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 public final class ReflectionUtil {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionUtil.class);
 
   /**
    * 以默认配置的基础包路径获取反射器
@@ -124,7 +128,7 @@ public final class ReflectionUtil {
             Pair.of(parameterAnnotations[j - k], parameterTypes[j - k]));
       }
     } catch (NotFoundException e) {
-      e.printStackTrace();
+      LOGGER.error("Failed to get parameter map", e);
     }
     return paramMap;
   }
@@ -179,7 +183,7 @@ public final class ReflectionUtil {
         try {
           return DateUtils.parseDate(value, fmt);
         } catch (ParseException e) {
-          e.printStackTrace();
+          LOGGER.error("Failed to parse date: {}", value, e);
           throw new RuntimeException("无法将格式化日期");
         }
       default:
@@ -211,7 +215,7 @@ public final class ReflectionUtil {
       }
       return arr;
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("Failed to convert array", e);
     }
     return null;
   }

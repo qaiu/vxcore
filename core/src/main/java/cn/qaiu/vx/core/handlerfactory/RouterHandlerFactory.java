@@ -366,7 +366,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
               try {
                 ReflectionUtil.invokeWithArguments(method, instance, sock);
               } catch (Throwable e) {
-                e.printStackTrace();
+                LOGGER.error("SockJS handler error", e);
               }
             });
 
@@ -567,7 +567,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
 
   /** 处理方法异常 */
   private void handleMethodException(Throwable e, RoutingContext ctx) {
-    e.printStackTrace();
+    LOGGER.error("Method execution error", e);
     String err = e.getMessage();
     if (e.getCause() != null) {
       if (e.getCause() instanceof InvocationTargetException) {

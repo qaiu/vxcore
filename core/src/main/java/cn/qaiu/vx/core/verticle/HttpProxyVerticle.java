@@ -115,16 +115,16 @@ public class HttpProxyVerticle extends AbstractVerticle {
                       })
                   .onFailure(
                       clientSocketAttempt -> {
-                        System.err.println(
-                            "Failed to upgrade client connection to socket: "
-                                + clientSocketAttempt.getMessage());
+                        LOGGER.error(
+                            "Failed to upgrade client connection to socket: {}",
+                            clientSocketAttempt.getMessage());
                         targetSocket.close();
                         clientRequest.response().setStatusCode(500).end("Internal Server Error");
                       });
             })
         .onFailure(
             connectionAttempt -> {
-              System.err.println("Failed to connect to target: " + connectionAttempt.getMessage());
+              LOGGER.error("Failed to connect to target: {}", connectionAttempt.getMessage());
               clientRequest
                   .response()
                   .setStatusCode(502)
@@ -146,7 +146,7 @@ public class HttpProxyVerticle extends AbstractVerticle {
       }
       String[] split = new String(Base64.getDecoder().decode(s.replace("Basic ", ""))).split(":");
       if (split.length > 1) {
-        // TODO
+        // 验证代理认证信息
         String username = proxyServerConf.getString("username");
         String password = proxyServerConf.getString("password");
         if (!split[0].equals(username) || !split[1].equals(password)) {
@@ -243,7 +243,7 @@ public class HttpProxyVerticle extends AbstractVerticle {
       }
       return port;
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.error("Failed to extract port from URL", e);
       // 出现异常时返回 -1，表示提取失败
       return -1;
     }

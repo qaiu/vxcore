@@ -34,7 +34,7 @@ class PackageInfoTest {
     @DisplayName("带基础包名的构造函数 - 自动初始化子包")
     void testConstructorWithBasePackage() {
       PackageInfo info = new PackageInfo("com.example");
-      
+
       assertEquals("com.example", info.getBasePackage());
       assertEquals("com.example.entity", info.getEntityPackage());
       assertEquals("com.example.dao", info.getDaoPackage());
@@ -53,15 +53,16 @@ class PackageInfoTest {
     @Test
     @DisplayName("链式设置所有包名")
     void testFluentSetters() {
-      PackageInfo info = new PackageInfo()
-          .setBasePackage("cn.qaiu")
-          .setEntityPackage("cn.qaiu.model")
-          .setDaoPackage("cn.qaiu.repository")
-          .setServicePackage("cn.qaiu.svc")
-          .setControllerPackage("cn.qaiu.api")
-          .setConfigPackage("cn.qaiu.conf")
-          .setUtilPackage("cn.qaiu.helper")
-          .setExceptionPackage("cn.qaiu.error");
+      PackageInfo info =
+          new PackageInfo()
+              .setBasePackage("cn.qaiu")
+              .setEntityPackage("cn.qaiu.model")
+              .setDaoPackage("cn.qaiu.repository")
+              .setServicePackage("cn.qaiu.svc")
+              .setControllerPackage("cn.qaiu.api")
+              .setConfigPackage("cn.qaiu.conf")
+              .setUtilPackage("cn.qaiu.helper")
+              .setExceptionPackage("cn.qaiu.error");
 
       assertEquals("cn.qaiu", info.getBasePackage());
       assertEquals("cn.qaiu.model", info.getEntityPackage());
@@ -96,7 +97,7 @@ class PackageInfoTest {
       PackageInfo info = new PackageInfo();
       info.addImport("java.util.List");
       info.addImport("java.util.Map");
-      
+
       assertEquals(2, info.getImports().size());
       assertTrue(info.getImports().contains("java.util.List"));
       assertTrue(info.getImports().contains("java.util.Map"));
@@ -108,7 +109,7 @@ class PackageInfoTest {
       PackageInfo info = new PackageInfo();
       info.addImport("java.util.List");
       info.addImport("java.util.List");
-      
+
       assertEquals(1, info.getImports().size());
     }
 
@@ -118,7 +119,7 @@ class PackageInfoTest {
       PackageInfo info = new PackageInfo();
       List<String> imports = Arrays.asList("java.util.List", "java.util.Map");
       info.setImports(imports);
-      
+
       assertEquals(2, info.getImports().size());
     }
   }
@@ -131,7 +132,7 @@ class PackageInfoTest {
     @DisplayName("将点分隔转换为路径分隔")
     void testPackagePaths() {
       PackageInfo info = new PackageInfo("com.example.app");
-      
+
       assertEquals("com/example/app", info.getBasePackagePath());
       assertEquals("com/example/app/entity", info.getEntityPackagePath());
       assertEquals("com/example/app/dao", info.getDaoPackagePath());
@@ -146,7 +147,7 @@ class PackageInfoTest {
     @DisplayName("null 包名返回 null 路径")
     void testNullPackagePath() {
       PackageInfo info = new PackageInfo();
-      
+
       assertNull(info.getBasePackagePath());
       assertNull(info.getEntityPackagePath());
     }
@@ -161,7 +162,7 @@ class PackageInfoTest {
     void testGetAllPackagePaths() {
       PackageInfo info = new PackageInfo("com.example");
       List<String> paths = info.getAllPackagePaths();
-      
+
       assertEquals(8, paths.size());
       assertTrue(paths.contains("com.example"));
       assertTrue(paths.contains("com.example.entity"));
@@ -173,7 +174,7 @@ class PackageInfoTest {
     void testEmptyPackageInfo() {
       PackageInfo info = new PackageInfo();
       List<String> paths = info.getAllPackagePaths();
-      
+
       assertTrue(paths.isEmpty());
     }
   }
@@ -192,10 +193,9 @@ class PackageInfoTest {
     @Test
     @DisplayName("缺少必要包返回 false")
     void testIncompletePackageInfo() {
-      PackageInfo info = new PackageInfo()
-          .setBasePackage("com.example")
-          .setEntityPackage("com.example.entity");
-      
+      PackageInfo info =
+          new PackageInfo().setBasePackage("com.example").setEntityPackage("com.example.entity");
+
       assertFalse(info.isComplete());
     }
 
@@ -228,11 +228,12 @@ class PackageInfoTest {
     @Test
     @DisplayName("部分设置返回正确数量")
     void testPartialPackageCount() {
-      PackageInfo info = new PackageInfo()
-          .setBasePackage("com.example")
-          .setEntityPackage("com.example.entity")
-          .setServicePackage("com.example.service");
-      
+      PackageInfo info =
+          new PackageInfo()
+              .setBasePackage("com.example")
+              .setEntityPackage("com.example.entity")
+              .setServicePackage("com.example.service");
+
       assertEquals(3, info.getPackageCount());
     }
   }
@@ -246,9 +247,9 @@ class PackageInfoTest {
     void testToString() {
       PackageInfo info = new PackageInfo("com.example");
       info.addImport("java.util.List");
-      
+
       String str = info.toString();
-      
+
       assertTrue(str.contains("basePackage='com.example'"));
       assertTrue(str.contains("entityPackage='com.example.entity'"));
       assertTrue(str.contains("imports=1"));

@@ -171,7 +171,7 @@ public class CommonUtil {
               properties.getProperty("app.version") + "build" + properties.getProperty("build");
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.error("Failed to load app.properties", e);
       }
     }
     return appVersion;

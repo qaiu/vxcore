@@ -200,8 +200,9 @@ public class EnhancedCreateTableIntegrationTest {
             error -> {
               // 在测试环境中，DDL同步可能因为测试隔离问题失败
               // 记录错误但仍然完成测试（这是预期行为）
-              System.out.println("⚠️ Strict DDL mapping failed (expected in some test scenarios): " 
-                  + error.getMessage());
+              System.out.println(
+                  "⚠️ Strict DDL mapping failed (expected in some test scenarios): "
+                      + error.getMessage());
               testContext.completeNow();
             });
   }

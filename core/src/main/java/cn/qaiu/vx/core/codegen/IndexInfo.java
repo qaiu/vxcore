@@ -20,6 +20,15 @@ public class IndexInfo {
 
   public IndexInfo() {}
 
+  /**
+   * 使用索引名构造
+   *
+   * @param indexName 索引名
+   */
+  public IndexInfo(String indexName) {
+    this.indexName = indexName;
+  }
+
   public IndexInfo(String indexName, String tableName) {
     this.indexName = indexName;
     this.tableName = tableName;

@@ -58,20 +58,21 @@ class FieldInfoTest {
     @Test
     @DisplayName("链式设置所有属性")
     void testFluentSetters() {
-      FieldInfo info = new FieldInfo()
-          .setFieldName("userId")
-          .setFieldType("Long")
-          .setColumnName("user_id")
-          .setColumnType("bigint")
-          .setDescription("用户ID")
-          .setPrimaryKey(true)
-          .setNullable(false)
-          .setUnique(true)
-          .setLength(20)
-          .setPrecision(10)
-          .setScale(2)
-          .setDefaultValue("0")
-          .setComment("主键");
+      FieldInfo info =
+          new FieldInfo()
+              .setFieldName("userId")
+              .setFieldType("Long")
+              .setColumnName("user_id")
+              .setColumnType("bigint")
+              .setDescription("用户ID")
+              .setPrimaryKey(true)
+              .setNullable(false)
+              .setUnique(true)
+              .setLength(20)
+              .setPrecision(10)
+              .setScale(2)
+              .setDefaultValue("0")
+              .setComment("主键");
 
       assertEquals("userId", info.getFieldName());
       assertEquals("Long", info.getFieldType());
@@ -94,12 +95,7 @@ class FieldInfoTest {
   class CapitalizedFieldNameTest {
 
     @ParameterizedTest
-    @CsvSource({
-        "userName, UserName",
-        "id, Id",
-        "a, A",
-        "ABC, ABC"
-    })
+    @CsvSource({"userName, UserName", "id, Id", "a, A", "ABC, ABC"})
     @DisplayName("首字母大写转换")
     void testCapitalize(String fieldName, String expected) {
       FieldInfo info = new FieldInfo(fieldName, "String");
@@ -168,11 +164,11 @@ class FieldInfoTest {
 
     @ParameterizedTest
     @CsvSource({
-        "java.lang.String, String",
-        "java.util.List, List",
-        "java.time.LocalDateTime, LocalDateTime",
-        "String, String",
-        "int, int"
+      "java.lang.String, String",
+      "java.util.List, List",
+      "java.time.LocalDateTime, LocalDateTime",
+      "String, String",
+      "int, int"
     })
     @DisplayName("提取简单类型名")
     void testSimpleType(String fullType, String expected) {
@@ -201,7 +197,8 @@ class FieldInfoTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Integer", "Long", "Double", "Float", "Boolean", "Character", "Byte", "Short"})
+    @ValueSource(
+        strings = {"Integer", "Long", "Double", "Float", "Boolean", "Character", "Byte", "Short"})
     @DisplayName("包装类型检测")
     void testIsWrapperType(String type) {
       FieldInfo info = new FieldInfo("field", type);
@@ -213,7 +210,7 @@ class FieldInfoTest {
     void testIsStringType() {
       FieldInfo info = new FieldInfo("name", "String");
       assertTrue(info.isStringType());
-      
+
       FieldInfo info2 = new FieldInfo("name", "java.lang.String");
       assertTrue(info2.isStringType());
     }
@@ -278,18 +275,14 @@ class FieldInfoTest {
     @Test
     @DisplayName("优先返回 comment")
     void testCommentFirst() {
-      FieldInfo info = new FieldInfo("field", "String")
-          .setComment("注释")
-          .setDescription("描述");
+      FieldInfo info = new FieldInfo("field", "String").setComment("注释").setDescription("描述");
       assertEquals("注释", info.getFieldComment());
     }
 
     @Test
     @DisplayName("comment 为空时返回 description")
     void testDescriptionWhenCommentEmpty() {
-      FieldInfo info = new FieldInfo("field", "String")
-          .setComment("")
-          .setDescription("描述");
+      FieldInfo info = new FieldInfo("field", "String").setComment("").setDescription("描述");
       assertEquals("描述", info.getFieldComment());
     }
 
@@ -308,12 +301,10 @@ class FieldInfoTest {
     @Test
     @DisplayName("toString 包含所有字段信息")
     void testToString() {
-      FieldInfo info = new FieldInfo("userId", "Long")
-          .setColumnName("user_id")
-          .setPrimaryKey(true);
-      
+      FieldInfo info = new FieldInfo("userId", "Long").setColumnName("user_id").setPrimaryKey(true);
+
       String str = info.toString();
-      
+
       assertTrue(str.contains("fieldName='userId'"));
       assertTrue(str.contains("fieldType='Long'"));
       assertTrue(str.contains("columnName='user_id'"));

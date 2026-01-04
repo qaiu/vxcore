@@ -53,6 +53,16 @@ public class ForeignKeyInfo {
     return this;
   }
 
+  /**
+   * 设置引用表名（setReferencedTableName 的别名）
+   *
+   * @param referencedTable 引用表名
+   * @return ForeignKeyInfo实例
+   */
+  public ForeignKeyInfo setReferencedTable(String referencedTable) {
+    return setReferencedTableName(referencedTable);
+  }
+
   public List<String> getColumnNames() {
     return columnNames;
   }

@@ -49,20 +49,21 @@ class ColumnInfoTest {
     @Test
     @DisplayName("链式设置所有属性")
     void testFluentSetters() {
-      ColumnInfo info = new ColumnInfo()
-          .setColumnName("id")
-          .setColumnType("bigint")
-          .setDataType(java.sql.Types.BIGINT)
-          .setTypeName("BIGINT")
-          .setColumnSize(20)
-          .setDecimalDigits(0)
-          .setNullable(false)
-          .setPrimaryKey(true)
-          .setUnique(true)
-          .setAutoIncrement(true)
-          .setDefaultValue("0")
-          .setComment("主键ID")
-          .setDescription("自增主键");
+      ColumnInfo info =
+          new ColumnInfo()
+              .setColumnName("id")
+              .setColumnType("bigint")
+              .setDataType(java.sql.Types.BIGINT)
+              .setTypeName("BIGINT")
+              .setColumnSize(20)
+              .setDecimalDigits(0)
+              .setNullable(false)
+              .setPrimaryKey(true)
+              .setUnique(true)
+              .setAutoIncrement(true)
+              .setDefaultValue("0")
+              .setComment("主键ID")
+              .setDescription("自增主键");
 
       assertEquals("id", info.getColumnName());
       assertEquals("bigint", info.getColumnType());
@@ -93,12 +94,12 @@ class ColumnInfoTest {
 
     @ParameterizedTest
     @CsvSource({
-        "user_name, userName",
-        "USER_NAME, userName",
-        "id, id",
-        "ID, id",
-        "created_at, createdAt",
-        "first_name_last, firstNameLast"
+      "user_name, userName",
+      "USER_NAME, userName",
+      "id, id",
+      "ID, id",
+      "created_at, createdAt",
+      "first_name_last, firstNameLast"
     })
     @DisplayName("下划线转驼峰")
     void testUnderscoreToCamel(String columnName, String expectedFieldName) {
@@ -127,31 +128,31 @@ class ColumnInfoTest {
 
     @ParameterizedTest
     @CsvSource({
-        "int, Integer",
-        "integer, Integer",
-        "int4, Integer",
-        "bigint, Long",
-        "int8, Long",
-        "smallint, Short",
-        "int2, Short",
-        "tinyint, Byte",
-        "decimal, BigDecimal",
-        "numeric, BigDecimal",
-        "float, Float",
-        "real, Float",
-        "double, Double",
-        "boolean, Boolean",
-        "bool, Boolean",
-        "bit, Boolean",
-        "varchar, String",
-        "char, String",
-        "text, String",
-        "date, LocalDate",
-        "time, LocalTime",
-        "timestamp, LocalDateTime",
-        "datetime, LocalDateTime",
-        "blob, byte[]",
-        "binary, byte[]"
+      "int, Integer",
+      "integer, Integer",
+      "int4, Integer",
+      "bigint, Long",
+      "int8, Long",
+      "smallint, Short",
+      "int2, Short",
+      "tinyint, Byte",
+      "decimal, BigDecimal",
+      "numeric, BigDecimal",
+      "float, Float",
+      "real, Float",
+      "double, Double",
+      "boolean, Boolean",
+      "bool, Boolean",
+      "bit, Boolean",
+      "varchar, String",
+      "char, String",
+      "text, String",
+      "date, LocalDate",
+      "time, LocalTime",
+      "timestamp, LocalDateTime",
+      "datetime, LocalDateTime",
+      "blob, byte[]",
+      "binary, byte[]"
     })
     @DisplayName("SQL类型映射到Java类型")
     void testSqlToJavaTypeMapping(String sqlType, String expectedJavaType) {
@@ -179,7 +180,8 @@ class ColumnInfoTest {
   class TypeCheckTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"int", "bigint", "decimal", "float", "double", "numeric", "money", "real"})
+    @ValueSource(
+        strings = {"int", "bigint", "decimal", "float", "double", "numeric", "money", "real"})
     @DisplayName("数值类型检测")
     void testIsNumericType(String type) {
       ColumnInfo info = new ColumnInfo("col", type);
@@ -228,20 +230,14 @@ class ColumnInfoTest {
     @Test
     @DisplayName("优先返回 comment")
     void testCommentFirst() {
-      ColumnInfo info = new ColumnInfo()
-          .setColumnName("col")
-          .setComment("注释")
-          .setDescription("描述");
+      ColumnInfo info = new ColumnInfo().setColumnName("col").setComment("注释").setDescription("描述");
       assertEquals("注释", info.getColumnComment());
     }
 
     @Test
     @DisplayName("comment 为空时返回 description")
     void testDescriptionWhenCommentEmpty() {
-      ColumnInfo info = new ColumnInfo()
-          .setColumnName("col")
-          .setComment("")
-          .setDescription("描述");
+      ColumnInfo info = new ColumnInfo().setColumnName("col").setComment("").setDescription("描述");
       assertEquals("描述", info.getColumnComment());
     }
 
@@ -260,12 +256,10 @@ class ColumnInfoTest {
     @Test
     @DisplayName("toString 包含所有字段信息")
     void testToString() {
-      ColumnInfo info = new ColumnInfo("id", "bigint")
-          .setPrimaryKey(true)
-          .setAutoIncrement(true);
-      
+      ColumnInfo info = new ColumnInfo("id", "bigint").setPrimaryKey(true).setAutoIncrement(true);
+
       String str = info.toString();
-      
+
       assertTrue(str.contains("columnName='id'"));
       assertTrue(str.contains("columnType='bigint'"));
       assertTrue(str.contains("primaryKey=true"));

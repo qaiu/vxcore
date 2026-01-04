@@ -24,14 +24,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 基础三层框架测试 测试Controller -> Service -> DAO 三层架构
- * 注意：此测试需要启动HTTP服务器，在CI环境下可能因端口冲突而被禁用
+ * 基础三层框架测试 测试Controller -> Service -> DAO 三层架构 注意：此测试需要启动HTTP服务器，在CI环境下可能因端口冲突而被禁用
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 @ExtendWith(VertxExtension.class)
 @DisplayName("基础三层框架测试")
-@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "HTTP服务器测试在CI环境中可能因端口冲突而失败")
+@DisabledIfEnvironmentVariable(
+    named = "CI",
+    matches = "true",
+    disabledReason = "HTTP服务器测试在CI环境中可能因端口冲突而失败")
 public class ThreeLayerFrameworkTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ThreeLayerFrameworkTest.class);

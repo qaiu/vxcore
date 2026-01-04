@@ -73,10 +73,10 @@ class CastUtilTest {
       List<String> original = new ArrayList<>();
       original.add("a");
       original.add("b");
-      
+
       Object obj = original;
       List<String> result = CastUtil.cast(obj);
-      
+
       assertEquals(2, result.size());
       assertEquals("a", result.get(0));
       assertEquals("b", result.get(1));
@@ -88,10 +88,10 @@ class CastUtilTest {
       Map<String, Integer> original = new HashMap<>();
       original.put("one", 1);
       original.put("two", 2);
-      
+
       Object obj = original;
       Map<String, Integer> result = CastUtil.cast(obj);
-      
+
       assertEquals(2, result.size());
       assertEquals(1, result.get("one"));
       assertEquals(2, result.get("two"));
@@ -107,9 +107,9 @@ class CastUtilTest {
     void testCastToCustomClass() {
       Person person = new Person("John", 30);
       Object obj = person;
-      
+
       Person result = CastUtil.cast(obj);
-      
+
       assertSame(person, result);
       assertEquals("John", result.name);
       assertEquals(30, result.age);
@@ -120,9 +120,9 @@ class CastUtilTest {
     void testCastChildToParent() {
       Student student = new Student("Alice", 20, "CS");
       Object obj = student;
-      
+
       Person result = CastUtil.cast(obj);
-      
+
       assertSame(student, result);
       assertEquals("Alice", result.name);
     }
@@ -132,13 +132,15 @@ class CastUtilTest {
     void testCastParentToChild() {
       Person person = new Person("Bob", 25);
       Object obj = person;
-      
+
       // cast 操作本身会抛出 ClassCastException
-      assertThrows(ClassCastException.class, () -> {
-        Student result = CastUtil.cast(obj);
-        // 触发类型检查
-        String name = result.name;
-      });
+      assertThrows(
+          ClassCastException.class,
+          () -> {
+            Student result = CastUtil.cast(obj);
+            // 触发类型检查
+            String name = result.name;
+          });
     }
   }
 
@@ -152,17 +154,19 @@ class CastUtilTest {
       List<Object> objects = new ArrayList<>();
       objects.add("string");
       objects.add(123);
-      
+
       // 使用 CastUtil 转换 - 运行时不会检查泛型类型
       List<String> strings = CastUtil.cast(objects);
-      
+
       // 第一个元素是 String，可以正常访问
       assertEquals("string", strings.get(0));
-      
+
       // 第二个元素实际是 Integer，访问时会有类型问题
-      assertThrows(ClassCastException.class, () -> {
-        String s = strings.get(1); // 运行时抛出 ClassCastException
-      });
+      assertThrows(
+          ClassCastException.class,
+          () -> {
+            String s = strings.get(1); // 运行时抛出 ClassCastException
+          });
     }
 
     @Test
@@ -171,10 +175,10 @@ class CastUtilTest {
       List<String> original = new ArrayList<>();
       original.add("a");
       original.add("b");
-      
+
       Object obj = original;
       List<String> result = CastUtil.cast(obj);
-      
+
       // 类型一致，不会有问题
       assertEquals("a", result.get(0));
       assertEquals("b", result.get(1));

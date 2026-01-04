@@ -9,8 +9,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * MySQL测试配置工具类
- * 支持从环境变量（CI环境）或配置文件（本地开发）读取配置
+ * MySQL测试配置工具类 支持从环境变量（CI环境）或配置文件（本地开发）读取配置
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -29,13 +28,13 @@ public class MySQLTestConfig {
 
   private static Properties loadProperties() {
     Properties props = new Properties();
-    
+
     // 优先从环境变量加载（CI环境）
     if (isInCiEnvironment()) {
       String mysqlUrl = System.getenv("MYSQL_URL");
       String mysqlUser = getEnvOrDefault("MYSQL_USER", "root");
       String mysqlPassword = getEnvOrDefault("MYSQL_PASSWORD", "root");
-      
+
       if (mysqlUrl != null && !mysqlUrl.isEmpty()) {
         props.setProperty("mysql.url", mysqlUrl);
         props.setProperty("mysql.user", mysqlUser);
@@ -45,7 +44,7 @@ public class MySQLTestConfig {
         return props;
       }
     }
-    
+
     // 从配置文件加载（本地开发环境）
     try (InputStream input =
         MySQLTestConfig.class.getClassLoader().getResourceAsStream("mysql-test.properties")) {
