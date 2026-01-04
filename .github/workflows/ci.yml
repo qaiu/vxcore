@@ -240,8 +240,13 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
+    - name: 编译安装所有模块
+      run: mvn install -B -DskipTests
+      env:
+        CI: true
+
     - name: 构建项目
-      run: mvn clean package -B -DskipTests
+      run: mvn package -B -DskipTests
       env:
         CI: true
     
