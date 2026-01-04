@@ -1,9 +1,7 @@
 name: Performance Tests
 
 on:
-  schedule:
-    # 每天凌晨3点运行性能测试
-    - cron: '0 3 * * *'
+  # 性能测试仅支持手动触发，避免CI环境中的不稳定性
   workflow_dispatch:
     inputs:
       test_type:

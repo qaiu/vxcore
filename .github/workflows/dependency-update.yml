@@ -1,8 +1,7 @@
 name: Dependency Update
 
 on:
-  schedule:
-    - cron: '0 1 * * 1'  # 每周一凌晨1点运行
+  # 依赖更新仅支持手动触发，避免自动更新带来的风险
   workflow_dispatch:
 
 jobs:
