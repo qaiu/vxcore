@@ -16,15 +16,18 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * 数据库性能测试 测试数据库相关组件的性能表现
+ * 注意：性能测试在CI环境下可能不稳定，因此被禁用
  *
  * @author QAIU
  */
 @ExtendWith(VertxExtension.class)
 @DisplayName("数据库性能测试")
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "性能测试在CI环境下不稳定")
 class DatabasePerformanceTest {
 
   private static final int THREAD_COUNT = 50;
