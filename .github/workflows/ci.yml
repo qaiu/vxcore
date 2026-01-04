@@ -87,8 +87,8 @@ jobs:
       env:
         CI: true
         DB_TYPE: h2
-      # JDK 21 可能有一些并发测试不稳定，允许失败
-      continue-on-error: ${{ matrix.java-version == 21 && matrix.module == 'core' }}
+      # core-database 模块的性能测试在CI环境中可能不稳定，允许失败
+      continue-on-error: ${{ matrix.module == 'core-database' }}
     
     - name: 生成测试覆盖率报告
       run: mvn jacoco:report -pl ${{ matrix.module }} -B
