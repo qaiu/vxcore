@@ -529,7 +529,6 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
       writer.println("import io.vertx.codegen.annotations.ProxyGen;");
       writer.println("import io.vertx.codegen.annotations.VertxGen;");
       writer.println("import io.vertx.codegen.annotations.Fluent;");
-      writer.println("import " + entityPackage + "." + entityName + ";");
       writer.println("import java.util.List;");
       writer.println("import java.util.Optional;");
       writer.println("import javax.annotation.Generated;");
@@ -599,7 +598,6 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
       writer.println("import io.vertx.codegen.annotations.ProxyGen;");
       writer.println("import io.vertx.codegen.annotations.VertxGen;");
       writer.println("import io.vertx.codegen.annotations.Fluent;");
-      writer.println("import " + entityPackage + "." + entityName + ";");
       writer.println("import java.util.List;");
       writer.println("import java.util.Optional;");
       writer.println("import javax.annotation.Generated;");
@@ -730,7 +728,6 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
       writer.println("import io.vertx.codegen.annotations.ProxyGen;");
       writer.println("import io.vertx.codegen.annotations.VertxGen;");
       writer.println("import io.vertx.codegen.annotations.Fluent;");
-      writer.println("import " + entityPackage + "." + entityName + ";");
       writer.println("import java.util.List;");
       writer.println("import java.util.Optional;");
       writer.println("import javax.annotation.Generated;");

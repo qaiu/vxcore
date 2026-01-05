@@ -2,103 +2,62 @@ package cn.qaiu.db.dsl.lambda.example;
 
 import cn.qaiu.db.ddl.DdlColumn;
 import cn.qaiu.db.ddl.DdlTable;
-import cn.qaiu.db.dsl.BaseEntity;
-import io.vertx.codegen.format.SnakeCase;
-import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.templates.annotations.RowMapped;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 产品实体类 - 展示DdlColumn value字段的使用
+ * Lambda测试用的Product实体类
  *
- * @author qaiu
+ * @author <a href="https://qaiu.top">QAIU</a>
  */
-@RowMapped(formatter = SnakeCase.class)
-@DdlTable(value = "products", keyFields = "product_id")
-public class Product extends BaseEntity {
+@DdlTable("products")
+public class Product {
 
-  private static final long serialVersionUID = 1L;
-
-  // 使用value字段的简洁写法
-  @DdlColumn(value = "product_id", type = "BIGINT", autoIncrement = false)
+  @DdlColumn("product_id")
   private Long id;
 
-  // 使用value字段
   @DdlColumn("product_name")
   private String name;
 
-  // 使用value字段
   @DdlColumn("product_code")
   private String code;
 
-  // 使用value字段
   @DdlColumn("category_id")
   private Long categoryId;
 
-  // 使用value字段
   @DdlColumn("price")
   private BigDecimal price;
 
-  // 使用value字段
   @DdlColumn("stock_quantity")
   private Integer stockQuantity;
 
-  // 使用value字段
   @DdlColumn("description")
   private String description;
 
-  // 使用value字段
   @DdlColumn("is_active")
   private Boolean active;
 
-  // 使用value字段
   @DdlColumn("created_at")
   private LocalDateTime createdAt;
 
-  // 使用value字段
   @DdlColumn("updated_at")
   private LocalDateTime updatedAt;
 
+  // 构造函数
   public Product() {}
 
-  public Product(JsonObject json) {
-    // 简单的JSON转换实现
-    this.id = json.getLong("id");
-    this.name = json.getString("name");
-    this.code = json.getString("code");
-    this.categoryId = json.getLong("categoryId");
-    this.price = json.getValue("price") != null ? new BigDecimal(json.getString("price")) : null;
-    this.stockQuantity = json.getInteger("stockQuantity");
-    this.description = json.getString("description");
-    this.active = json.getBoolean("active");
-    this.createdAt =
-        json.getString("createdAt") != null
-            ? LocalDateTime.parse(json.getString("createdAt"))
-            : null;
-    this.updatedAt =
-        json.getString("updatedAt") != null
-            ? LocalDateTime.parse(json.getString("updatedAt"))
-            : null;
+  public Product(String name, String code, Long categoryId, BigDecimal price, Integer stockQuantity) {
+    this.name = name;
+    this.code = code;
+    this.categoryId = categoryId;
+    this.price = price;
+    this.stockQuantity = stockQuantity;
+    this.active = true;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
   }
 
-  public JsonObject toJson() {
-    JsonObject json = new JsonObject();
-    json.put("id", id);
-    json.put("name", name);
-    json.put("code", code);
-    json.put("categoryId", categoryId);
-    json.put("price", price != null ? price.toString() : null);
-    json.put("stockQuantity", stockQuantity);
-    json.put("description", description);
-    json.put("active", active);
-    json.put("createdAt", createdAt != null ? createdAt.toString() : null);
-    json.put("updatedAt", updatedAt != null ? updatedAt.toString() : null);
-    return json;
-  }
-
-  // Getters and Setters
-
+  // Getter和Setter方法
   public Long getId() {
     return id;
   }
@@ -196,15 +155,8 @@ public class Product extends BaseEntity {
         + price
         + ", stockQuantity="
         + stockQuantity
-        + ", description='"
-        + description
-        + '\''
         + ", active="
         + active
-        + ", createdAt="
-        + createdAt
-        + ", updatedAt="
-        + updatedAt
         + '}';
   }
 }

@@ -199,17 +199,20 @@ public class FrameworkLifecycleManager {
   private String determineConfigFile(String[] args) {
     if (args.length > 0) {
       String arg = args[0];
-      if (arg.startsWith("app-")) {
+      if (arg.startsWith("app-") || arg.startsWith("application-")) {
         return arg;
-      } else if (arg.equals("dev") || arg.equals("prod")) {
-        return "application";
+      } else if (arg.equals("dev")) {
+        return "app-dev";
+      } else if (arg.equals("prod")) {
+        return "app-prod";
       } else if (arg.equals("test")) {
-        return "application-test";
+        return "app-test";
       } else if (arg.equals("application")) {
         return "application";
       }
     }
-    return "app";
+    // 默认使用 app-dev 配置
+    return "app-dev";
   }
 
   /** 初始化所有组件 */

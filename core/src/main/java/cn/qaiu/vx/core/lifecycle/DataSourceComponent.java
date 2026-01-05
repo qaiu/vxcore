@@ -28,14 +28,31 @@ public class DataSourceComponent implements LifecycleComponent {
         promise -> {
           try {
             LOGGER.info("Initializing DataSource component...");
+            LOGGER.info("Config keys: {}", config.fieldNames());
 
-            // 检查是否有数据源配置
+            // 检查是否有数据源配置（兼容多种配置格式）
+            // 优先级: database > datasources > dataSource
             JsonObject databaseConfig = config.getJsonObject("database");
+            LOGGER.info("database config: {}", databaseConfig);
+            if (databaseConfig == null || databaseConfig.isEmpty()) {
+              databaseConfig = config.getJsonObject("datasources");
+              LOGGER.info("datasources config: {}", databaseConfig);
+            }
+            if (databaseConfig == null || databaseConfig.isEmpty()) {
+              // 兼容旧的 dataSource 配置格式
+              JsonObject oldDataSource = config.getJsonObject("dataSource");
+              LOGGER.info("dataSource config: {}", oldDataSource);
+              if (oldDataSource != null && !oldDataSource.isEmpty()) {
+                databaseConfig = new JsonObject().put("primary", oldDataSource);
+                LOGGER.info("Using legacy 'dataSource' configuration format in DataSourceComponent");
+              }
+            }
             if (databaseConfig == null || databaseConfig.isEmpty()) {
               LOGGER.info("No database configuration found, skipping datasource initialization");
               promise.complete();
               return;
             }
+            LOGGER.info("Found datasource configuration with {} entries: {}", databaseConfig.fieldNames().size(), databaseConfig.fieldNames());
 
             // 使用SPI模式查找数据源提供者
             DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
@@ -216,10 +233,60 @@ public class DataSourceComponent implements LifecycleComponent {
         if (type != null) {
           DataSourceProvider provider = registry.getProviderByType(type);
           if (provider != null) {
+            LOGGER.info("Found provider by type '{}': {}", type, provider.getName());
             return provider;
           }
         }
+        
+        // 如果没有指定 type，检查是否有 jdbcUrl 或 url 来推断数据源类型
+        String jdbcUrl = dataSourceConfig.getString("jdbcUrl");
+        if (jdbcUrl == null) {
+          jdbcUrl = dataSourceConfig.getString("url");
+        }
+        if (jdbcUrl != null) {
+          // 从 JDBC URL 推断数据库类型
+          String inferredType = inferDatabaseType(jdbcUrl);
+          if (inferredType != null) {
+            DataSourceProvider provider = registry.getProviderByType(inferredType);
+            if (provider != null) {
+              LOGGER.info("Found provider by inferred type '{}' from URL: {}", inferredType, provider.getName());
+              return provider;
+            }
+          }
+        }
+        
+        // 如果仍然没找到，尝试使用任何可用的提供者
+        var allProviders = registry.getAllProviders();
+        if (!allProviders.isEmpty()) {
+          DataSourceProvider defaultProvider = allProviders.get(0);
+          LOGGER.info("Using default provider: {}", defaultProvider.getName());
+          return defaultProvider;
+        }
       }
+    }
+    return null;
+  }
+  
+  /**
+   * 从 JDBC URL 推断数据库类型
+   */
+  private String inferDatabaseType(String jdbcUrl) {
+    if (jdbcUrl == null) {
+      return null;
+    }
+    String lowerUrl = jdbcUrl.toLowerCase();
+    if (lowerUrl.contains(":h2:")) {
+      return "h2";
+    } else if (lowerUrl.contains(":mysql:")) {
+      return "mysql";
+    } else if (lowerUrl.contains(":postgresql:") || lowerUrl.contains(":postgres:")) {
+      return "postgresql";
+    } else if (lowerUrl.contains(":oracle:")) {
+      return "oracle";
+    } else if (lowerUrl.contains(":sqlserver:") || lowerUrl.contains(":microsoft:")) {
+      return "sqlserver";
+    } else if (lowerUrl.contains(":sqlite:")) {
+      return "sqlite";
     }
     return null;
   }

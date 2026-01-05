@@ -14,7 +14,7 @@ public class ServerConfig {
 
   public ServerConfig() {
     this.host = "0.0.0.0";
-    this.port = 6400;
+    this.port = 26400;
     this.timeout = 30000;
     this.gatewayPrefix = "/";
   }

@@ -51,12 +51,25 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
     // 创建数据源管理器
     createDataSourceManager(vertx);
 
-    // 获取数据库配置
+    // 获取数据库配置（兼容多种配置格式）
+    // 优先级: database > datasources > dataSource
     JsonObject databaseConfig = config.getJsonObject("database");
+    if (databaseConfig == null || databaseConfig.isEmpty()) {
+      databaseConfig = config.getJsonObject("datasources");
+    }
+    if (databaseConfig == null || databaseConfig.isEmpty()) {
+      // 兼容旧的 dataSource 配置格式
+      JsonObject oldDataSource = config.getJsonObject("dataSource");
+      if (oldDataSource != null && !oldDataSource.isEmpty()) {
+        databaseConfig = new JsonObject().put("primary", oldDataSource);
+        LOGGER.info("Using legacy 'dataSource' configuration format");
+      }
+    }
     if (databaseConfig == null || databaseConfig.isEmpty()) {
       LOGGER.warn("No database configuration found");
       return Future.succeededFuture();
     }
+    LOGGER.info("Found database configuration with {} entries: {}", databaseConfig.fieldNames().size(), databaseConfig.fieldNames());
 
     // 注册所有数据源
     Future<Void> registrationFuture = Future.succeededFuture();
@@ -64,12 +77,28 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
       JsonObject dataSourceConfig = databaseConfig.getJsonObject(dataSourceName);
       if (dataSourceConfig != null) {
         String type = dataSourceConfig.getString("type");
+        
+        // 如果没有指定 type，从 jdbcUrl 推断
+        if (type == null || type.isEmpty()) {
+          String jdbcUrl = dataSourceConfig.getString("jdbcUrl");
+          if (jdbcUrl == null) {
+            jdbcUrl = dataSourceConfig.getString("url");
+          }
+          type = inferDatabaseType(jdbcUrl);
+          LOGGER.info("Inferred database type '{}' from URL for datasource: {}", type, dataSourceName);
+        }
+        
         if (supports(type)) {
           // 转换为DataSourceConfig对象
           DataSourceConfig configObj = new DataSourceConfig();
           configObj.setName(dataSourceName);
           configObj.setType(type);
-          configObj.setUrl(dataSourceConfig.getString("url"));
+          // 兼容 url 和 jdbcUrl 两种配置方式
+          String url = dataSourceConfig.getString("url");
+          if (url == null) {
+            url = dataSourceConfig.getString("jdbcUrl");
+          }
+          configObj.setUrl(url);
           configObj.setUsername(dataSourceConfig.getString("username"));
           configObj.setPassword(dataSourceConfig.getString("password"));
 
@@ -81,11 +110,14 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
             configObj.setMinPoolSize(dataSourceConfig.getInteger("min_pool_size"));
           }
 
+          final String dsName = dataSourceName;
+          final JsonObject finalConfig = configObj.toJsonObject();
           registrationFuture =
               registrationFuture.compose(
-                  v ->
-                      dataSourceManager.registerDataSource(
-                          dataSourceName, configObj.toJsonObject()));
+                  v -> {
+                    LOGGER.info("Registering datasource: {} with config: {}", dsName, finalConfig);
+                    return dataSourceManager.registerDataSource(dsName, finalConfig);
+                  });
         } else {
           LOGGER.warn("Unsupported datasource type: {} for datasource: {}", type, dataSourceName);
         }
@@ -93,7 +125,34 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
     }
 
     // 初始化所有数据源
-    return registrationFuture.compose(v -> dataSourceManager.initializeAllDataSources());
+    return registrationFuture.compose(v -> {
+      LOGGER.info("Initializing all registered datasources...");
+      return dataSourceManager.initializeAllDataSources();
+    });
+  }
+  
+  /**
+   * 从 JDBC URL 推断数据库类型
+   */
+  private String inferDatabaseType(String jdbcUrl) {
+    if (jdbcUrl == null) {
+      return null;
+    }
+    String lowerUrl = jdbcUrl.toLowerCase();
+    if (lowerUrl.contains(":h2:")) {
+      return "h2";
+    } else if (lowerUrl.contains(":mysql:")) {
+      return "mysql";
+    } else if (lowerUrl.contains(":postgresql:") || lowerUrl.contains(":postgres:")) {
+      return "postgresql";
+    } else if (lowerUrl.contains(":oracle:")) {
+      return "oracle";
+    } else if (lowerUrl.contains(":sqlserver:") || lowerUrl.contains(":microsoft:")) {
+      return "sqlserver";
+    } else if (lowerUrl.contains(":sqlite:")) {
+      return "sqlite";
+    }
+    return null;
   }
 
   @Override

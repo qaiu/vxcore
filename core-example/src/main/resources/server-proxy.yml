@@ -2,7 +2,7 @@
 server-name: Vert.x-proxy-server(v4.1.2)
 
 proxy:
-  - listen: 6401
+  - listen: 26401
     # 404的路径
     page404: webroot/nfd-front/index.html
     static:
@@ -16,11 +16,11 @@ proxy:
     # 2.origin代理地址端口后无任何，转发后地址：代理地址+访问URL目录部
     location:
       - path: ~^/(json|v2|d|parser|ye|lz|cow|ec|fj|fc|le|qq|ws|iz|ce|admin|api)/.*
-        origin: 127.0.0.1:6400
+        origin: 127.0.0.1:26400
       - path: ~^/nfdmm/.*
-        origin: 127.0.0.1:6402
+        origin: 127.0.0.1:26402
       - path: /n1/
-        origin: 127.0.0.1:6400/v2/
+        origin: 127.0.0.1:26400/v2/
 
 #    # SSL HTTPS配置
     ssl:
@@ -36,7 +36,7 @@ proxy:
       # 加密套件 ssl_ciphers 暂不支持
       # ssl_ciphers: AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
 
-  - listen: 6402
+  - listen: 26402
     # 404的路径
     page404: webroot/err/404.html
     static:
@@ -46,7 +46,7 @@ proxy:
       root: webroot/admin/
     location:
       - path: ~^/admin/.*
-        origin: 127.0.0.1:6400
+        origin: 127.0.0.1:26400
 
 
   - listen: 8086

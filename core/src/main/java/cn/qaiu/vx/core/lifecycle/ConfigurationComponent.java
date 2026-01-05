@@ -114,15 +114,31 @@ public class ConfigurationComponent implements LifecycleComponent {
     // 验证服务器配置
     JsonObject serverConfig = config.getJsonObject("server");
     if (serverConfig == null) {
-      throw new IllegalArgumentException("Server configuration is required");
+      LOGGER.warn("No 'server' configuration found, will use default settings");
+      // 创建默认服务器配置
+      serverConfig = new JsonObject()
+          .put("port", 8080)
+          .put("host", "0.0.0.0");
+      config.put("server", serverConfig);
     }
 
     if (serverConfig.getInteger("port") == null) {
-      throw new IllegalArgumentException("Server port is required");
+      serverConfig.put("port", 8080);
+      LOGGER.info("Server port not specified, using default: 8080");
     }
 
     // 验证数据源配置
     JsonObject datasources = config.getJsonObject("datasources");
+    // 兼容旧的 dataSource 配置格式
+    JsonObject oldDataSource = config.getJsonObject("dataSource");
+    
+    if ((datasources == null || datasources.isEmpty()) && oldDataSource != null) {
+      LOGGER.info("Using legacy 'dataSource' configuration format");
+      // 转换旧格式为新格式
+      datasources = new JsonObject().put("primary", oldDataSource);
+      config.put("datasources", datasources);
+    }
+    
     if (datasources == null || datasources.isEmpty()) {
       LOGGER.warn("No datasource configuration found");
     }

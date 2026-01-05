@@ -22,7 +22,7 @@ public class HttpProxyConf {
   public static final String DEFAULT_PASSWORD = UUID.randomUUID().toString();
 
   /** 默认端口 */
-  public static final Integer DEFAULT_PORT = 6402;
+  public static final Integer DEFAULT_PORT = 26402;
 
   /** 默认超时时间 */
   public static final Integer DEFAULT_TIMEOUT = 15000;
