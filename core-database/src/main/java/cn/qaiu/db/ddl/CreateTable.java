@@ -1,7 +1,6 @@
 package cn.qaiu.db.ddl;
 
 import cn.qaiu.db.pool.JDBCType;
-import cn.qaiu.vx.core.util.ReflectionUtil;
 import io.vertx.codegen.format.CamelCase;
 import io.vertx.codegen.format.Case;
 import io.vertx.codegen.format.LowerCamelCase;
@@ -451,9 +450,9 @@ public class CreateTable {
 
   public static Future<Void> createTable(Pool pool, JDBCType type) {
     Promise<Void> promise = Promise.promise();
-    Set<Class<?>> tableClasses = ReflectionUtil.getReflections().getTypesAnnotatedWith(Table.class);
-    Set<Class<?>> ddlTableClasses =
-        ReflectionUtil.getReflections().getTypesAnnotatedWith(DdlTable.class);
+    // 复用EnhancedCreateTable的方法扫描实体类
+    Set<Class<?>> tableClasses = EnhancedCreateTable.getTableClasses();
+    Set<Class<?>> ddlTableClasses = EnhancedCreateTable.getDdlTableClasses();
 
     // 合并两个集合
     Set<Class<?>> allTableClasses = new HashSet<>();

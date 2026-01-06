@@ -1,10 +1,10 @@
 package cn.qaiu.vx.core.proxy;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.http.WebSocketClient;
+import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.http.WebSocketConnectOptions;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,12 +20,12 @@ public class WebSocketProxyHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketProxyHandler.class);
 
-  private final HttpClient httpClient;
+  private final WebSocketClient webSocketClient;
 
   public WebSocketProxyHandler(Vertx vertx) {
-    this.httpClient =
-        vertx.createHttpClient(
-            new HttpClientOptions().setConnectTimeout(10000).setIdleTimeout(30).setKeepAlive(true));
+    this.webSocketClient =
+        vertx.createWebSocketClient(
+            new WebSocketClientOptions().setConnectTimeout(10000).setIdleTimeout(30));
   }
 
   /**
@@ -69,8 +69,8 @@ public class WebSocketProxyHandler {
             });
 
     // 连接到目标服务器
-    httpClient
-        .webSocket(connectOptions)
+    webSocketClient
+        .connect(connectOptions)
         .onSuccess(
             targetSocket -> {
               LOGGER.debug(
@@ -171,8 +171,8 @@ public class WebSocketProxyHandler {
 
   /** 关闭代理处理器 */
   public void close() {
-    if (httpClient != null) {
-      httpClient.close();
+    if (webSocketClient != null) {
+      webSocketClient.close();
     }
   }
 }

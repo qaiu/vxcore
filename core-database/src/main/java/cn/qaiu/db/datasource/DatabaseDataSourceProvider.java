@@ -124,10 +124,20 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
       }
     }
 
+    // 保存第一个数据源名称用于设置默认数据源
+    final String firstDataSourceName = databaseConfig.fieldNames().iterator().next();
+    
     // 初始化所有数据源
     return registrationFuture.compose(v -> {
       LOGGER.info("Initializing all registered datasources...");
       return dataSourceManager.initializeAllDataSources();
+    }).compose(v -> {
+      // 设置第一个数据源为默认数据源
+      if (firstDataSourceName != null) {
+        dataSourceManager.setDefaultDataSource(firstDataSourceName);
+        LOGGER.info("Set default datasource to: {}", firstDataSourceName);
+      }
+      return Future.succeededFuture();
     });
   }
   

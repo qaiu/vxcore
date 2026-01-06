@@ -85,6 +85,15 @@ public class SharedDataUtil {
   }
 
   /**
+   * 获取全局配置
+   *
+   * @return 全局配置JSON对象
+   */
+  public static JsonObject getGlobalConfig() {
+    return getJsonConfig("globalConfig");
+  }
+
+  /**
    * 获取自定义配置中的字符串值
    *
    * @param key 配置键

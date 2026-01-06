@@ -1,0 +1,56 @@
+# VXCore 安全配置示例
+# 本文件演示如何配置JWT认证和权限控制
+
+server:
+  port: 8080
+  host: "0.0.0.0"
+
+# 安全配置
+security:
+  # 是否启用安全模块
+  enabled: true
+  
+  # JWT配置
+  jwt-enable: true
+  jwt-algorithm: "RS256"  # 支持 HS256（对称）或 RS256（非对称）
+  jwt-expire-seconds: 3600  # Token过期时间（1小时）
+  jwt-issuer: "vxcore-example"
+  
+  # 密钥配置（可选，如果不配置会自动生成）
+  # jwt-secret: "your-hs256-secret-key"  # HS256使用
+  # jwt-public-key: "/path/to/public.pem"  # RS256使用
+  # jwt-private-key: "/path/to/private.pem"  # RS256使用
+  
+  # 刷新Token过期时间（7天）
+  refresh-token-expire-seconds: 604800
+  
+  # Token请求头配置
+  token-header: "Authorization"
+  token-prefix: "Bearer "
+  
+  # 需要认证的路径正则表达式
+  jwt-auth-reg:
+    - "/api/secure/.*"
+    - "/api/admin/.*"
+    - "/api/users/.*"
+  
+  # 忽略认证的路径正则表达式（优先级高于jwt-auth-reg）
+  jwt-ignores-reg:
+    - "/api/auth/login"
+    - "/api/auth/refresh"
+    - "/api/secure/public"
+    - "/health"
+    - "/api-docs/.*"
+
+# 数据源配置
+datasources:
+  primary:
+    type: "h2"
+    jdbcUrl: "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1"
+    username: "sa"
+    password: ""
+    
+# 自定义配置
+custom:
+  baseLocations: "cn.qaiu.example"
+  gatewayPrefix: ""

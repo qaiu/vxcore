@@ -154,7 +154,16 @@ public class DataSourceManager implements DataSourceManagerInterface {
 
   /** 获取默认数据源连接池 */
   public Pool getDefaultPool() {
-    return getPoolInternal(defaultDataSource);
+    Pool pool = getPoolInternal(defaultDataSource);
+    if (pool == null && !pools.isEmpty()) {
+      // 如果默认数据源不存在，回退到第一个可用的数据源
+      String firstKey = pools.keySet().iterator().next();
+      LOGGER.info("Default datasource '{}' not found, falling back to '{}'", defaultDataSource, firstKey);
+      pool = pools.get(firstKey);
+      // 更新默认数据源为第一个可用的
+      this.defaultDataSource = firstKey;
+    }
+    return pool;
   }
 
   /** 获取默认JooqExecutor */

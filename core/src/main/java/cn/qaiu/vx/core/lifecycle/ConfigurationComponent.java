@@ -2,6 +2,9 @@ package cn.qaiu.vx.core.lifecycle;
 
 import static cn.qaiu.vx.core.util.ConfigConstant.*;
 
+import cn.qaiu.vx.core.config.ConfigAliasRegistry;
+import cn.qaiu.vx.core.config.ConfigBinder;
+import cn.qaiu.vx.core.config.ConfigResolver;
 import cn.qaiu.vx.core.util.AutoScanPathDetector;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -13,6 +16,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 配置管理组件 负责配置的加载、验证和分发
+ * 
+ * <p>使用 {@link ConfigAliasRegistry} 提供配置别名机制，
+ * 使用 {@link ConfigResolver} 提供别名感知的配置值获取，
+ * 使用 {@link ConfigBinder} 提供类型安全的配置绑定。
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -22,6 +29,8 @@ public class ConfigurationComponent implements LifecycleComponent {
 
   private Vertx vertx;
   private JsonObject globalConfig;
+  private ConfigResolver configResolver;
+  private ConfigBinder configBinder;
 
   @Override
   public Future<Void> initialize(Vertx vertx, JsonObject config) {
@@ -31,6 +40,10 @@ public class ConfigurationComponent implements LifecycleComponent {
     return Future.future(
         promise -> {
           try {
+            // 0. 初始化配置解析器和绑定器
+            this.configResolver = new ConfigResolver(config);
+            this.configBinder = new ConfigBinder();
+            
             // 1. 自动检测扫描路径
             autoDetectScanPaths(config);
 
@@ -41,6 +54,8 @@ public class ConfigurationComponent implements LifecycleComponent {
             storeConfiguration(config);
 
             LOGGER.info("Configuration component initialized successfully");
+            LOGGER.info("ConfigAliasRegistry initialized with {} alias groups", 
+                ConfigAliasRegistry.getInstance().getAllAliasGroups().size());
             promise.complete();
           } catch (Exception e) {
             LOGGER.error("Failed to initialize configuration component", e);
@@ -111,7 +126,7 @@ public class ConfigurationComponent implements LifecycleComponent {
 
   /** 验证配置 */
   private void validateConfiguration(JsonObject config) {
-    // 验证服务器配置
+    // 验证服务器配置（使用ConfigResolver支持别名）
     JsonObject serverConfig = config.getJsonObject("server");
     if (serverConfig == null) {
       LOGGER.warn("No 'server' configuration found, will use default settings");
@@ -122,15 +137,22 @@ public class ConfigurationComponent implements LifecycleComponent {
       config.put("server", serverConfig);
     }
 
-    if (serverConfig.getInteger("port") == null) {
+    // 使用ConfigResolver获取端口配置（支持port/serverPort别名）
+    ConfigResolver serverResolver = new ConfigResolver(serverConfig);
+    Integer port = serverResolver.getInteger("port");
+    if (port == null) {
       serverConfig.put("port", 8080);
       LOGGER.info("Server port not specified, using default: 8080");
     }
 
-    // 验证数据源配置
-    JsonObject datasources = config.getJsonObject("datasources");
+    // 验证数据源配置（使用别名机制兼容多种配置格式）
+    // 优先级: database > datasources > dataSource (通过别名机制统一处理)
+    JsonObject datasources = configResolver.getJsonObject("database");
+    if (datasources == null) {
+      datasources = configResolver.getJsonObject("datasources");
+    }
     // 兼容旧的 dataSource 配置格式
-    JsonObject oldDataSource = config.getJsonObject("dataSource");
+    JsonObject oldDataSource = configResolver.getJsonObject("dataSource");
     
     if ((datasources == null || datasources.isEmpty()) && oldDataSource != null) {
       LOGGER.info("Using legacy 'dataSource' configuration format");
@@ -158,6 +180,30 @@ public class ConfigurationComponent implements LifecycleComponent {
     }
 
     LOGGER.info("Configuration stored in shared data");
+  }
+
+  /**
+   * 获取配置解析器
+   * @return ConfigResolver实例
+   */
+  public ConfigResolver getConfigResolver() {
+    return configResolver;
+  }
+
+  /**
+   * 获取配置绑定器
+   * @return ConfigBinder实例
+   */
+  public ConfigBinder getConfigBinder() {
+    return configBinder;
+  }
+
+  /**
+   * 获取全局配置
+   * @return 全局配置JsonObject
+   */
+  public JsonObject getGlobalConfig() {
+    return globalConfig;
   }
 
   @Override

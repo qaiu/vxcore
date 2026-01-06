@@ -1,7 +1,7 @@
 package cn.qaiu.db.dsl.core.executor;
 
 import cn.qaiu.db.pool.JDBCType;
-import io.vertx.mysqlclient.MySQLPool;
+import cn.qaiu.db.util.DatabaseUrlUtil;
 import io.vertx.sqlclient.Pool;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -38,27 +38,42 @@ public class MySQLExecutorStrategy extends AbstractExecutorStrategy {
 
   /**
    * 获取连接池类型
+   * 使用通用Pool类型，避免依赖已废弃的MySQLPool
    *
-   * @return MySQLPool类型
+   * @return Pool类型
    */
   @Override
   public Class<? extends Pool> getPoolType() {
-    return MySQLPool.class;
+    return Pool.class;
   }
 
   /**
    * 检查是否支持指定的连接池
+   * 通过检查连接池的数据库类型来判断，而非类名
    *
    * @param pool 连接池
    * @return 是否支持
    */
   @Override
   public boolean supports(Pool pool) {
-    boolean supported =
-        pool instanceof MySQLPool || pool.getClass().getName().contains("MySQLPool");
+    // 优先通过URL检测数据库类型
+    try {
+      JDBCType jdbcType = DatabaseUrlUtil.getJDBCTypeFromPool(pool).toCompletionStage().toCompletableFuture().get();
+      boolean supported = jdbcType == JDBCType.MySQL;
+      if (supported) {
+        LOGGER.debug("MySQL executor strategy supports pool (detected by URL): {}", pool.getClass().getName());
+      }
+      return supported;
+    } catch (Exception e) {
+      LOGGER.debug("Failed to detect database type from pool URL, falling back to class name check");
+    }
+
+    // 后备：通过类名检测
+    String className = pool.getClass().getName().toLowerCase();
+    boolean supported = className.contains("mysql");
 
     if (supported) {
-      LOGGER.debug("MySQL executor strategy supports pool: {}", pool.getClass().getName());
+      LOGGER.debug("MySQL executor strategy supports pool (detected by class name): {}", pool.getClass().getName());
     }
 
     return supported;

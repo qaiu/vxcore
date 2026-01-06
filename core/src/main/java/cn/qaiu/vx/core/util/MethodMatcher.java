@@ -10,8 +10,6 @@ import io.vertx.ext.web.RoutingContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 方法匹配评分器 用于在方法重载时选择最佳匹配的方法
@@ -19,8 +17,6 @@ import org.slf4j.LoggerFactory;
  * @author QAIU
  */
 public class MethodMatcher {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(MethodMatcher.class);
 
   /**
    * 计算方法的匹配分数 分数越高表示匹配度越好

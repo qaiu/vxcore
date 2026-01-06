@@ -58,4 +58,11 @@ public interface DataSourceManagerInterface {
    * @return 数据源名称列表
    */
   List<String> getDataSourceNames();
+
+  /**
+   * 设置默认数据源
+   *
+   * @param name 数据源名称
+   */
+  void setDefaultDataSource(String name);
 }

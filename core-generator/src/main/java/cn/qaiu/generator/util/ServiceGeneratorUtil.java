@@ -12,6 +12,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Service接口生成工具
@@ -20,6 +22,7 @@ import java.util.List;
  */
 public class ServiceGeneratorUtil {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceGeneratorUtil.class);
   private final ServiceInterfaceBuilder serviceBuilder;
 
   public ServiceGeneratorUtil() {
@@ -45,8 +48,8 @@ public class ServiceGeneratorUtil {
       System.out.println("✅ 成功生成 " + entityName + "Service 接口");
 
     } catch (Exception e) {
+      LOGGER.error("Failed to generate service interface for entity: {}", entityName, e);
       System.err.println("❌ 生成 " + entityName + "Service 接口失败: " + e.getMessage());
-      e.printStackTrace();
     }
   }
 
@@ -93,8 +96,8 @@ public class ServiceGeneratorUtil {
       generateServicesForEntities(packageName, outputDir, entityNames.toArray(new String[0]));
 
     } catch (IOException e) {
+      LOGGER.error("Failed to scan entity directory: {}", entityDir, e);
       System.err.println("❌ 扫描实体目录失败: " + e.getMessage());
-      e.printStackTrace();
     }
   }
 

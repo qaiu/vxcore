@@ -16,7 +16,12 @@
 - [异常处理](09-exception-handling.md) - 异常处理机制
 - [配置管理](10-configuration.md) - 配置管理详解
 
-### 💻 开发指南
+### � 安全与框架
+- [安全认证](06-security.md) - JWT认证与权限控制
+- [依赖注入](07-di-framework.md) - Dagger2 依赖注入框架
+- [AOP切面编程](15-aop-guide.md) - 声明式切面编程指南
+
+### �💻 开发指南
 - [开发者指南](05-developer-guide.md) - AI Agent辅助开发指南
 - [Lambda查询](../core-database/docs/lambda/LAMBDA_QUERY_GUIDE.md) - Lambda查询详解
 - [多数据源](../core-database/docs/MULTI_DATASOURCE_GUIDE.md) - 多数据源配置和使用
@@ -108,7 +113,7 @@ curl http://localhost:8080/api/hello?name=VXCore
 
 ## 📈 项目状态
 
-### ✅ 已完成功能 (v2.0.0)
+### ✅ 已完成功能 (v1.1.0)
 - **代码生成器**: 根据数据库表结构自动生成三层架构代码
 - **Lambda查询增强**: Join、聚合查询、子查询
 - **批量操作**: batchInsert、batchUpdate、batchDelete
@@ -120,15 +125,18 @@ curl http://localhost:8080/api/hello?name=VXCore
 - **反向代理**: HTTP/WebSocket代理支持
 - **配置元数据**: IDE自动提示和验证
 - **SPI扩展**: 第三方数据库驱动扩展
+- **安全认证**: JWT认证、角色权限控制
+- **依赖注入**: Dagger2 编译时DI
+- **AOP切面编程**: 基于Byte Buddy的声明式AOP
 
 ### 🔄 进行中功能
 - **Code-gen模板引擎**: 代码生成工具
 - **HTML模板引擎**: 视图渲染支持
 
 ### 📋 计划功能
-- **AOP支持**: 注解式切面编程
 - **事件总线**: 注解式事件处理
 - **微服务支持**: 服务发现、配置中心
+- **分布式缓存**: Redis 集成
 
 ## 📖 完整文档
 

@@ -1,7 +1,7 @@
 package cn.qaiu.db.dsl.core.executor;
 
 import cn.qaiu.db.pool.JDBCType;
-import io.vertx.pgclient.PgPool;
+import cn.qaiu.db.util.DatabaseUrlUtil;
 import io.vertx.sqlclient.Pool;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -38,26 +38,42 @@ public class PostgreSQLExecutorStrategy extends AbstractExecutorStrategy {
 
   /**
    * 获取连接池类型
+   * 使用通用Pool类型，避免依赖已废弃的PgPool
    *
-   * @return PgPool类型
+   * @return Pool类型
    */
   @Override
   public Class<? extends Pool> getPoolType() {
-    return PgPool.class;
+    return Pool.class;
   }
 
   /**
    * 检查是否支持指定的连接池
+   * 通过检查连接池的数据库类型来判断，而非类名
    *
    * @param pool 连接池
    * @return 是否支持
    */
   @Override
   public boolean supports(Pool pool) {
-    boolean supported = pool instanceof PgPool || pool.getClass().getName().contains("PgPool");
+    // 优先通过URL检测数据库类型
+    try {
+      JDBCType jdbcType = DatabaseUrlUtil.getJDBCTypeFromPool(pool).toCompletionStage().toCompletableFuture().get();
+      boolean supported = jdbcType == JDBCType.PostgreSQL;
+      if (supported) {
+        LOGGER.debug("PostgreSQL executor strategy supports pool (detected by URL): {}", pool.getClass().getName());
+      }
+      return supported;
+    } catch (Exception e) {
+      LOGGER.debug("Failed to detect database type from pool URL, falling back to class name check");
+    }
+
+    // 后备：通过类名检测
+    String className = pool.getClass().getName().toLowerCase();
+    boolean supported = className.contains("pg") || className.contains("postgres");
 
     if (supported) {
-      LOGGER.debug("PostgreSQL executor strategy supports pool: {}", pool.getClass().getName());
+      LOGGER.debug("PostgreSQL executor strategy supports pool (detected by class name): {}", pool.getClass().getName());
     }
 
     return supported;

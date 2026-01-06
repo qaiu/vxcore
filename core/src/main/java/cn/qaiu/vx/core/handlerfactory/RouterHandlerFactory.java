@@ -18,6 +18,7 @@ import cn.qaiu.vx.core.exception.SystemException;
 import cn.qaiu.vx.core.exception.ValidationException;
 import cn.qaiu.vx.core.interceptor.BeforeInterceptor;
 import cn.qaiu.vx.core.model.JsonResult;
+import cn.qaiu.vx.core.security.SecurityInterceptor;
 import cn.qaiu.vx.core.util.*;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -66,6 +67,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
 
   private final String gatewayPrefix;
   private final ExceptionHandlerManager exceptionHandlerManager;
+  private SecurityInterceptor securityInterceptor;
 
   public RouterHandlerFactory(String gatewayPrefix) {
     this.webSocketHandlerFactory = new WebSocketHandlerFactory(VertxHolder.getVertxInstance());
@@ -73,6 +75,24 @@ public class RouterHandlerFactory implements BaseHttpApi {
     this.gatewayPrefix = gatewayPrefix;
     this.exceptionHandlerManager = new ExceptionHandlerManager();
     initBuiltinExceptionHandlers();
+    initSecurityInterceptor();
+  }
+
+  /** 初始化安全拦截器 */
+  private void initSecurityInterceptor() {
+    try {
+      // 从全局配置获取安全配置
+      JsonObject globalConfig = SharedDataUtil.getGlobalConfig();
+      if (globalConfig != null) {
+        JsonObject securityConfig = globalConfig.getJsonObject("security");
+        if (securityConfig != null && securityConfig.getBoolean("enabled", false)) {
+          this.securityInterceptor = new SecurityInterceptor(securityConfig);
+          LOGGER.info("Security interceptor initialized");
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to initialize security interceptor: {}", e.getMessage());
+    }
   }
 
   /** 初始化内置异常处理器 */
@@ -117,7 +137,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
         .route()
         .handler(
             CorsHandler.create()
-                .addRelativeOrigin(".*")
+                .addOriginWithRegex(".*")
                 .allowCredentials(true)
                 .allowedMethods(httpMethods));
 
@@ -289,6 +309,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
       Router router, Object instance, String routeKey, List<Method> routeMethods) {
     Method firstMethod = routeMethods.get(0);
     RouteMapping mapping = firstMethod.getAnnotation(RouteMapping.class);
+    Class<?> handlerClass = firstMethod.getDeclaringClass();
 
     // 解析路由键
     String[] parts = routeKey.split(":");
@@ -301,6 +322,16 @@ public class RouterHandlerFactory implements BaseHttpApi {
     // 创建路由
     Route route = router.route(method, vertxPath);
     configureHttpRoute(route, mapping, routeMethods, method, path);
+
+    // 添加安全拦截器（如果启用）
+    if (securityInterceptor != null) {
+      route.handler(ctx -> {
+        // 将方法和类信息存入上下文，供安全拦截器使用
+        ctx.put("_handler_method", firstMethod);
+        ctx.put("_handler_class", handlerClass);
+        securityInterceptor.handle(ctx);
+      });
+    }
 
     // 设置处理器
     route
@@ -536,7 +567,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
   private void handleMethodResult(Object data, RoutingContext ctx) {
     if (data == null) return;
 
-    if (data instanceof JsonResult jsonResult) {
+    if (data instanceof JsonResult<?> jsonResult) {
       doFireJsonResultResponse(ctx, jsonResult, jsonResult.getCode());
     } else if (data instanceof JsonObject) {
       doFireJsonObjectResponse(ctx, ((JsonObject) data));
@@ -552,7 +583,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
     future
         .onSuccess(
             res -> {
-              if (res instanceof JsonResult jsonResult) {
+              if (res instanceof JsonResult<?> jsonResult) {
                 doFireJsonResultResponse(ctx, jsonResult, jsonResult.getCode());
               } else if (res instanceof JsonObject) {
                 doFireJsonObjectResponse(ctx, ((JsonObject) res));

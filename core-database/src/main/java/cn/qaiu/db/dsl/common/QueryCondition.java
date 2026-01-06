@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
 public class QueryCondition implements Serializable {
 
   private static final long serialVersionUID = 1L;

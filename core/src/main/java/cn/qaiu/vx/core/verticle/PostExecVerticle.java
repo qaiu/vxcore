@@ -41,6 +41,8 @@ public class PostExecVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise) {
     if (!lock.compareAndSet(false, true)) {
+      // 已有其他实例在执行，直接完成当前实例的启动
+      startPromise.complete();
       return;
     }
     LOGGER.info("PostExecVerticle 开始执行...");

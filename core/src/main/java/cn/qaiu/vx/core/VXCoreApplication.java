@@ -1,6 +1,7 @@
 package cn.qaiu.vx.core;
 
 import cn.qaiu.vx.core.lifecycle.FrameworkLifecycleManager;
+import cn.qaiu.vx.core.util.MainClassHolder;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -107,6 +108,9 @@ public class VXCoreApplication {
    * @param userHandler 用户回调处理器
    */
   public static void run(String[] args, Handler<JsonObject> userHandler) {
+    // 在主线程中检测并保存主类
+    MainClassHolder.detectAndSetMainClass();
+    
     VXCoreApplication app = new VXCoreApplication();
     app.start(args, userHandler)
         .onFailure(

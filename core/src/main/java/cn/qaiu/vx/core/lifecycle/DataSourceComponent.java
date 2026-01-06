@@ -1,5 +1,10 @@
 package cn.qaiu.vx.core.lifecycle;
 
+import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.config.DataSourceConfigResolver;
+import cn.qaiu.vx.core.spi.OrmSyncProvider;
+import cn.qaiu.vx.core.spi.OrmSyncProviderRegistry;
+import cn.qaiu.vx.core.util.MainClassHolder;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -7,7 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 数据源管理组件 负责多数据源的初始化、管理和生命周期 使用接口抽象避免循环依赖
+ * 数据源管理组件 负责多数据源的初始化、管理和生命周期 
+ * 使用接口抽象避免循环依赖
+ * 
+ * <p>使用 {@link DataSourceConfigResolver} 解析数据源配置，
+ * 支持多种配置格式（database/datasources/dataSource）和配置项别名。
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -30,29 +39,17 @@ public class DataSourceComponent implements LifecycleComponent {
             LOGGER.info("Initializing DataSource component...");
             LOGGER.info("Config keys: {}", config.fieldNames());
 
-            // 检查是否有数据源配置（兼容多种配置格式）
-            // 优先级: database > datasources > dataSource
-            JsonObject databaseConfig = config.getJsonObject("database");
-            LOGGER.info("database config: {}", databaseConfig);
-            if (databaseConfig == null || databaseConfig.isEmpty()) {
-              databaseConfig = config.getJsonObject("datasources");
-              LOGGER.info("datasources config: {}", databaseConfig);
-            }
-            if (databaseConfig == null || databaseConfig.isEmpty()) {
-              // 兼容旧的 dataSource 配置格式
-              JsonObject oldDataSource = config.getJsonObject("dataSource");
-              LOGGER.info("dataSource config: {}", oldDataSource);
-              if (oldDataSource != null && !oldDataSource.isEmpty()) {
-                databaseConfig = new JsonObject().put("primary", oldDataSource);
-                LOGGER.info("Using legacy 'dataSource' configuration format in DataSourceComponent");
-              }
-            }
+            // 使用 DataSourceConfigResolver 解析配置（支持别名和多种配置格式）
+            DataSourceConfigResolver configResolver = new DataSourceConfigResolver(config);
+            JsonObject databaseConfig = configResolver.resolveDataSourcesConfig();
+            
             if (databaseConfig == null || databaseConfig.isEmpty()) {
               LOGGER.info("No database configuration found, skipping datasource initialization");
               promise.complete();
               return;
             }
-            LOGGER.info("Found datasource configuration with {} entries: {}", databaseConfig.fieldNames().size(), databaseConfig.fieldNames());
+            LOGGER.info("Found datasource configuration with {} entries: {}", 
+                databaseConfig.fieldNames().size(), databaseConfig.fieldNames());
 
             // 使用SPI模式查找数据源提供者
             DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
@@ -70,10 +67,15 @@ public class DataSourceComponent implements LifecycleComponent {
                   "Initializing datasources and SQL executors during component initialization...");
               provider
                   .initializeDataSources(vertx, config)
+                  .compose(v -> {
+                    LOGGER.info(
+                        "DataSources and SQL executors initialized successfully");
+                    // 数据源初始化完成后，执行ORM同步
+                    return executeOrmSync();
+                  })
                   .onSuccess(
                       v -> {
-                        LOGGER.info(
-                            "DataSources and SQL executors initialized successfully during component initialization");
+                        LOGGER.info("DataSource component initialization completed");
                         promise.complete();
                       })
                   .onFailure(
@@ -103,20 +105,122 @@ public class DataSourceComponent implements LifecycleComponent {
             LOGGER.info("Starting DataSource component...");
 
             if (dataSourceProvider != null) {
-              // 数据源已经在initialize阶段初始化完成，这里只需要验证状态
+              // 数据源和ORM同步已在initialize阶段完成
               LOGGER.info(
-                  "DataSource component started successfully with provider: {} (already initialized)",
+                  "DataSource component started successfully with provider: {}",
                   dataSourceProvider.getName());
-              promise.complete();
             } else {
               LOGGER.info("No DataSource provider available, component started without datasource");
-              promise.complete();
             }
+            promise.complete();
           } catch (Exception e) {
             LOGGER.error("Failed to start datasource component", e);
             promise.fail(e);
           }
         });
+  }
+
+  /**
+   * 执行ORM同步（通过SPI发现的OrmSyncProvider）
+   */
+  private Future<Void> executeOrmSync() {
+    return Future.future(promise -> {
+      try {
+        // 获取主类
+        Class<?> mainClass = findMainClass();
+        if (mainClass == null) {
+          LOGGER.info("No main class found with @App annotation, skipping ORM sync");
+          promise.complete();
+          return;
+        }
+        
+        LOGGER.info("Found main class for ORM sync: {}", mainClass.getName());
+        
+        // 初始化OrmSyncProviderRegistry并获取提供者
+        OrmSyncProviderRegistry registry = OrmSyncProviderRegistry.getInstance();
+        registry.initialize();
+        
+        OrmSyncProvider provider = registry.getPreferredProvider();
+        if (provider == null) {
+          LOGGER.info("No OrmSyncProvider found, skipping ORM sync");
+          promise.complete();
+          return;
+        }
+        
+        LOGGER.info("Using OrmSyncProvider: {}", provider.getName());
+        
+        // 检查是否需要同步
+        if (!provider.shouldSync(mainClass, globalConfig)) {
+          LOGGER.info("ORM sync not required based on configuration");
+          promise.complete();
+          return;
+        }
+        
+        // 执行同步
+        LOGGER.info("Starting ORM/DDL synchronization...");
+        provider.sync(vertx, mainClass, globalConfig)
+            .onSuccess(result -> {
+              if (result.isSuccess()) {
+                LOGGER.info("ORM sync completed successfully: {}", result.getMessage());
+              } else {
+                LOGGER.warn("ORM sync completed with status: {}", result.getMessage());
+              }
+              promise.complete();
+            })
+            .onFailure(err -> {
+              LOGGER.error("ORM sync failed", err);
+              promise.fail(err);
+            });
+            
+      } catch (Exception e) {
+        LOGGER.error("Failed to execute ORM sync", e);
+        promise.fail(e);
+      }
+    });
+  }
+  
+  /**
+   * 查找主类（优先从MainClassHolder获取）
+   */
+  private Class<?> findMainClass() {
+    // 1. 优先从MainClassHolder获取（在VXCoreApplication.run时已保存）
+    Class<?> mainClass = MainClassHolder.getMainClass();
+    if (mainClass != null) {
+      return mainClass;
+    }
+    
+    // 2. 尝试从堆栈跟踪中查找（作为fallback）
+    try {
+      StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+      
+      for (StackTraceElement element : stackTrace) {
+        if ("main".equals(element.getMethodName())) {
+          String className = element.getClassName();
+          try {
+            Class<?> clazz = Class.forName(className);
+            if (clazz.isAnnotationPresent(App.class)) {
+              return clazz;
+            }
+          } catch (ClassNotFoundException e) {
+            LOGGER.debug("Class not found: {}", className);
+          }
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.debug("Failed to find main class from stack trace: {}", e.getMessage());
+    }
+    
+    // 3. 尝试从配置中获取
+    if (globalConfig != null && globalConfig.containsKey("mainClass")) {
+      try {
+        String mainClassName = globalConfig.getString("mainClass");
+        return Class.forName(mainClassName);
+      } catch (ClassNotFoundException e) {
+        LOGGER.warn("Main class from config not found: {}", e.getMessage());
+      }
+    }
+    
+    return null;
   }
 
   @Override

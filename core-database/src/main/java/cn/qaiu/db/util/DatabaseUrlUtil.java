@@ -1,6 +1,9 @@
 package cn.qaiu.db.util;
 
 import cn.qaiu.db.pool.JDBCType;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -9,8 +12,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
 import org.postgresql.jdbc.PgConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DatabaseUrlUtil {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseUrlUtil.class);
 
   public static String getDatabaseIdentifier(java.sql.Connection conn) {
     if (conn == null) return "Unknown";
@@ -257,5 +264,47 @@ public class DatabaseUrlUtil {
       return null;
     }
     return JDBCType.getJDBCTypeByURL(jdbcUrl);
+  }
+
+  /**
+   * 从Pool连接中获取数据库类型（异步方式）
+   * 这是统一的数据库类型检测方法，供ddl包下的类使用
+   *
+   * @param pool 数据库连接池
+   * @return 数据库类型Future，检测失败时默认返回MySQL
+   */
+  public static Future<JDBCType> getJDBCTypeFromPool(Pool pool) {
+    Promise<JDBCType> promise = Promise.promise();
+
+    pool.getConnection()
+        .onSuccess(
+            conn -> {
+              try {
+                JDBCType dbType = getJDBCType(conn);
+                if (dbType != null) {
+                  LOGGER.debug("Detected database type from Pool: {}", dbType);
+                  promise.complete(dbType);
+                } else {
+                  LOGGER.warn("Failed to detect database type from Pool, using MySQL as default");
+                  promise.complete(JDBCType.MySQL);
+                }
+              } catch (Exception e) {
+                LOGGER.warn(
+                    "Error detecting database type from Pool: {}, using MySQL as default",
+                    e.getMessage());
+                promise.complete(JDBCType.MySQL);
+              } finally {
+                conn.close();
+              }
+            })
+        .onFailure(
+            throwable -> {
+              LOGGER.warn(
+                  "Failed to get connection from Pool: {}, using MySQL as default",
+                  throwable.getMessage());
+              promise.complete(JDBCType.MySQL);
+            });
+
+    return promise.future();
   }
 }

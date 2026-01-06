@@ -28,24 +28,24 @@ public class EnhancedCreateTable {
 
   /** 创建表（自动从Pool检测数据库类型） */
   public static Future<Void> createTable(Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool).compose(dbType -> CreateTable.createTable(pool, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> CreateTable.createTable(pool, dbType));
   }
 
   /** 创建表并启用严格DDL映射（自动从Pool检测数据库类型） */
   public static Future<Void> createTableWithStrictMapping(Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool)
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
         .compose(dbType -> createTableWithStrictMapping(pool, dbType));
   }
 
   /** 同步表结构（自动从Pool检测数据库类型） */
   public static Future<List<TableStructureComparator.TableDifference>> syncTableStructure(
       Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool).compose(dbType -> synchronizeTable(pool, clz, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> synchronizeTable(pool, clz, dbType));
   }
 
   /** 生成表结构报告（自动从Pool检测数据库类型） */
   public static Future<String> generateTableStructureReport(Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool)
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
         .compose(dbType -> generateTableStructureReport(pool, dbType));
   }
 
@@ -124,6 +124,31 @@ public class EnhancedCreateTable {
     return ReflectionUtil.getReflections().getTypesAnnotatedWith(DdlTable.class);
   }
 
+  /**
+   * 获取指定包下使用DdlTable注解的类
+   * 
+   * @param packageNames 包名数组，为空或null时扫描默认包
+   * @return 带有@DdlTable注解的类集合
+   */
+  public static Set<Class<?>> getDdlTableClasses(String... packageNames) {
+    if (packageNames == null || packageNames.length == 0) {
+      return getDdlTableClasses();
+    }
+    
+    Set<Class<?>> result = new java.util.HashSet<>();
+    for (String packageName : packageNames) {
+      if (packageName != null && !packageName.isEmpty()) {
+        try {
+          result.addAll(ReflectionUtil.getReflections(packageName)
+              .getTypesAnnotatedWith(DdlTable.class));
+        } catch (Exception e) {
+          LOGGER.warn("Failed to scan package '{}': {}", packageName, e.getMessage());
+        }
+      }
+    }
+    return result.isEmpty() ? getDdlTableClasses() : result;
+  }
+
   /** 获取所有使用Table注解的类（兼容原有） */
   public static Set<Class<?>> getTableClasses() {
     return ReflectionUtil.getReflections().getTypesAnnotatedWith(Table.class);
@@ -131,7 +156,7 @@ public class EnhancedCreateTable {
 
   /** 检查是否有表需要同步（自动从Pool检测数据库类型） */
   public static Future<Boolean> hasTablesNeedingSync(Pool pool) {
-    return getDatabaseTypeFromPool(pool).compose(dbType -> hasTablesNeedingSync(pool, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> hasTablesNeedingSync(pool, dbType));
   }
 
   /** 检查是否有表需要同步 */
@@ -160,7 +185,7 @@ public class EnhancedCreateTable {
 
   /** 生成表结构报告（自动从Pool检测数据库类型） */
   public static Future<String> generateTableStructureReport(Pool pool) {
-    return getDatabaseTypeFromPool(pool)
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
         .compose(dbType -> generateTableStructureReport(pool, dbType));
   }
 
@@ -202,47 +227,6 @@ public class EnhancedCreateTable {
               promise.complete(report.toString());
             })
         .onFailure(promise::fail);
-
-    return promise.future();
-  }
-
-  /**
-   * 从Pool连接中获取数据库类型 优先级：Pool的JDBC类型 > 注解中的类型
-   *
-   * @param pool 数据库连接池
-   * @return 数据库类型Future
-   */
-  private static Future<JDBCType> getDatabaseTypeFromPool(Pool pool) {
-    Promise<JDBCType> promise = Promise.promise();
-
-    pool.getConnection()
-        .onSuccess(
-            conn -> {
-              try {
-                JDBCType dbType = DatabaseUrlUtil.getJDBCType(conn);
-                if (dbType != null) {
-                  LOGGER.debug("Detected database type from Pool: {}", dbType);
-                  promise.complete(dbType);
-                } else {
-                  LOGGER.warn("Failed to detect database type from Pool, using MySQL as default");
-                  promise.complete(JDBCType.MySQL);
-                }
-              } catch (Exception e) {
-                LOGGER.warn(
-                    "Error detecting database type from Pool: {}, using MySQL as default",
-                    e.getMessage());
-                promise.complete(JDBCType.MySQL);
-              } finally {
-                conn.close();
-              }
-            })
-        .onFailure(
-            throwable -> {
-              LOGGER.warn(
-                  "Failed to get connection from Pool: {}, using MySQL as default",
-                  throwable.getMessage());
-              promise.complete(JDBCType.MySQL);
-            });
 
     return promise.future();
   }

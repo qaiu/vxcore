@@ -10,6 +10,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -26,6 +28,8 @@ import picocli.CommandLine.Parameters;
     mixinStandardHelpOptions = true,
     version = "1.0.0")
 public class GeneratorCli implements Callable<Integer> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GeneratorCli.class);
 
   // 数据库配置
   @Option(
@@ -175,8 +179,8 @@ public class GeneratorCli implements Callable<Integer> {
       return 0;
 
     } catch (Exception e) {
+      LOGGER.error("Code generation failed", e);
       System.err.println("代码生成失败: " + e.getMessage());
-      e.printStackTrace();
       return 1;
     }
   }

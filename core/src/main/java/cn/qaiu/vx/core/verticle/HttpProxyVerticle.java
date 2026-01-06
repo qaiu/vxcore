@@ -30,14 +30,22 @@ public class HttpProxyVerticle extends AbstractVerticle {
   private JsonObject proxyServerConf;
 
   @Override
-  public void start() {
-    proxyServerConf =
-        ((JsonObject) vertx.sharedData().getLocalMap(LOCAL).get(GLOBAL_CONFIG))
-            .getJsonObject("proxy-server");
-    proxyPreConf =
-        ((JsonObject) vertx.sharedData().getLocalMap(LOCAL).get(GLOBAL_CONFIG))
-            .getJsonObject("proxy-pre");
-    Integer serverPort = proxyServerConf.getInteger("port");
+  public void start(io.vertx.core.Promise<Void> startPromise) {
+    try {
+      JsonObject globalConfig = (JsonObject) vertx.sharedData().getLocalMap(LOCAL).get(GLOBAL_CONFIG);
+      if (globalConfig == null) {
+        startPromise.fail("Global configuration not found");
+        return;
+      }
+      
+      proxyServerConf = globalConfig.getJsonObject("proxy-server");
+      if (proxyServerConf == null) {
+        startPromise.fail("Missing proxy-server configuration");
+        return;
+      }
+      
+      proxyPreConf = globalConfig.getJsonObject("proxy-pre");
+      Integer serverPort = proxyServerConf.getInteger("port");
 
     ProxyOptions proxyOptions = null;
     if (proxyPreConf != null && StringUtils.isNotBlank(proxyPreConf.getString("ip"))) {
@@ -73,8 +81,18 @@ public class HttpProxyVerticle extends AbstractVerticle {
     // 启动 HTTP 代理服务器
     server
         .listen(serverPort)
-        .onSuccess(res -> LOGGER.info("HTTP Proxy server started on port {}", serverPort))
-        .onFailure(err -> LOGGER.error("Failed to start HTTP Proxy server: " + err.getMessage()));
+        .onSuccess(res -> {
+          LOGGER.info("HTTP Proxy server started on port {}", serverPort);
+          startPromise.complete();
+        })
+        .onFailure(err -> {
+          LOGGER.error("Failed to start HTTP Proxy server: {}", err.getMessage());
+          startPromise.fail(err);
+        });
+    } catch (Exception e) {
+      LOGGER.error("Failed to initialize HTTP Proxy server", e);
+      startPromise.fail(e);
+    }
   }
 
   // 处理 HTTP CONNECT 请求，用于代理 HTTPS 流量
@@ -218,7 +236,7 @@ public class HttpProxyVerticle extends AbstractVerticle {
             })
         .onFailure(
             err -> {
-              err.printStackTrace();
+              LOGGER.error("Failed to forward HTTP request", err);
               clientRequest.response().setStatusCode(502).end("Bad Gateway: Request failed");
             });
   }

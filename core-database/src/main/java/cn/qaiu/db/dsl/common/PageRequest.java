@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
 public class PageRequest implements Serializable {
 
   private static final long serialVersionUID = 1L;

@@ -1,0 +1,23 @@
+# 测试环境服务配置
+server:
+  port: 0  # 使用随机端口避免端口冲突
+  contextPath: /
+  enableDatabase: false
+
+# vertx核心线程配置
+vertx:
+  eventLoopPoolSize: 2
+  workerPoolSize: 4
+
+# vertx-service配置
+custom:
+  asyncServiceInstances: 2
+  baseLocations: cn.qaiu.vx.core
+  routeTimeOut: 30000
+  ignoresReg:
+    - .*/test.*$
+
+# 安全配置（测试时禁用）
+server-auth:
+  ref-enable: false
+  jwt-enable: false

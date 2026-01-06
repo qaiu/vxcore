@@ -212,7 +212,7 @@ mvn archetype:generate \
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vxcore.version>2.0.0</vxcore.version>
+        <vxcore.version>1.1.0</vxcore.version>
         <vertx.version>4.5.2</vertx.version>
         <jooq.version>3.19.2</jooq.version>
     </properties>

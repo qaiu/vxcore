@@ -1,7 +1,6 @@
 package cn.qaiu.vx.core.model;
 
 import cn.qaiu.vx.core.util.CastUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonObject;
 import java.io.Serial;
 import java.io.Serializable;
@@ -136,8 +135,6 @@ public class JsonResult<T> implements Serializable {
   public JsonObject toJsonObject() {
     return JsonObject.mapFrom(this);
   }
-
-  private static final ObjectMapper mapper = new ObjectMapper();
 
   // 转为json对象
   public static JsonResult<?> toJsonResult(JsonObject json) {

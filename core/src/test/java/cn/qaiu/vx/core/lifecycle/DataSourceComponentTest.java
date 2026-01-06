@@ -347,6 +347,11 @@ public class DataSourceComponentTest {
           public java.util.List<String> getDataSourceNames() {
             return new java.util.ArrayList<>(dataSourceNames);
           }
+
+          @Override
+          public void setDefaultDataSource(String name) {
+            // 测试用空实现
+          }
         };
       }
 
@@ -423,6 +428,11 @@ public class DataSourceComponentTest {
           @Override
           public java.util.List<String> getDataSourceNames() {
             return new java.util.ArrayList<>(dataSourceNames);
+          }
+
+          @Override
+          public void setDefaultDataSource(String name) {
+            // 测试用空实现
           }
         };
       }

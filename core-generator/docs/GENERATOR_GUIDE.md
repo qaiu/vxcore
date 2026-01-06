@@ -54,7 +54,7 @@ java -jar core-generator.jar \
 <plugin>
     <groupId>cn.qaiu</groupId>
     <artifactId>core-generator-maven-plugin</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <executions>
         <execution>
             <goals>
@@ -617,6 +617,12 @@ src/main/java/
    ```
 
 ## 更新日志
+
+### v1.1.0 (2026-01-07)
+- AOP 切面编程支持
+- 安全认证框架集成
+- Dagger2 依赖注入支持
+- 性能优化和 Bug 修复
 
 ### v1.0.0 (2024-01-01)
 - 初始版本发布

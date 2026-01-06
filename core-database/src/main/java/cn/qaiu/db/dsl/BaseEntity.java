@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
 public abstract class BaseEntity implements Serializable {
 
   private static final long serialVersionUID = 1L;

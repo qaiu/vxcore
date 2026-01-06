@@ -2,7 +2,6 @@ package cn.qaiu.db.ddl;
 
 import cn.qaiu.db.pool.JDBCType;
 import cn.qaiu.db.util.DatabaseUrlUtil;
-import cn.qaiu.vx.core.util.ReflectionUtil;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.sqlclient.Pool;
@@ -24,7 +23,7 @@ public class TableStructureSynchronizer {
   /** 同步所有表结构（自动从Pool检测数据库类型） */
   public static Future<List<TableStructureComparator.TableDifference>> synchronizeAllTables(
       Pool pool) {
-    return getDatabaseTypeFromPool(pool).compose(dbType -> synchronizeAllTables(pool, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> synchronizeAllTables(pool, dbType));
   }
 
   /** 同步所有表结构 */
@@ -33,9 +32,8 @@ public class TableStructureSynchronizer {
     Promise<List<TableStructureComparator.TableDifference>> promise = Promise.promise();
 
     try {
-      // 获取所有使用DdlTable注解的类
-      Set<Class<?>> ddlTableClasses =
-          ReflectionUtil.getReflections().getTypesAnnotatedWith(DdlTable.class);
+      // 获取所有使用DdlTable注解的类（复用EnhancedCreateTable的方法）
+      Set<Class<?>> ddlTableClasses = EnhancedCreateTable.getDdlTableClasses();
 
       if (ddlTableClasses.isEmpty()) {
         LOGGER.warn("No DdlTable annotated classes found");
@@ -75,7 +73,7 @@ public class TableStructureSynchronizer {
   /** 同步单个表结构（自动从Pool检测数据库类型） */
   public static Future<List<TableStructureComparator.TableDifference>> synchronizeTable(
       Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool).compose(dbType -> synchronizeTable(pool, clz, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> synchronizeTable(pool, clz, dbType));
   }
 
   /** 同步单个表结构 */
@@ -284,7 +282,7 @@ public class TableStructureSynchronizer {
   /** 强制同步表结构（自动从Pool检测数据库类型，忽略版本检查） */
   public static Future<List<TableStructureComparator.TableDifference>> forceSynchronizeTable(
       Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool)
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
         .compose(dbType -> forceSynchronizeTable(pool, clz, dbType));
   }
 
@@ -323,7 +321,7 @@ public class TableStructureSynchronizer {
 
   /** 检查表是否需要同步（自动从Pool检测数据库类型） */
   public static Future<Boolean> needsSynchronization(Pool pool, Class<?> clz) {
-    return getDatabaseTypeFromPool(pool).compose(dbType -> needsSynchronization(pool, clz, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> needsSynchronization(pool, clz, dbType));
   }
 
   /** 检查表是否需要同步 */
@@ -363,47 +361,6 @@ public class TableStructureSynchronizer {
       LOGGER.error("Failed to check synchronization status for: {}", clz.getSimpleName(), e);
       promise.fail(e);
     }
-
-    return promise.future();
-  }
-
-  /**
-   * 从Pool连接中获取数据库类型 优先级：Pool的JDBC类型 > 注解中的类型
-   *
-   * @param pool 数据库连接池
-   * @return 数据库类型Future
-   */
-  private static Future<JDBCType> getDatabaseTypeFromPool(Pool pool) {
-    Promise<JDBCType> promise = Promise.promise();
-
-    pool.getConnection()
-        .onSuccess(
-            conn -> {
-              try {
-                JDBCType dbType = DatabaseUrlUtil.getJDBCType(conn);
-                if (dbType != null) {
-                  LOGGER.debug("Detected database type from Pool: {}", dbType);
-                  promise.complete(dbType);
-                } else {
-                  LOGGER.warn("Failed to detect database type from Pool, using MySQL as default");
-                  promise.complete(JDBCType.MySQL);
-                }
-              } catch (Exception e) {
-                LOGGER.warn(
-                    "Error detecting database type from Pool: {}, using MySQL as default",
-                    e.getMessage());
-                promise.complete(JDBCType.MySQL);
-              } finally {
-                conn.close();
-              }
-            })
-        .onFailure(
-            throwable -> {
-              LOGGER.warn(
-                  "Failed to get connection from Pool: {}, using MySQL as default",
-                  throwable.getMessage());
-              promise.complete(JDBCType.MySQL);
-            });
 
     return promise.future();
   }

@@ -141,8 +141,6 @@ public class ParameterMatcher {
     Parameter[] parameters = method.getParameters();
     int score = 0;
 
-    Map<String, String> pathParams = ctx.pathParams();
-    MultiMap queryParams = ctx.queryParams();
     boolean hasRequestBody = ctx.body() != null && ctx.body().asJsonObject() != null;
 
     for (int i = 0; i < parameters.length; i++) {

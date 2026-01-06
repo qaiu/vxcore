@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
 @DdlTable(
     value = "test_simple", // 表名
     keyFields = "id", // 主键字段

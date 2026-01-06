@@ -239,7 +239,7 @@ public class EnhancedTypeMapper {
     if (targetType.isEnum()) {
       if (value instanceof String) {
         try {
-          @SuppressWarnings("unchecked")
+          @SuppressWarnings({"unchecked", "rawtypes"})
           T enumValue = (T) Enum.valueOf((Class<? extends Enum>) targetType, (String) value);
           return enumValue;
         } catch (IllegalArgumentException e) {

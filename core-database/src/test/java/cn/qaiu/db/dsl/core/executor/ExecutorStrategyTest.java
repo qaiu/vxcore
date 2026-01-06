@@ -54,7 +54,8 @@ class ExecutorStrategyTest {
 
     assertEquals(JDBCType.MySQL, strategy.getSupportedType());
     assertEquals(SQLDialect.MYSQL, strategy.getSQLDialect());
-    assertEquals(io.vertx.mysqlclient.MySQLPool.class, strategy.getPoolType());
+    // 使用通用Pool类型，避免依赖已废弃的MySQLPool
+    assertEquals(io.vertx.sqlclient.Pool.class, strategy.getPoolType());
   }
 
   @Test
@@ -63,7 +64,8 @@ class ExecutorStrategyTest {
 
     assertEquals(JDBCType.PostgreSQL, strategy.getSupportedType());
     assertEquals(SQLDialect.POSTGRES, strategy.getSQLDialect());
-    assertEquals(io.vertx.pgclient.PgPool.class, strategy.getPoolType());
+    // 使用通用Pool类型，避免依赖已废弃的PgPool
+    assertEquals(io.vertx.sqlclient.Pool.class, strategy.getPoolType());
   }
 
   @Test

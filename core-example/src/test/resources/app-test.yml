@@ -1,0 +1,37 @@
+# 测试环境服务配置
+server:
+  port: 0  # 使用随机端口避免端口冲突
+  contextPath: /
+  enableDatabase: false  # 测试时禁用数据库
+  domainName: http://127.0.0.1:8080
+
+# vertx核心线程配置
+vertx:
+  eventLoopPoolSize: 2
+  workerPoolSize: 4
+
+# vertx-service配置
+custom:
+  asyncServiceInstances: 2
+  baseLocations: cn.qaiu
+  routeTimeOut: 30000
+  ignoresReg:
+    - .*/test.*$
+
+  entityPackagesReg:
+    - ^cn\.qaiu\.example\..*
+
+# 数据源配置（测试用H2内存数据库）
+dataSource:
+  provider_class: io.vertx.ext.jdbc.spi.impl.HikariCPDataSourceProvider
+  jdbcUrl: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+  driverClassName: org.h2.Driver
+  username: sa
+  password: ''
+
+# 安全配置
+server-auth:
+  ref-enable: false
+  jwt-enable: false
+  jwt-auth-reg: []
+  jwt-ignores-reg: []
