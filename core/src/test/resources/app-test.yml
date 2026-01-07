@@ -17,6 +17,15 @@ custom:
   ignoresReg:
     - .*/test.*$
 
+# 数据库配置（测试用）
+database:
+  default:
+    type: h2
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password: ""
+    maxPoolSize: 5
+
 # 安全配置（测试时禁用）
 server-auth:
   ref-enable: false
