@@ -67,7 +67,10 @@ public class CodeGenCli {
       String fullPath =
           outputPath + "/" + packageInfo.getEntityPackagePath() + "/" + className + ".java";
       java.nio.file.Path filePath = java.nio.file.Paths.get(fullPath);
-      java.nio.file.Files.createDirectories(filePath.getParent());
+      java.nio.file.Path parentDir = filePath.getParent();
+      if (parentDir != null) {
+        java.nio.file.Files.createDirectories(parentDir);
+      }
       java.nio.file.Files.write(filePath, result.getBytes(StandardCharsets.UTF_8));
 
       return CodeGenResult.success("Entity generated successfully: " + fullPath);
@@ -124,7 +127,10 @@ public class CodeGenCli {
       String fullPath =
           outputPath + "/" + packageInfo.getDaoPackagePath() + "/" + className + "Dao.java";
       java.nio.file.Path filePath = java.nio.file.Paths.get(fullPath);
-      java.nio.file.Files.createDirectories(filePath.getParent());
+      java.nio.file.Path parentDir = filePath.getParent();
+      if (parentDir != null) {
+        java.nio.file.Files.createDirectories(parentDir);
+      }
       java.nio.file.Files.write(filePath, result.getBytes(StandardCharsets.UTF_8));
 
       return CodeGenResult.success("DAO generated successfully: " + fullPath);
@@ -186,7 +192,10 @@ public class CodeGenCli {
               + className
               + "Controller.java";
       java.nio.file.Path filePath = java.nio.file.Paths.get(fullPath);
-      java.nio.file.Files.createDirectories(filePath.getParent());
+      java.nio.file.Path parentDir = filePath.getParent();
+      if (parentDir != null) {
+        java.nio.file.Files.createDirectories(parentDir);
+      }
       java.nio.file.Files.write(filePath, result.getBytes(StandardCharsets.UTF_8));
 
       return CodeGenResult.success("Controller generated successfully: " + fullPath);

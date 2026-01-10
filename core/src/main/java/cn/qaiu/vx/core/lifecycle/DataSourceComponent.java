@@ -31,7 +31,7 @@ public class DataSourceComponent implements LifecycleComponent {
   @Override
   public Future<Void> initialize(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
-    this.globalConfig = config;
+    this.globalConfig = config != null ? config.copy() : new JsonObject();
 
     return Future.future(
         promise -> {

@@ -116,7 +116,7 @@ public class VXCoreApplication {
         .onFailure(
             error -> {
               LOGGER.error("Application startup failed", error);
-              System.exit(1);
+              throw new RuntimeException("Application startup failed", error);
             });
   }
 

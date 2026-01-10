@@ -34,7 +34,7 @@ public class ConfigBinder {
     /**
      * 注册默认类型绑定策略
      */
-    private void registerDefaultStrategies() {
+    private final void registerDefaultStrategies() {
         // 基本类型策略
         registerStrategy(String.class, (value, targetType) -> value != null ? value.toString() : null);
         
@@ -89,7 +89,7 @@ public class ConfigBinder {
         registerStrategy(Boolean.class, (value, targetType) -> {
             if (value instanceof Boolean) return (Boolean) value;
             if (value != null) return Boolean.parseBoolean(value.toString());
-            return null;
+            return Boolean.FALSE;
         });
         
         registerStrategy(boolean.class, (value, targetType) -> {

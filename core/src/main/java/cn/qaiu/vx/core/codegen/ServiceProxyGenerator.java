@@ -24,14 +24,8 @@ public class ServiceProxyGenerator extends AbstractProcessor {
 
   private Messager messager;
   private Filer filer;
-  @SuppressWarnings("unused") // Reserved for future use in template processing
-  private Elements elementUtils;
-  @SuppressWarnings("unused") // Reserved for future use in template processing
-  private Types typeUtils;
 
   // 当前处理的接口信息
-  @SuppressWarnings("unused") // May be used in future template processing
-  private TypeElement currentInterface;
   private String currentConcreteType;
   private String currentConcreteIdType;
 
@@ -40,8 +34,7 @@ public class ServiceProxyGenerator extends AbstractProcessor {
     super.init(processingEnv);
     this.messager = processingEnv.getMessager();
     this.filer = processingEnv.getFiler();
-    this.elementUtils = processingEnv.getElementUtils();
-    this.typeUtils = processingEnv.getTypeUtils();
+    // elementUtils 和 typeUtils 删除，因为当前未使用
   }
 
   @Override
@@ -305,7 +298,7 @@ public class ServiceProxyGenerator extends AbstractProcessor {
 
   /** 设置当前接口信息 */
   private void setCurrentInterfaceInfo(TypeElement serviceInterface) {
-    this.currentInterface = serviceInterface;
+    // currentInterface 字段删除，因为当前未使用
 
     // 从接口的泛型参数中获取具体类型
     List<? extends TypeParameterElement> typeParams = serviceInterface.getTypeParameters();
@@ -458,14 +451,8 @@ public class ServiceProxyGenerator extends AbstractProcessor {
         writer.write(
             "    return _vertx.eventBus().<JsonArray>request(_address, _json, _deliveryOptions).map(msg -> {\n");
         writer.write("      return msg.body();\n");
-      } else if (isPrimitiveOrBasicType(innerType)) {
-        writer.write(
-            "    return _vertx.eventBus().<"
-                + innerType
-                + ">request(_address, _json, _deliveryOptions).map(msg -> {\n");
-        writer.write("      return msg.body();\n");
       } else {
-        // 实体类型
+        // 基本类型或实体类型
         writer.write(
             "    return _vertx.eventBus().<"
                 + innerType
@@ -702,7 +689,7 @@ public class ServiceProxyGenerator extends AbstractProcessor {
   private void generateHandlerMethodCase(Writer writer, ExecutableElement method)
       throws IOException {
     String methodName = method.getSimpleName().toString();
-    String returnType = replaceGenericTypes(method.getReturnType().toString());
+    // returnType 变量已删除，因为未使用
 
     writer.write("        case \"" + methodName + "\": {\n");
 

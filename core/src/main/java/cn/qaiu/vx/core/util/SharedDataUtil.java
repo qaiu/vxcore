@@ -20,7 +20,7 @@ public class SharedDataUtil {
    *
    * @return Vert.x共享数据对象
    */
-  public static SharedData shareData() {
+  public static synchronized SharedData shareData() {
     if (sharedData == null) {
       try {
         sharedData = VertxHolder.getVertxInstance().sharedData();

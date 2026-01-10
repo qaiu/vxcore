@@ -49,7 +49,7 @@ public class AopComponent implements LifecycleComponent {
     @Override
     public Future<Void> initialize(Vertx vertx, JsonObject config) {
         this.vertx = vertx;
-        this.aopConfig = config.getJsonObject(CONFIG_KEY, new JsonObject());
+        this.aopConfig = config.getJsonObject(CONFIG_KEY, new JsonObject()).copy();
         this.enabled = aopConfig.getBoolean(ENABLED_KEY, true);
 
         if (!enabled) {
@@ -135,10 +135,10 @@ public class AopComponent implements LifecycleComponent {
     /**
      * 获取 AOP 配置
      *
-     * @return AOP 配置对象
+     * @return AOP 配置对象的不可变副本
      */
     public JsonObject getAopConfig() {
-        return aopConfig;
+        return aopConfig == null ? new JsonObject() : aopConfig.copy();
     }
 
     /**

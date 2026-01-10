@@ -199,7 +199,7 @@ public class SecurityConfig {
     }
 
     public String[] getAuthPaths() {
-        return authPaths != null ? authPaths.clone() : null;
+        return authPaths != null ? authPaths.clone() : new String[0];
     }
 
     public void setAuthPaths(String[] authPaths) {
@@ -207,7 +207,7 @@ public class SecurityConfig {
     }
 
     public String[] getIgnorePaths() {
-        return ignorePaths != null ? ignorePaths.clone() : null;
+        return ignorePaths != null ? ignorePaths.clone() : new String[0];
     }
 
     public void setIgnorePaths(String[] ignorePaths) {
@@ -239,7 +239,7 @@ public class SecurityConfig {
     }
 
     public String[] getAllowedDomains() {
-        return allowedDomains != null ? allowedDomains.clone() : null;
+        return allowedDomains != null ? allowedDomains.clone() : new String[0];
     }
 
     public void setAllowedDomains(String[] allowedDomains) {

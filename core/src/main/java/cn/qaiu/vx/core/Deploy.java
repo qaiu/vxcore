@@ -219,9 +219,7 @@ public final class Deploy {
                    \\ \\ / // /__\\\\[ `/'`\\]| |    [ \\ [  ]|____   _|\s
                     \\ V / | \\__., | |    | |, _  > '  <     _| |_ \s
                      \\_/   '.__.'[___]   \\__/(_)[__]`\\_]   |_____|\s
-                                                      Version: %s; Framework version: %s; %s©%d.
-
-                """;
+                                                      Version: %s; Framework version: %s; %s©%d.%n%n                """;
 
     System.out.printf(
         logoTemplate, CommonUtil.getAppVersion(), "4x", conf.getString("copyright"), year);

@@ -274,7 +274,11 @@ public class CodeGenerator {
       if (templatePath != null && Files.exists(Paths.get(templatePath))) {
         return Files.list(Paths.get(templatePath))
             .filter(path -> path.toString().endsWith(".ftl"))
-            .map(path -> path.getFileName().toString())
+            .map(path -> {
+              java.nio.file.Path fileName = path.getFileName();
+              return fileName != null ? fileName.toString() : "";
+            })
+            .filter(name -> !name.isEmpty())
             .toArray(String[]::new);
       } else {
         // 从classpath获取模板

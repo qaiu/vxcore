@@ -35,7 +35,7 @@ public class ConfigurationComponent implements LifecycleComponent {
   @Override
   public Future<Void> initialize(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
-    this.globalConfig = config;
+    this.globalConfig = config != null ? config.copy() : new JsonObject();
 
     return Future.future(
         promise -> {
@@ -200,10 +200,10 @@ public class ConfigurationComponent implements LifecycleComponent {
 
   /**
    * 获取全局配置
-   * @return 全局配置JsonObject
+   * @return 全局配置 JsonObject 的不可变副本
    */
   public JsonObject getGlobalConfig() {
-    return globalConfig;
+    return globalConfig != null ? globalConfig.copy() : new JsonObject();
   }
 
   @Override
