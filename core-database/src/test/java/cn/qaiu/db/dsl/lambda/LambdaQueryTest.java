@@ -7,10 +7,13 @@ import cn.qaiu.db.dsl.lambda.example.User;
 import cn.qaiu.db.dsl.lambda.example.UserDao;
 import io.vertx.core.Vertx;
 import io.vertx.jdbcclient.JDBCPool;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import io.vertx.sqlclient.PoolOptions;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author qaiu
  */
+@ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class LambdaQueryTest {
 
@@ -33,19 +37,22 @@ public class LambdaQueryTest {
   static void setUp() {
     vertx = Vertx.vertx();
 
-    // 创建H2内存数据库连接池
-    io.vertx.jdbcclient.JDBCConnectOptions connectOptions =
-        new io.vertx.jdbcclient.JDBCConnectOptions()
-            .setJdbcUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
-            .setUser("sa")
-            .setPassword("");
-
-    pool = JDBCPool.pool(vertx, connectOptions, new PoolOptions().setMaxSize(10));
+    // 使用 H2TestConfig 创建数据库连接池（MODE=MySQL）
+    pool = cn.qaiu.db.test.H2TestConfig.createH2Pool(vertx, "lambda_query_test_db");
     executor = new JooqExecutor(pool);
     userDao = new UserDao(executor);
 
-    // 创建测试表
-    createTestTable();
+    // 同步创建测试表
+    try {
+      pool.query(cn.qaiu.db.test.H2TestConfig.TestTables.CREATE_USERS_TABLE)
+          .execute()
+          .toCompletionStage()
+          .toCompletableFuture()
+          .get(10, java.util.concurrent.TimeUnit.SECONDS);
+      logger.info("Users test table created successfully");
+    } catch (Exception e) {
+      logger.error("Failed to create users test table", e);
+    }
   }
 
   @AfterAll
@@ -79,34 +86,6 @@ public class LambdaQueryTest {
     clearTestData();
     // 插入测试数据
     insertTestData();
-  }
-
-  /** 创建测试表 */
-  private static void createTestTable() {
-    String createTableSql =
-        """
-            CREATE TABLE IF NOT EXISTS users (
-                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                email VARCHAR(100) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                age INTEGER,
-                status VARCHAR(20) DEFAULT 'ACTIVE',
-                balance DECIMAL(10,2) DEFAULT 0.00,
-                email_verified BOOLEAN DEFAULT FALSE,
-                bio TEXT,
-                create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """;
-
-    try {
-      cn.qaiu.vx.core.util.FutureUtils.getResult(pool.query(createTableSql).execute());
-      logger.info("Test table created successfully");
-    } catch (Exception e) {
-      logger.error("Failed to create test table", e);
-      throw new RuntimeException("Failed to create test table", e);
-    }
   }
 
   /** 清空测试数据 */

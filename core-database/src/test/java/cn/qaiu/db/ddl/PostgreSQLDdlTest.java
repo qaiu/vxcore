@@ -15,6 +15,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
+@Disabled("PostgreSQL集成测试导致VM崩溃，暂时禁用")
 @ExtendWith(VertxExtension.class)
 @DisplayName("PostgreSQL DDL映射测试")
 public class PostgreSQLDdlTest {

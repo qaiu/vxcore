@@ -99,7 +99,7 @@ public class H2TestConfig {
     public static final String CREATE_PRODUCTS_TABLE =
         """
             CREATE TABLE IF NOT EXISTS products (
-                id BIGINT PRIMARY KEY AUTO_INCREMENT,
+                product_id BIGINT PRIMARY KEY AUTO_INCREMENT,
                 product_name VARCHAR(100) NOT NULL,
                 product_code VARCHAR(50) NOT NULL UNIQUE,
                 category_id BIGINT,
