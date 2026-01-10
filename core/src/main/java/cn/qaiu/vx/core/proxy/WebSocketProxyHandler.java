@@ -160,7 +160,7 @@ public class WebSocketProxyHandler {
 
   /** 检查是否为WebSocket升级相关头部 */
   private boolean isWebSocketUpgradeHeader(String headerName) {
-    String lowerName = headerName.toLowerCase();
+    String lowerName = headerName.toLowerCase(java.util.Locale.ROOT);
     return lowerName.equals("connection")
         || lowerName.equals("upgrade")
         || lowerName.equals("sec-websocket-key")

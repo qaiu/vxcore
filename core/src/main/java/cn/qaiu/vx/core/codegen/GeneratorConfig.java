@@ -170,11 +170,11 @@ public class GeneratorConfig {
   }
 
   public Map<String, Object> getCustomProperties() {
-    return customProperties;
+    return customProperties != null ? new HashMap<>(customProperties) : null;
   }
 
   public GeneratorConfig setCustomProperties(Map<String, Object> customProperties) {
-    this.customProperties = customProperties;
+    this.customProperties = customProperties != null ? new HashMap<>(customProperties) : null;
     return this;
   }
 

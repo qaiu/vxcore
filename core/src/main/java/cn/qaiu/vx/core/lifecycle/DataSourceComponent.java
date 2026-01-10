@@ -378,7 +378,7 @@ public class DataSourceComponent implements LifecycleComponent {
     if (jdbcUrl == null) {
       return null;
     }
-    String lowerUrl = jdbcUrl.toLowerCase();
+    String lowerUrl = jdbcUrl.toLowerCase(java.util.Locale.ROOT);
     if (lowerUrl.contains(":h2:")) {
       return "h2";
     } else if (lowerUrl.contains(":mysql:")) {

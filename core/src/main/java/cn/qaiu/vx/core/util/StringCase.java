@@ -2,6 +2,8 @@ package cn.qaiu.vx.core.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Locale;
+
 /**
  * 驼峰式下划线命名的字符串相互转换 <br>
  * Create date 2021/6/2 0:41
@@ -32,7 +34,7 @@ public class StringCase {
       StringBuilder sb = new StringBuilder();
       for (String s : StringUtils.splitByCharacterTypeCamelCase(str)) {
         if (!s.startsWith("_")) {
-          sb.append(s.toLowerCase()).append("_");
+          sb.append(s.toLowerCase(Locale.ROOT)).append("_");
         } else {
           sb.append(s);
         }
@@ -46,7 +48,7 @@ public class StringCase {
     StringBuilder sb = new StringBuilder();
     for (String s : StringUtils.splitByCharacterTypeCamelCase(str)) {
       if (!s.startsWith("_")) {
-        sb.append(s.toLowerCase()).append("_");
+        sb.append(s.toLowerCase(Locale.ROOT)).append("_");
       } else {
         sb.append(s);
       }
@@ -63,7 +65,7 @@ public class StringCase {
    */
   public static String toUnderlineUpperCase(String str) {
     String result = toUnderlineCase(str);
-    return result != null ? result.toUpperCase() : null;
+    return result != null ? result.toUpperCase(Locale.ROOT) : null;
   }
 
   /**

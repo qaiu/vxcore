@@ -15,13 +15,11 @@ public class ProxyComponent implements LifecycleComponent {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ProxyComponent.class);
 
-  private Vertx vertx;
   private JsonObject proxyConfig;
   private boolean proxyEnabled = false;
 
   @Override
   public Future<Void> initialize(Vertx vertx, JsonObject config) {
-    this.vertx = vertx;
 
     return Future.future(
         promise -> {

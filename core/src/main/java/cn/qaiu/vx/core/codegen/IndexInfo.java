@@ -71,11 +71,11 @@ public class IndexInfo {
   }
 
   public List<String> getColumnNames() {
-    return columnNames;
+    return columnNames != null ? new ArrayList<>(columnNames) : null;
   }
 
   public IndexInfo setColumnNames(List<String> columnNames) {
-    this.columnNames = columnNames;
+    this.columnNames = columnNames != null ? new ArrayList<>(columnNames) : null;
     return this;
   }
 

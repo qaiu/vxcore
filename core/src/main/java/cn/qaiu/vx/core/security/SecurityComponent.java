@@ -17,7 +17,6 @@ public class SecurityComponent implements LifecycleComponent {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityComponent.class);
 
-    private Vertx vertx;
     private SecurityConfig securityConfig;
     private JwtAuthProvider jwtAuthProvider;
     private SecurityInterceptor securityInterceptor;
@@ -25,7 +24,6 @@ public class SecurityComponent implements LifecycleComponent {
 
     @Override
     public Future<Void> initialize(Vertx vertx, JsonObject config) {
-        this.vertx = vertx;
 
         return Future.future(promise -> {
             try {

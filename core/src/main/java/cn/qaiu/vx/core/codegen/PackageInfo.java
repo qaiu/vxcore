@@ -122,11 +122,11 @@ public class PackageInfo {
   }
 
   public List<String> getImports() {
-    return imports;
+    return imports != null ? new ArrayList<>(imports) : null;
   }
 
   public PackageInfo setImports(List<String> imports) {
-    this.imports = imports;
+    this.imports = imports != null ? new ArrayList<>(imports) : null;
     return this;
   }
 

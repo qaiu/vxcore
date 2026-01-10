@@ -1,7 +1,6 @@
 package cn.qaiu.db.dsl.core.executor;
 
 import cn.qaiu.db.pool.JDBCType;
-import cn.qaiu.db.util.DatabaseUrlUtil;
 import io.vertx.sqlclient.Pool;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -49,26 +48,15 @@ public class MySQLExecutorStrategy extends AbstractExecutorStrategy {
 
   /**
    * 检查是否支持指定的连接池
-   * 通过检查连接池的数据库类型来判断，而非类名
+   * 通过检查连接池的类名来判断，避免阻塞操作
+   * 注意：不能在这里使用异步数据库操作，因为这个方法可能在事件循环线程中被调用
    *
    * @param pool 连接池
    * @return 是否支持
    */
   @Override
   public boolean supports(Pool pool) {
-    // 优先通过URL检测数据库类型
-    try {
-      JDBCType jdbcType = DatabaseUrlUtil.getJDBCTypeFromPool(pool).toCompletionStage().toCompletableFuture().get();
-      boolean supported = jdbcType == JDBCType.MySQL;
-      if (supported) {
-        LOGGER.debug("MySQL executor strategy supports pool (detected by URL): {}", pool.getClass().getName());
-      }
-      return supported;
-    } catch (Exception e) {
-      LOGGER.debug("Failed to detect database type from pool URL, falling back to class name check");
-    }
-
-    // 后备：通过类名检测
+    // 通过类名检测（非阻塞方式）
     String className = pool.getClass().getName().toLowerCase();
     boolean supported = className.contains("mysql");
 

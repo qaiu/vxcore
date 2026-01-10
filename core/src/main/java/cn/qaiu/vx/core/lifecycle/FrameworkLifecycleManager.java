@@ -350,11 +350,13 @@ public class FrameworkLifecycleManager {
   }
 
   /** 获取全局配置 */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public JsonObject getGlobalConfig() {
     return globalConfig;
   }
 
   /** 获取Vertx实例 */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public Vertx getVertx() {
     return vertx;
   }

@@ -10,6 +10,7 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.ProxyOptions;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -162,7 +163,7 @@ public class HttpProxyVerticle extends AbstractVerticle {
         clientRequest.response().setStatusCode(403).end();
         return;
       }
-      String[] split = new String(Base64.getDecoder().decode(s.replace("Basic ", ""))).split(":");
+      String[] split = new String(Base64.getDecoder().decode(s.replace("Basic ", "")), StandardCharsets.UTF_8).split(":");
       if (split.length > 1) {
         // 验证代理认证信息
         String username = proxyServerConf.getString("username");

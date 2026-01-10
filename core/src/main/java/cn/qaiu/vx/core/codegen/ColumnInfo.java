@@ -1,5 +1,7 @@
 package cn.qaiu.vx.core.codegen;
 
+import java.util.Locale;
+
 /**
  * 列信息 封装数据库列的元数据信息
  *
@@ -179,13 +181,13 @@ public class ColumnInfo {
 
     // 将下划线命名转换为驼峰命名
     String[] parts = columnName.split("_");
-    StringBuilder fieldName = new StringBuilder(parts[0].toLowerCase());
+    StringBuilder fieldName = new StringBuilder(parts[0].toLowerCase(Locale.ROOT));
 
     for (int i = 1; i < parts.length; i++) {
       if (!parts[i].isEmpty()) {
         fieldName
             .append(Character.toUpperCase(parts[i].charAt(0)))
-            .append(parts[i].substring(1).toLowerCase());
+            .append(parts[i].substring(1).toLowerCase(Locale.ROOT));
       }
     }
 
@@ -202,7 +204,7 @@ public class ColumnInfo {
       return "String";
     }
 
-    String lowerType = columnType.toLowerCase();
+    String lowerType = columnType.toLowerCase(Locale.ROOT);
 
     return switch (lowerType) {
       case "int", "integer", "int4" -> "Integer";
@@ -247,7 +249,7 @@ public class ColumnInfo {
       return false;
     }
 
-    String lowerType = columnType.toLowerCase();
+    String lowerType = columnType.toLowerCase(Locale.ROOT);
     return lowerType.contains("int")
         || lowerType.contains("decimal")
         || lowerType.contains("numeric")
@@ -267,7 +269,7 @@ public class ColumnInfo {
       return false;
     }
 
-    String lowerType = columnType.toLowerCase();
+    String lowerType = columnType.toLowerCase(Locale.ROOT);
     return lowerType.contains("char")
         || lowerType.contains("varchar")
         || lowerType.contains("text")
@@ -284,7 +286,7 @@ public class ColumnInfo {
       return false;
     }
 
-    String lowerType = columnType.toLowerCase();
+    String lowerType = columnType.toLowerCase(Locale.ROOT);
     return lowerType.contains("date")
         || lowerType.contains("time")
         || lowerType.contains("timestamp");
@@ -300,7 +302,7 @@ public class ColumnInfo {
       return false;
     }
 
-    String lowerType = columnType.toLowerCase();
+    String lowerType = columnType.toLowerCase(Locale.ROOT);
     return lowerType.contains("blob")
         || lowerType.contains("binary")
         || lowerType.contains("varbinary");

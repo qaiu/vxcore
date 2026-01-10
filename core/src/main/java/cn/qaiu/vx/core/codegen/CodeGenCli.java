@@ -4,6 +4,8 @@ import io.vertx.core.Vertx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 代码生成器CLI工具 提供命令行接口来生成代码
  *
@@ -66,7 +68,7 @@ public class CodeGenCli {
           outputPath + "/" + packageInfo.getEntityPackagePath() + "/" + className + ".java";
       java.nio.file.Path filePath = java.nio.file.Paths.get(fullPath);
       java.nio.file.Files.createDirectories(filePath.getParent());
-      java.nio.file.Files.write(filePath, result.getBytes());
+      java.nio.file.Files.write(filePath, result.getBytes(StandardCharsets.UTF_8));
 
       return CodeGenResult.success("Entity generated successfully: " + fullPath);
 
@@ -123,7 +125,7 @@ public class CodeGenCli {
           outputPath + "/" + packageInfo.getDaoPackagePath() + "/" + className + "Dao.java";
       java.nio.file.Path filePath = java.nio.file.Paths.get(fullPath);
       java.nio.file.Files.createDirectories(filePath.getParent());
-      java.nio.file.Files.write(filePath, result.getBytes());
+      java.nio.file.Files.write(filePath, result.getBytes(StandardCharsets.UTF_8));
 
       return CodeGenResult.success("DAO generated successfully: " + fullPath);
 
@@ -185,7 +187,7 @@ public class CodeGenCli {
               + "Controller.java";
       java.nio.file.Path filePath = java.nio.file.Paths.get(fullPath);
       java.nio.file.Files.createDirectories(filePath.getParent());
-      java.nio.file.Files.write(filePath, result.getBytes());
+      java.nio.file.Files.write(filePath, result.getBytes(StandardCharsets.UTF_8));
 
       return CodeGenResult.success("Controller generated successfully: " + fullPath);
 

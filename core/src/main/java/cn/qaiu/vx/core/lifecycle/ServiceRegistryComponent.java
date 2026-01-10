@@ -20,7 +20,6 @@ public class ServiceRegistryComponent implements LifecycleComponent {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRegistryComponent.class);
 
-  private Vertx vertx;
   private ServiceComponent serviceComponent;
   private ServiceRegistry serviceRegistry;
   private Map<String, Set<Class<?>>> annotatedClassesMap;
@@ -28,7 +27,6 @@ public class ServiceRegistryComponent implements LifecycleComponent {
 
   @Override
   public Future<Void> initialize(Vertx vertx, JsonObject config) {
-    this.vertx = vertx;
 
     return Future.future(
         promise -> {

@@ -14,10 +14,12 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
@@ -29,6 +31,7 @@ import java.util.Base64;
 public class JwtAuthProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthProvider.class);
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final Vertx vertx;
     private final SecurityConfig config;
@@ -141,7 +144,7 @@ public class JwtAuthProvider {
      * 从文件加载密钥
      */
     private String loadKeyFromFile(String path) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(path)));
+        return new String(Files.readAllBytes(Paths.get(path)), StandardCharsets.UTF_8);
     }
 
     /**
@@ -149,7 +152,7 @@ public class JwtAuthProvider {
      */
     private String generateRandomSecret() {
         byte[] bytes = new byte[32];
-        new java.security.SecureRandom().nextBytes(bytes);
+        SECURE_RANDOM.nextBytes(bytes);
         return Base64.getEncoder().encodeToString(bytes);
     }
 

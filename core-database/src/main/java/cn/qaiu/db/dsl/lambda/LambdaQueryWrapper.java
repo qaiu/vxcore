@@ -800,26 +800,43 @@ public class LambdaQueryWrapper<T> {
 
   /** 执行查询并返回列表 */
   public Future<List<T>> list() {
-    return executeQuery()
+    Query select = buildSelect();
+    if (executor == null) {
+      return Future.failedFuture("JooqExecutor is required for query execution");
+    }
+    return executor
+        .executeQuery(select)
         .map(
             rows -> {
-              // 这里需要实现从RowSet到List<T>的转换
-              // 暂时返回空列表，实际实现需要根据具体的映射器
-              return new ArrayList<>();
+              // 使用 DefaultMapper 实现从 RowSet 到 List<T> 的转换
+              cn.qaiu.db.dsl.mapper.EntityMapper<T> mapper =
+                  new cn.qaiu.db.dsl.mapper.DefaultMapper<>(entityClass, table.getName());
+              List<T> result = new ArrayList<>();
+              for (io.vertx.sqlclient.Row row : rows) {
+                T entity = mapper.fromRow(row);
+                result.add(entity);
+              }
+              return result;
             });
   }
 
   /** 执行查询并返回单个对象 */
   public Future<T> one() {
-    return executeQuery()
+    Query select = buildSelect();
+    if (executor == null) {
+      return Future.failedFuture("JooqExecutor is required for query execution");
+    }
+    return executor
+        .executeQuery(select)
         .map(
             rows -> {
-              if (rows.isEmpty()) {
+              if (rows.size() == 0) {
                 return null;
               }
-              // 这里需要实现从RowSet到T的转换
-              // 暂时返回null，实际实现需要根据具体的映射器
-              return null;
+              // 使用 DefaultMapper 实现从 Row 到 T 的转换
+              cn.qaiu.db.dsl.mapper.EntityMapper<T> mapper =
+                  new cn.qaiu.db.dsl.mapper.DefaultMapper<>(entityClass, table.getName());
+              return mapper.fromRow(rows.iterator().next());
             });
   }
 
@@ -919,10 +936,18 @@ public class LambdaQueryWrapper<T> {
 
   /** 执行COUNT查询 */
   private Future<Long> executeCountQuery(SelectConditionStep<Record1<Integer>> countQuery) {
-    // 执行COUNT查询 - 直接使用DSLContext
+    // 执行COUNT查询 - 使用JooqExecutor
     if (executor != null) {
-      // 使用DSLContext执行查询
-      return Future.succeededFuture(dslContext.fetchOne(countQuery).value1().longValue());
+      // 使用executor执行查询
+      return executor
+          .executeQuery(countQuery)
+          .map(
+              rows -> {
+                if (rows.size() > 0) {
+                  return rows.iterator().next().getLong(0);
+                }
+                return 0L;
+              });
     } else {
       // 兼容旧版本，直接使用DSLContext
       return Future.succeededFuture(0L);

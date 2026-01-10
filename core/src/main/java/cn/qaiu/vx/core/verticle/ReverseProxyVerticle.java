@@ -43,7 +43,7 @@ public class ReverseProxyVerticle extends AbstractVerticle {
 
   private static String serverName = "Vert.x-proxy-server"; // Server name in Http response header
 
-  public static String REROUTE_PATH_PREFIX =
+  public static final String REROUTE_PATH_PREFIX =
       "/__rrvpspp"; // re_route_vert_proxy_server_path_prefix 硬编码
 
   @Override

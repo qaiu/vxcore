@@ -76,11 +76,11 @@ public class TableInfo {
   }
 
   public List<ColumnInfo> getColumns() {
-    return columns;
+    return columns != null ? new ArrayList<>(columns) : null;
   }
 
   public TableInfo setColumns(List<ColumnInfo> columns) {
-    this.columns = columns;
+    this.columns = columns != null ? new ArrayList<>(columns) : null;
     return this;
   }
 
@@ -90,11 +90,11 @@ public class TableInfo {
   }
 
   public List<IndexInfo> getIndexes() {
-    return indexes;
+    return indexes != null ? new ArrayList<>(indexes) : null;
   }
 
   public TableInfo setIndexes(List<IndexInfo> indexes) {
-    this.indexes = indexes;
+    this.indexes = indexes != null ? new ArrayList<>(indexes) : null;
     return this;
   }
 
@@ -104,11 +104,11 @@ public class TableInfo {
   }
 
   public List<ForeignKeyInfo> getForeignKeys() {
-    return foreignKeys;
+    return foreignKeys != null ? new ArrayList<>(foreignKeys) : null;
   }
 
   public TableInfo setForeignKeys(List<ForeignKeyInfo> foreignKeys) {
-    this.foreignKeys = foreignKeys;
+    this.foreignKeys = foreignKeys != null ? new ArrayList<>(foreignKeys) : null;
     return this;
   }
 

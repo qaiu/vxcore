@@ -45,6 +45,10 @@ public final class Deploy {
 
   private Thread mainThread;
 
+  private Deploy() {
+    // Private constructor for singleton
+  }
+
   public static Deploy instance() {
     return INSTANCE;
   }

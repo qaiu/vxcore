@@ -63,11 +63,11 @@ public class EntityInfo {
   }
 
   public List<FieldInfo> getFields() {
-    return fields;
+    return fields != null ? new ArrayList<>(fields) : null;
   }
 
   public EntityInfo setFields(List<FieldInfo> fields) {
-    this.fields = fields;
+    this.fields = fields != null ? new ArrayList<>(fields) : null;
     return this;
   }
 
@@ -77,11 +77,11 @@ public class EntityInfo {
   }
 
   public List<String> getImports() {
-    return imports;
+    return imports != null ? new ArrayList<>(imports) : null;
   }
 
   public EntityInfo setImports(List<String> imports) {
-    this.imports = imports;
+    this.imports = imports != null ? new ArrayList<>(imports) : null;
     return this;
   }
 

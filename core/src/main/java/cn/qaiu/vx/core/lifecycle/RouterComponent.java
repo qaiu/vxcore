@@ -17,13 +17,11 @@ public class RouterComponent implements LifecycleComponent {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RouterComponent.class);
 
-  private Vertx vertx;
   private RouterHandlerFactory routerHandlerFactory;
   private Router router;
 
   @Override
   public Future<Void> initialize(Vertx vertx, JsonObject config) {
-    this.vertx = vertx;
 
     return Future.future(
         promise -> {

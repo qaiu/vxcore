@@ -79,7 +79,7 @@ public class ConfigAliasRegistry {
         
         for (String alias : aliases) {
             aliasToCanonical.put(alias, canonicalName);
-            aliasToCanonical.put(alias.toLowerCase(), canonicalName);
+            aliasToCanonical.put(alias.toLowerCase(java.util.Locale.ROOT), canonicalName);
         }
     }
 
@@ -95,7 +95,7 @@ public class ConfigAliasRegistry {
         }
         String canonical = aliasToCanonical.get(alias);
         if (canonical == null) {
-            canonical = aliasToCanonical.get(alias.toLowerCase());
+            canonical = aliasToCanonical.get(alias.toLowerCase(java.util.Locale.ROOT));
         }
         return canonical != null ? canonical : alias;
     }

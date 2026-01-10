@@ -24,10 +24,13 @@ public class ServiceProxyGenerator extends AbstractProcessor {
 
   private Messager messager;
   private Filer filer;
+  @SuppressWarnings("unused") // Reserved for future use in template processing
   private Elements elementUtils;
+  @SuppressWarnings("unused") // Reserved for future use in template processing
   private Types typeUtils;
 
   // 当前处理的接口信息
+  @SuppressWarnings("unused") // May be used in future template processing
   private TypeElement currentInterface;
   private String currentConcreteType;
   private String currentConcreteIdType;

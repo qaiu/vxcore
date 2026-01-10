@@ -76,4 +76,21 @@ public class LocalConstant {
   public static String getString(String k) {
     return LOCAL_CONST.get(k).toString();
   }
+
+  /**
+   * 移除本地常量中的键值对
+   *
+   * @param k 键
+   * @return 被移除的值
+   */
+  public static Object remove(String k) {
+    return LOCAL_CONST.remove(k);
+  }
+
+  /**
+   * 清空本地常量映射
+   */
+  public static void clear() {
+    LOCAL_CONST.clear();
+  }
 }

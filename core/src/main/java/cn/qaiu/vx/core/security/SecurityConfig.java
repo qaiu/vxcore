@@ -199,19 +199,19 @@ public class SecurityConfig {
     }
 
     public String[] getAuthPaths() {
-        return authPaths;
+        return authPaths != null ? authPaths.clone() : null;
     }
 
     public void setAuthPaths(String[] authPaths) {
-        this.authPaths = authPaths;
+        this.authPaths = authPaths != null ? authPaths.clone() : null;
     }
 
     public String[] getIgnorePaths() {
-        return ignorePaths;
+        return ignorePaths != null ? ignorePaths.clone() : null;
     }
 
     public void setIgnorePaths(String[] ignorePaths) {
-        this.ignorePaths = ignorePaths;
+        this.ignorePaths = ignorePaths != null ? ignorePaths.clone() : null;
     }
 
     public String getTokenHeader() {
@@ -239,11 +239,11 @@ public class SecurityConfig {
     }
 
     public String[] getAllowedDomains() {
-        return allowedDomains;
+        return allowedDomains != null ? allowedDomains.clone() : null;
     }
 
     public void setAllowedDomains(String[] allowedDomains) {
-        this.allowedDomains = allowedDomains;
+        this.allowedDomains = allowedDomains != null ? allowedDomains.clone() : null;
     }
 
     /**

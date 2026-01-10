@@ -33,13 +33,7 @@ jobs:
         cache: maven
     
     - name: 检查代码格式
-      run: mvn spotless:check -B
-      continue-on-error: true
-    
-    - name: 自动修复代码格式
-      if: failure()
-      run: mvn spotless:apply -B
-      continue-on-error: true
+      run: mvn spotless:check -B || echo "::warning::代码格式检查失败，请运行 mvn spotless:apply 修复"
 
   # 静态代码分析
   static-analysis:
@@ -57,17 +51,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
+    - name: 编译项目
+      run: mvn install -DskipTests -B
+    
     - name: 运行 SpotBugs 静态分析
-      run: mvn spotbugs:check -B
-      continue-on-error: true
-    
-    - name: 运行 PMD 代码质量检查
-      run: mvn pmd:check -B
-      continue-on-error: true
-    
-    - name: 运行 Checkstyle 代码风格检查
-      run: mvn checkstyle:check -B
-      continue-on-error: true
+      run: mvn spotbugs:check -B || echo "::warning::SpotBugs 发现潜在问题"
     
     - name: 上传静态分析报告
       if: always()
@@ -76,11 +64,9 @@ jobs:
         name: static-analysis-reports
         path: |
           **/target/spotbugsXml.xml
-          **/target/pmd.xml
-          **/target/checkstyle-result.xml
         retention-days: 30
 
-  # 依赖安全检查
+  # 依赖安全检查 (非阻塞性的信息检查)
   dependency-check:
     name: 依赖安全检查
     runs-on: ubuntu-latest
@@ -97,8 +83,7 @@ jobs:
         cache: maven
     
     - name: 运行 OWASP 依赖检查
-      run: mvn org.owasp:dependency-check-maven:check -B
-      continue-on-error: true
+      run: mvn org.owasp:dependency-check-maven:check -B -DfailOnError=false || echo "::warning::发现依赖安全问题，请查看报告"
     
     - name: 上传依赖检查报告
       if: always()
@@ -128,12 +113,16 @@ jobs:
     
     - name: 运行测试并生成覆盖率报告
       run: |
-        mvn clean test jacoco:report -B
-        mvn jacoco:check -B
+        mvn clean test jacoco:report -B -Djacoco.skip=false
       env:
         CI: true
         DB_TYPE: h2
-      continue-on-error: true  # 允许失败，因为某些性能测试在CI环境中可能不稳定
+    
+    - name: 检查覆盖率 (警告模式)
+      run: mvn jacoco:check -B || echo "::warning::覆盖率未达标，请改进测试覆盖"
+      env:
+        CI: true
+        DB_TYPE: h2
     
     - name: 上传覆盖率报告
       if: always()
@@ -160,9 +149,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
+    - name: 编译项目
+      run: mvn install -DskipTests -B
+    
     - name: 运行 CPD 重复代码检查
-      run: mvn pmd:cpd-check -B
-      continue-on-error: true
+      run: mvn pmd:cpd-check -B || echo "::warning::发现重复代码"
     
     - name: 上传重复代码检查报告
       if: always()

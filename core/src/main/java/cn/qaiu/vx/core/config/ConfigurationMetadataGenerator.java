@@ -75,11 +75,11 @@ public class ConfigurationMetadataGenerator {
     }
 
     public String[] getAllowedValues() {
-      return allowedValues;
+      return allowedValues != null ? allowedValues.clone() : null;
     }
 
     public void setAllowedValues(String[] allowedValues) {
-      this.allowedValues = allowedValues;
+      this.allowedValues = allowedValues != null ? allowedValues.clone() : null;
     }
 
     public double getMinValue() {
@@ -144,11 +144,11 @@ public class ConfigurationMetadataGenerator {
     }
 
     public List<PropertyMetadata> getProperties() {
-      return properties;
+      return properties != null ? new ArrayList<>(properties) : null;
     }
 
     public void setProperties(List<PropertyMetadata> properties) {
-      this.properties = properties;
+      this.properties = properties != null ? new ArrayList<>(properties) : null;
     }
   }
 

@@ -64,11 +64,11 @@ public class ForeignKeyInfo {
   }
 
   public List<String> getColumnNames() {
-    return columnNames;
+    return columnNames != null ? new ArrayList<>(columnNames) : null;
   }
 
   public ForeignKeyInfo setColumnNames(List<String> columnNames) {
-    this.columnNames = columnNames;
+    this.columnNames = columnNames != null ? new ArrayList<>(columnNames) : null;
     return this;
   }
 
@@ -78,11 +78,11 @@ public class ForeignKeyInfo {
   }
 
   public List<String> getReferencedColumnNames() {
-    return referencedColumnNames;
+    return referencedColumnNames != null ? new ArrayList<>(referencedColumnNames) : null;
   }
 
   public ForeignKeyInfo setReferencedColumnNames(List<String> referencedColumnNames) {
-    this.referencedColumnNames = referencedColumnNames;
+    this.referencedColumnNames = referencedColumnNames != null ? new ArrayList<>(referencedColumnNames) : null;
     return this;
   }
 
