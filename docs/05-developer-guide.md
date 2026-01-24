@@ -250,7 +250,7 @@ AI Agent：性能测试计划：
  * </pre>
  * 
  * @author AI Agent Generated
- * @since 2.0.0
+ * @since 1.1.0
  */
 public class WebSocketHandlerFactory {
     // 实现代码...
@@ -608,7 +608,7 @@ echo "✅ 性能基准测试完成"
 - v1.0.0: 初始版本
 - v1.1.0: 添加WebSocket支持
 - v1.1.1: 修复WebSocket连接问题
-- v2.0.0: 重构路由系统
+- v1.2.0: 添加新特性
 ```
 
 #### 发布流程

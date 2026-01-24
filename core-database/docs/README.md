@@ -81,7 +81,7 @@ core-database/src/main/java/cn/qaiu/db/
 <dependency>
     <groupId>cn.qaiu</groupId>
     <artifactId>vxcore-database</artifactId>
-    <version>2.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -806,7 +806,7 @@ public class DatabaseConfig {
 
 ## 📝 更新记录
 
-### v2.0.0 - 无参构造函数DAO + Lambda查询增强 (当前版本)
+### v1.1.0 - 无参构造函数DAO + Lambda查询增强 (当前版本)
 
 #### ✅ 主要变化
 
@@ -849,7 +849,7 @@ public class DatabaseConfig {
 
 ## 🆚 版本对比
 
-| 功能 | v1.0 (旧版) | v2.0 (当前) |
+| 功能 | v1.0 (旧版) | v1.1 (当前) |
 |------|-------------|-------------|
 | 无参构造函数DAO | ❌ 不支持 | ✅ 完整支持 |
 | Lambda查询 | ❌ 不支持 | ✅ 完整支持 |

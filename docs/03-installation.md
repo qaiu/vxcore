@@ -213,23 +213,30 @@ mvn archetype:generate \
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vxcore.version>1.1.0</vxcore.version>
-        <vertx.version>4.5.2</vertx.version>
-        <jooq.version>3.19.2</jooq.version>
+        <vertx.version>4.5.21</vertx.version>
     </properties>
     
     <dependencies>
-        <!-- VXCore Core Module -->
+        <!-- VXCore 核心模块 -->
         <dependency>
             <groupId>cn.qaiu</groupId>
-            <artifactId>vxcore-core</artifactId>
+            <artifactId>core</artifactId>
             <version>${vxcore.version}</version>
         </dependency>
         
-        <!-- VXCore Database Module -->
+        <!-- VXCore 数据库模块 -->
         <dependency>
             <groupId>cn.qaiu</groupId>
-            <artifactId>vxcore-database</artifactId>
+            <artifactId>core-database</artifactId>
             <version>${vxcore.version}</version>
+        </dependency>
+        
+        <!-- VXCore 代码生成器（可选，开发时使用） -->
+        <dependency>
+            <groupId>cn.qaiu</groupId>
+            <artifactId>core-generator</artifactId>
+            <version>${vxcore.version}</version>
+            <scope>provided</scope>
         </dependency>
         
         <!-- Vert.x Core -->

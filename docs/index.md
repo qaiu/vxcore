@@ -34,8 +34,27 @@
 
 ## 🚀 5分钟快速体验
 
-### 1. 克隆项目
+### 📦 Maven 中央仓库
+
+VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
+
+```xml
+<dependency>
+    <groupId>cn.qaiu</groupId>
+    <artifactId>core</artifactId>
+    <version>1.1.0</version>
+</dependency>
+```
+
+**中央仓库地址**: https://central.sonatype.com/artifact/cn.qaiu/vxcore
+
+### 1. 创建项目
 ```bash
+# 方式一：使用 Maven 依赖（推荐）
+mvn archetype:generate -DgroupId=com.example -DartifactId=my-app
+# 然后在 pom.xml 中添加上述依赖
+
+# 方式二：克隆源码
 git clone https://github.com/qaiu/vxcore.git
 cd vxcore
 ```

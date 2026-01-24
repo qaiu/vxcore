@@ -106,9 +106,52 @@ vxcore/
 - **Maven 3.8+**: 现代化构建工具
 - **数据库**: H2/MySQL/PostgreSQL（可选）
 
+### 📦 Maven 依赖
+
+VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
+
+```xml
+<properties>
+    <vxcore.version>1.1.0</vxcore.version>
+</properties>
+
+<dependencies>
+    <!-- VXCore 核心模块 -->
+    <dependency>
+        <groupId>cn.qaiu</groupId>
+        <artifactId>core</artifactId>
+        <version>${vxcore.version}</version>
+    </dependency>
+    
+    <!-- VXCore 数据库模块 -->
+    <dependency>
+        <groupId>cn.qaiu</groupId>
+        <artifactId>core-database</artifactId>
+        <version>${vxcore.version}</version>
+    </dependency>
+    
+    <!-- VXCore 代码生成器（可选） -->
+    <dependency>
+        <groupId>cn.qaiu</groupId>
+        <artifactId>core-generator</artifactId>
+        <version>${vxcore.version}</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+```
+
 ### ⚡ 5分钟快速上手
 
-#### 1. 克隆并编译项目
+#### 1. 创建 Maven 项目或克隆源码
+
+**方式一：使用 Maven 依赖（推荐）**
+```bash
+# 创建新的 Maven 项目
+mvn archetype:generate -DgroupId=com.example -DartifactId=my-app
+# 在 pom.xml 中添加上述依赖
+```
+
+**方式二：克隆源码**
 
 ```bash
 git clone https://github.com/qaiu/vxcore.git
@@ -352,7 +395,7 @@ mvn test jacoco:report
 
 ## 📈 版本历史
 
-### v2.0.0 (当前版本)
+### v1.1.0 (当前版本)
 - ✅ **无参构造函数DAO**: 自动初始化，无需手动传递参数，极大简化DAO使用
 - ✅ **代码生成器**: 根据数据库表结构自动生成三层架构代码
 - ✅ **Lambda 查询增强**: 支持 Join、聚合查询、子查询

@@ -29,7 +29,62 @@ mvn -version
 
 ## 🚀 第一步：创建项目
 
-### 1.1 克隆项目
+### 1.1 使用 Maven 依赖（推荐）
+
+VXCore 已发布到 Maven 中央仓库，您可以直接在项目中引入依赖：
+
+#### 创建新项目
+```bash
+# 使用 Maven 创建新项目
+mvn archetype:generate \
+  -DgroupId=com.example \
+  -DartifactId=my-vxcore-app \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false
+
+cd my-vxcore-app
+```
+
+#### 添加 VXCore 依赖
+在 `pom.xml` 中添加：
+
+```xml
+<properties>
+    <java.version>17</java.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <vxcore.version>1.1.0</vxcore.version>
+    <vertx.version>4.5.21</vertx.version>
+</properties>
+
+<dependencies>
+    <!-- VXCore 核心模块 -->
+    <dependency>
+        <groupId>cn.qaiu</groupId>
+        <artifactId>core</artifactId>
+        <version>${vxcore.version}</version>
+    </dependency>
+    
+    <!-- VXCore 数据库模块 -->
+    <dependency>
+        <groupId>cn.qaiu</groupId>
+        <artifactId>core-database</artifactId>
+        <version>${vxcore.version}</version>
+    </dependency>
+    
+    <!-- H2 数据库（用于开发测试） -->
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>2.2.220</version>
+    </dependency>
+</dependencies>
+```
+
+### 1.2 克隆源码（可选）
+
+如果您想研究源码或贡献代码，可以克隆项目：
+
 ```bash
 # 克隆 VXCore 项目
 git clone https://github.com/qaiu/vxcore.git
@@ -39,7 +94,7 @@ cd vxcore
 ls -la
 ```
 
-### 1.2 项目结构说明
+### 1.3 项目结构说明
 ```
 vxcore/
 ├── core/                    # 核心框架模块
