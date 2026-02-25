@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -118,7 +119,7 @@ public class EnhancedTypeMapper {
             return obj;
           }
           if (obj instanceof String) {
-            String str = ((String) obj).toLowerCase();
+            String str = ((String) obj).toLowerCase(Locale.ROOT);
             if ("true".equals(str) || "1".equals(str) || "yes".equals(str)) {
               return true;
             } else if ("false".equals(str) || "0".equals(str) || "no".equals(str)) {

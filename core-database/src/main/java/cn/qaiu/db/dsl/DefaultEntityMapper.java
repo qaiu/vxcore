@@ -233,27 +233,6 @@ public class DefaultEntityMapper<T extends BaseEntity> implements EntityMapper<T
   }
 
   /**
-   * 将JsonObject中的LocalDateTime转换为字符串
-   *
-   * @param json 原始JsonObject
-   * @return 转换后的JsonObject
-   */
-  private JsonObject convertLocalDateTimeToString(JsonObject json) {
-    JsonObject converted = new JsonObject();
-
-    for (String key : json.fieldNames()) {
-      Object value = json.getValue(key);
-      if (value instanceof LocalDateTime) {
-        converted.put(key, ((LocalDateTime) value).toString());
-      } else {
-        converted.put(key, value);
-      }
-    }
-
-    return converted;
-  }
-
-  /**
    * 批量映射从 RowSet
    *
    * @param rowSet 数据库行集合

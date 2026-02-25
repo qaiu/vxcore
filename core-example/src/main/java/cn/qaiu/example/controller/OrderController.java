@@ -10,6 +10,7 @@ import cn.qaiu.vx.core.enums.RouteMethod;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
+import java.util.Locale;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -115,7 +116,7 @@ public class OrderController implements BaseHttpApi {
     LOGGER.debug("Getting orders by status: {}", status);
 
     try {
-      Order.OrderStatus.valueOf(status.toUpperCase()); // 验证状态是否有效
+      Order.OrderStatus.valueOf(status.toUpperCase(Locale.ROOT)); // 验证状态是否有效
       return orderService.getOrdersByStatus(status);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid status: " + status);
@@ -170,7 +171,7 @@ public class OrderController implements BaseHttpApi {
     }
 
     try {
-      Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
+      Order.OrderStatus.valueOf(status.toUpperCase(Locale.ROOT));
       return orderService.updateOrderStatus(id, status);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid status: " + status);

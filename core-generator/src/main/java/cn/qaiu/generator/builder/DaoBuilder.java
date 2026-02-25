@@ -7,6 +7,7 @@ import cn.qaiu.vx.core.codegen.EntityInfo;
 import cn.qaiu.vx.core.codegen.TableInfo;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +92,7 @@ public class DaoBuilder {
       imports.add("org.jooq.impl.DSL");
 
       // 添加 jOOQ 生成的表类导入
-      String tableClassName = entityInfo.getClassName().toUpperCase();
+      String tableClassName = entityInfo.getClassName().toUpperCase(Locale.ROOT);
       imports.add("org.jooq.generated.tables." + tableClassName);
       imports.add("org.jooq.generated.tables.records." + tableClassName + "Record");
 

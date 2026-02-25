@@ -6,6 +6,7 @@ import cn.qaiu.example.entity.User;
 import io.vertx.core.Future;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,6 @@ public class AutoTableManager {
     if (ddlTable != null && !ddlTable.value().isEmpty()) {
       return ddlTable.value();
     }
-    return entityClass.getSimpleName().toLowerCase() + "s";
+    return entityClass.getSimpleName().toLowerCase(Locale.ROOT) + "s";
   }
 }

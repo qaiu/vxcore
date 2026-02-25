@@ -9,6 +9,7 @@ import cn.qaiu.vx.core.codegen.TableInfo;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -165,7 +166,7 @@ public class EntityBuilder {
       return name;
     }
 
-    String[] parts = name.toLowerCase().split("_");
+    String[] parts = name.toLowerCase(Locale.ROOT).split("_");
     StringBuilder result = new StringBuilder();
 
     for (int i = 0; i < parts.length; i++) {
@@ -190,7 +191,7 @@ public class EntityBuilder {
       return "String";
     }
 
-    String type = columnType.toLowerCase();
+    String type = columnType.toLowerCase(Locale.ROOT);
     if (type.contains("varchar") || type.contains("char") || type.contains("text")) {
       return "String";
     } else if (type.contains("bigint")) {

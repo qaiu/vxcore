@@ -276,8 +276,8 @@ public class TableStructureComparator {
     }
 
     // 标准化类型名称（转换为小写）
-    String expected = expectedType.toLowerCase().trim();
-    String actual = actualType.toLowerCase().trim();
+    String expected = expectedType.toLowerCase(Locale.ROOT).trim();
+    String actual = actualType.toLowerCase(Locale.ROOT).trim();
 
     // 完全匹配
     if (expected.equals(actual)) {
@@ -457,7 +457,7 @@ public class TableStructureComparator {
       normalized = normalized.substring(1, normalized.length() - 1);
     }
 
-    return normalized.toLowerCase();
+    return normalized.toLowerCase(Locale.ROOT);
   }
 
   private static boolean isDefaultValueEquivalent(String expected, String actual) {
@@ -504,7 +504,7 @@ public class TableStructureComparator {
       return true;
     }
 
-    String expectedType = expected.getType().toLowerCase();
+    String expectedType = expected.getType().toLowerCase(Locale.ROOT);
 
     // 对于DECIMAL/NUMERIC类型，比较precision而不是length
     if (isNumericType(expectedType)) {
@@ -657,7 +657,7 @@ public class TableStructureComparator {
                   ||
                   // 对于主键字段，如果没有明确的默认值，也可能是AUTO_INCREMENT
                   (name != null
-                      && name.toLowerCase().contains("id")
+                      && name.toLowerCase(Locale.ROOT).contains("id")
                       && (defaultValue.isEmpty() || defaultValue.equals("null"))));
     } else if (dbType == JDBCType.PostgreSQL) {
       // PostgreSQL通过检查序列来判断auto_increment
@@ -883,24 +883,6 @@ public class TableStructureComparator {
   private static String generateAlterColumnAutoIncrementSql(
       String tableName, ColumnMetadata column, JDBCType dbType) {
     return generateAlterColumnTypeSql(tableName, column, dbType);
-  }
-
-  /** 生成PostgreSQL列注释SQL */
-  private static String generatePostgreSQLColumnCommentSql(
-      String tableName, ColumnMetadata column) {
-    String quotationMarks = "\"";
-    if (column.getComment() != null && !column.getComment().isEmpty()) {
-      return String.format(
-          "COMMENT ON COLUMN %s%s%s.%s%s%s IS '%s'",
-          quotationMarks,
-          tableName,
-          quotationMarks,
-          quotationMarks,
-          column.getName(),
-          quotationMarks,
-          column.getComment());
-    }
-    return null; // 没有注释时返回null
   }
 
   /** 列信息类 */

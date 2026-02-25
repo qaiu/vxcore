@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +155,7 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
     if (jdbcUrl == null) {
       return null;
     }
-    String lowerUrl = jdbcUrl.toLowerCase();
+    String lowerUrl = jdbcUrl.toLowerCase(Locale.ROOT);
     if (lowerUrl.contains(":h2:")) {
       return "h2";
     } else if (lowerUrl.contains(":mysql:")) {

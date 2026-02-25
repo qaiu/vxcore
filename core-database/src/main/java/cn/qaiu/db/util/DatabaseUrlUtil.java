@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Locale;
 import java.util.Properties;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
@@ -24,7 +25,7 @@ public class DatabaseUrlUtil {
 
     try {
       DatabaseMetaData metaData = conn.getMetaData();
-      String dbProduct = metaData.getDatabaseProductName().toLowerCase();
+      String dbProduct = metaData.getDatabaseProductName().toLowerCase(Locale.ROOT);
 
       // PostgreSQL 特殊处理
       if (dbProduct.contains("postgresql")) {

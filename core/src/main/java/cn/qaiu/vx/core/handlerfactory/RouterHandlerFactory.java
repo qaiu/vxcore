@@ -5,7 +5,6 @@ import static cn.qaiu.vx.core.verticle.ReverseProxyVerticle.REROUTE_PATH_PREFIX;
 import static io.vertx.core.http.HttpHeaders.*;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-import cn.qaiu.vx.core.annotations.DateFormat;
 import cn.qaiu.vx.core.annotations.RouteHandler;
 import cn.qaiu.vx.core.annotations.RouteMapping;
 import cn.qaiu.vx.core.annotations.SockRouteMapper;
@@ -30,14 +29,12 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javassist.CtClass;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -744,31 +741,6 @@ public class RouterHandlerFactory implements BaseHttpApi {
     }
   }
 
-  /** 处理请求-使用预计算参数的参数绑定 */
-  private void handlerMethodWithParams(
-      Object instance, Method method, Map<String, Object> parameters, RoutingContext ctx) {
-    Object[] args = parameters.values().toArray();
-
-    try {
-      Object result = ReflectionUtil.invokeWithArguments(method, instance, args);
-      if (result instanceof Future) {
-        ((Future<?>) result)
-            .onComplete(
-                ar -> {
-                  if (ar.succeeded()) {
-                    doFireJsonResultResponse(ctx, JsonResult.data(ar.result()));
-                  } else {
-                    doFireJsonResultResponse(ctx, JsonResult.error(ar.cause().getMessage()));
-                  }
-                });
-      } else {
-        doFireJsonResultResponse(ctx, JsonResult.data(result));
-      }
-    } catch (Throwable e) {
-      exceptionHandlerManager.handleException(e, ctx, null);
-    }
-  }
-
   /** 处理方法结果 */
   private void handleMethodResult(Object data, RoutingContext ctx) {
     if (data == null) return;
@@ -814,19 +786,6 @@ public class RouterHandlerFactory implements BaseHttpApi {
       }
     }
     doFireJsonResultResponse(ctx, JsonResult.error(err), 500);
-  }
-
-  /** 获取DateFormat注解值 */
-  private String getFmt(Annotation[] parameterAnnotations, CtClass v) {
-    String fmt = "";
-    if (Date.class.getName().equals(v.getName())) {
-      for (Annotation annotation : parameterAnnotations) {
-        if (annotation instanceof DateFormat) {
-          fmt = ((DateFormat) annotation).value();
-        }
-      }
-    }
-    return fmt;
   }
 
   private Set<BeforeInterceptor> getBeforeInterceptor() {

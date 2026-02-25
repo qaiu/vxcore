@@ -86,13 +86,9 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
     String entityPackage = elementUtils.getPackageOf(entityElement).getQualifiedName().toString();
     String entityName = entityElement.getSimpleName().toString();
     String serviceName = entityName + "Service";
-    String implName = entityName + "ServiceGen";
 
     String basePackage =
         annotation.basePackage().isEmpty() ? entityPackage : annotation.basePackage();
-
-    // 获取ID类型
-    String idType = getIdType(annotation);
 
     // 判断是接口还是实体类
     if (entityElement.getKind() == ElementKind.INTERFACE) {
@@ -153,25 +149,6 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
         }
 
         // 不再生成基础实现类
-      }
-    }
-  }
-
-  /**
-   * 获取ID类型
-   *
-   * @param annotation 注解
-   * @return ID类型字符串
-   */
-  private String getIdType(GenerateServiceGen annotation) {
-    try {
-      return annotation.idType().getSimpleName();
-    } catch (javax.lang.model.type.MirroredTypeException e) {
-      String typeName = e.getTypeMirror().toString();
-      if (typeName.contains(".")) {
-        return typeName.substring(typeName.lastIndexOf('.') + 1);
-      } else {
-        return typeName;
       }
     }
   }

@@ -101,7 +101,7 @@ public class QueryCondition implements Serializable {
   private Object value;
 
   /** 子条件（用于嵌套条件） */
-  private List<ConditionGroup> groups;
+  private transient List<ConditionGroup> groups;
 
   /** 默认构造函数 */
   public QueryCondition() {

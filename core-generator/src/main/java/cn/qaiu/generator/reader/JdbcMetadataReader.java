@@ -213,7 +213,6 @@ public class JdbcMetadataReader implements DatabaseMetadataReader {
     try (ResultSet rs = metaData.getColumns(null, schema, tableName, null)) {
       while (rs.next()) {
         String columnName = rs.getString("COLUMN_NAME");
-        int dataType = rs.getInt("DATA_TYPE");
         String typeName = rs.getString("TYPE_NAME");
         int columnSize = rs.getInt("COLUMN_SIZE");
         int nullable = rs.getInt("NULLABLE");
@@ -307,59 +306,6 @@ public class JdbcMetadataReader implements DatabaseMetadataReader {
     }
 
     return foreignKeys;
-  }
-
-  /** 数据库类型映射到Java类型 */
-  private String mapToJavaType(int sqlType, String typeName) {
-    switch (sqlType) {
-      case Types.VARCHAR:
-      case Types.CHAR:
-      case Types.LONGVARCHAR:
-      case Types.CLOB:
-        return "String";
-      case Types.INTEGER:
-        return "Integer";
-      case Types.BIGINT:
-        return "Long";
-      case Types.SMALLINT:
-      case Types.TINYINT:
-        return "Short";
-      case Types.DECIMAL:
-      case Types.NUMERIC:
-        return "BigDecimal";
-      case Types.FLOAT:
-      case Types.REAL:
-        return "Float";
-      case Types.DOUBLE:
-        return "Double";
-      case Types.BOOLEAN:
-      case Types.BIT:
-        return "Boolean";
-      case Types.DATE:
-        return "LocalDate";
-      case Types.TIME:
-        return "LocalTime";
-      case Types.TIMESTAMP:
-        return "LocalDateTime";
-      case Types.BLOB:
-      case Types.BINARY:
-      case Types.VARBINARY:
-      case Types.LONGVARBINARY:
-        return "byte[]";
-      default:
-        // 根据类型名称进行特殊处理
-        if (typeName != null) {
-          String lowerTypeName = typeName.toLowerCase();
-          if (lowerTypeName.contains("text")) {
-            return "String";
-          } else if (lowerTypeName.contains("json")) {
-            return "String";
-          } else if (lowerTypeName.contains("uuid")) {
-            return "String";
-          }
-        }
-        return "String";
-    }
   }
 
   @Override

@@ -2,6 +2,7 @@ package cn.qaiu.db.dsl.core.executor;
 
 import cn.qaiu.db.pool.JDBCType;
 import io.vertx.sqlclient.Pool;
+import java.util.Locale;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class PostgreSQLExecutorStrategy extends AbstractExecutorStrategy {
   @Override
   public boolean supports(Pool pool) {
     // 通过类名检测（非阻塞方式）
-    String className = pool.getClass().getName().toLowerCase();
+    String className = pool.getClass().getName().toLowerCase(Locale.ROOT);
     boolean supported = className.contains("pg") || className.contains("postgres");
 
     if (supported) {

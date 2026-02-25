@@ -6,6 +6,7 @@ import io.vertx.sqlclient.RowSet;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +183,7 @@ public class DefaultMapper<T> implements EntityMapper<T> {
   private Object getValueFromRow(Row row, String columnName, Class<?> targetType) {
     try {
       // 尝试多种字段名格式：原始名、大写、小写
-      String[] possibleNames = {columnName, columnName.toUpperCase(), columnName.toLowerCase()};
+      String[] possibleNames = {columnName, columnName.toUpperCase(Locale.ROOT), columnName.toLowerCase(Locale.ROOT)};
 
       Object value = null;
       String actualColumnName = null;

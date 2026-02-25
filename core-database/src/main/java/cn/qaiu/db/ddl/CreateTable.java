@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="https://qaiu.top">QAIU</a>
  */
 public class CreateTable {
-  public static Map<Class<?>, String> javaProperty2SqlColumnMap =
+  public static final Map<Class<?>, String> javaProperty2SqlColumnMap =
       new HashMap<>() {
         {
           // Java类型到SQL类型的映射
@@ -53,7 +53,7 @@ public class CreateTable {
       };
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CreateTable.class);
-  public static String UNIQUE_PREFIX = "idx_";
+  public static final String UNIQUE_PREFIX = "idx_";
 
   private static Case getCase(Class<?> clz) {
     return switch (clz.getName()) {

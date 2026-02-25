@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
@@ -305,7 +306,7 @@ public class JooqDslBuilder {
   public Condition buildComparisonCondition(String fieldName, String operator, Object value) {
     Field<Object> field = DSL.field(cn.qaiu.vx.core.util.StringCase.toUnderlineCase(fieldName));
 
-    switch (operator.toUpperCase()) {
+    switch (operator.toUpperCase(Locale.ROOT)) {
       case "EQ":
       case "=":
         return field.eq(value);

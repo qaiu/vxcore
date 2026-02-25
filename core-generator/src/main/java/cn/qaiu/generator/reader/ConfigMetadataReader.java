@@ -201,10 +201,6 @@ public class ConfigMetadataReader implements DatabaseMetadataReader {
     try {
       String columnName = columnNode.get("columnName").asText();
       String columnType = columnNode.get("columnType").asText();
-      String javaType =
-          columnNode.has("javaType")
-              ? columnNode.get("javaType").asText()
-              : mapToJavaType(columnType);
 
       ColumnInfo columnInfo = new ColumnInfo();
       columnInfo.setColumnName(columnName);
@@ -281,48 +277,6 @@ public class ConfigMetadataReader implements DatabaseMetadataReader {
     } catch (Exception e) {
       LOGGER.error("Failed to parse foreign key info", e);
       return null;
-    }
-  }
-
-  /** 数据库类型映射到Java类型 */
-  private String mapToJavaType(String dbType) {
-    if (dbType == null) {
-      return "String";
-    }
-
-    String lowerType = dbType.toLowerCase();
-
-    if (lowerType.contains("varchar")
-        || lowerType.contains("char")
-        || lowerType.contains("text")
-        || lowerType.contains("json")) {
-      return "String";
-    } else if (lowerType.contains("int")) {
-      if (lowerType.contains("bigint")) {
-        return "Long";
-      } else if (lowerType.contains("smallint") || lowerType.contains("tinyint")) {
-        return "Short";
-      } else {
-        return "Integer";
-      }
-    } else if (lowerType.contains("decimal") || lowerType.contains("numeric")) {
-      return "BigDecimal";
-    } else if (lowerType.contains("float")) {
-      return "Float";
-    } else if (lowerType.contains("double")) {
-      return "Double";
-    } else if (lowerType.contains("boolean") || lowerType.contains("bit")) {
-      return "Boolean";
-    } else if (lowerType.contains("date")) {
-      return "LocalDate";
-    } else if (lowerType.contains("time")) {
-      return "LocalTime";
-    } else if (lowerType.contains("timestamp")) {
-      return "LocalDateTime";
-    } else if (lowerType.contains("blob") || lowerType.contains("binary")) {
-      return "byte[]";
-    } else {
-      return "String";
     }
   }
 

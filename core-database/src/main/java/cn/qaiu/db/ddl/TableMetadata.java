@@ -7,6 +7,7 @@ import io.vertx.codegen.format.SnakeCase;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -283,7 +284,7 @@ public class TableMetadata {
       return JDBCType.MySQL; // 默认MySQL
     }
 
-    String type = dbtypeStr.trim().toLowerCase();
+    String type = dbtypeStr.trim().toLowerCase(Locale.ROOT);
     switch (type) {
       case "mysql":
         return JDBCType.MySQL;

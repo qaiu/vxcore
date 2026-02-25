@@ -6,6 +6,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,7 +62,7 @@ public class ServiceInterfaceBuilder {
     // 确保输出目录存在
     Files.createDirectories(outputPath.getParent());
 
-    try (Writer writer = new FileWriter(outputPath.toFile())) {
+    try (Writer writer = new OutputStreamWriter(new FileOutputStream(outputPath.toFile()), StandardCharsets.UTF_8)) {
       template.process(data, writer);
     }
   }

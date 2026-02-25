@@ -22,14 +22,13 @@ public class DatabaseUtils {
 
   /** 创建 H2 数据库连接池 */
   public static Future<JDBCClient> createH2Pool(DatabaseConfig config) {
-    JsonObject jdbcConfig =
-        new JsonObject()
-            .put("url", config.getUrl())
-            .put("driver_class", config.getDriver())
-            .put("user", config.getUsername())
-            .put("password", config.getPassword())
-            .put("max_pool_size", config.getMaxPoolSize())
-            .put("min_pool_size", config.getMinPoolSize());
+    new JsonObject()
+        .put("url", config.getUrl())
+        .put("driver_class", config.getDriver())
+        .put("user", config.getUsername())
+        .put("password", config.getPassword())
+        .put("max_pool_size", config.getMaxPoolSize())
+        .put("min_pool_size", config.getMinPoolSize());
 
     // 这里需要 Vertx 实例，暂时返回成功
     // 实际实现需要从 VertxHolder 获取 Vertx 实例

@@ -19,10 +19,10 @@ public class PageResult implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /** 分页请求信息 */
-  private PageRequest pageRequest;
+  private transient PageRequest pageRequest;
 
   /** 数据列表（JsonArray形式） */
-  private JsonArray data;
+  private transient JsonArray data;
 
   /** 总记录数 */
   private long totalRecords;
