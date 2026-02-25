@@ -3,8 +3,32 @@ name: Code Quality
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.txt'
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/*.properties'
+      - '!.github/workflows/**'
+      - 'LICENSE*'
+      - '.gitignore'
+      - '.editorconfig'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.html'
+      - '**/*.txt'
+      - '**/*.yml'
+      - '**/*.yaml'
+      - '**/*.properties'
+      - '!.github/workflows/**'
+      - 'LICENSE*'
+      - '.gitignore'
+      - '.editorconfig'
   schedule:
     # 每周一凌晨1点运行代码质量检查
     - cron: '0 1 * * 1'

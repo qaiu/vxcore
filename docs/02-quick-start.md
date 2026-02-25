@@ -53,8 +53,8 @@ cd my-vxcore-app
     <java.version>17</java.version>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <vxcore.version>1.2.0</vxcore.version>
-    <vertx.version>4.5.21</vertx.version>
+    <vxcore.version>1.2.1</vxcore.version>
+    <vertx.version>4.5.22</vertx.version>
 </properties>
 
 <dependencies>

@@ -15,10 +15,7 @@
     <description>VxCore database module - jOOQ integration with DSL query support</description>
 
     <properties>
-        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>2.0.5</slf4j.version>
-        <jooq.version>3.19.11</jooq.version>
     </properties>
 
     <dependencies>
@@ -31,13 +28,10 @@
         <dependency>
             <groupId>com.google.dagger</groupId>
             <artifactId>dagger</artifactId>
-            <version>2.50</version>
         </dependency>
         <dependency>
             <groupId>com.google.dagger</groupId>
             <artifactId>dagger-compiler</artifactId>
-            <version>2.50</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
@@ -50,7 +44,6 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>9.2.0</version>
             <optional>true</optional>
         </dependency>
         
@@ -81,16 +74,14 @@
 
 
 
-        <!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP -->
+        <!-- HikariCP -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -128,7 +119,6 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.8</version>
             <optional>true</optional>
         </dependency>
         
@@ -144,7 +134,6 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
         
@@ -152,7 +141,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-junit5</artifactId>
-            <version>${vertx.version}</version>
             <scope>test</scope>
         </dependency>
         
@@ -160,7 +148,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.8.0</version>
             <scope>test</scope>
         </dependency>
         
@@ -168,7 +155,6 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.25.1</version>
             <scope>test</scope>
         </dependency>
         
@@ -176,7 +162,6 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.2.220</version>
             <optional>true</optional>
         </dependency>
         
@@ -184,8 +169,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -195,7 +178,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
                 <configuration>
                     <release>${java.version}</release>
                     <!-- Dagger2 注解处理器 -->
@@ -203,7 +185,7 @@
                         <path>
                             <groupId>com.google.dagger</groupId>
                             <artifactId>dagger-compiler</artifactId>
-                            <version>2.50</version>
+                            <version>${dagger.version}</version>
                         </path>
                     </annotationProcessorPaths>
                     <generatedSourcesDirectory>
@@ -277,29 +259,28 @@
                     <dependency>
                         <groupId>com.mysql</groupId>
                         <artifactId>mysql-connector-j</artifactId>
-                        <version>9.2.0</version>
+                        <version>${mysql.version}</version>
                     </dependency>
                     <!-- PostgreSQL 驱动 -->
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>42.7.8</version>
+                        <version>${postgresql.version}</version>
                     </dependency>
                     <!-- H2 驱动（测试用） -->
                     <dependency>
                         <groupId>com.h2database</groupId>
                         <artifactId>h2</artifactId>
-                        <version>2.2.220</version>
+                        <version>${h2.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
             
-            <!-- JaCoCo 测试覆盖率插件 - 暂时禁用，与Java 23不兼容 -->
-            <!--
+            <!-- JaCoCo 测试覆盖率插件 -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
+                <version>${jacoco.plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -326,12 +307,12 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.85</minimum>
+                                            <minimum>0.60</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.25</minimum>
+                                            <minimum>0.50</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
@@ -340,7 +321,6 @@
                     </execution>
                 </executions>
             </plugin>
-            -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -1,6 +1,7 @@
 package cn.qaiu.vx.core.registry;
 
 import cn.qaiu.vx.core.annotations.Service;
+import cn.qaiu.vx.core.aop.AopUtils;
 import cn.qaiu.vx.core.util.AnnotationNameGenerator;
 import cn.qaiu.vx.core.util.ReflectionUtil;
 import io.vertx.core.Vertx;
@@ -59,6 +60,7 @@ public class ServiceRegistry {
         ServiceInfo serviceInfo = analyzeServiceClass(serviceClass);
         if (serviceInfo != null) {
           Object serviceInstance = ReflectionUtil.newWithNoParam(serviceClass);
+          serviceInstance = AopUtils.proxy(serviceInstance);
           boolean success = registerService(serviceInfo, serviceInstance);
 
           if (success) {

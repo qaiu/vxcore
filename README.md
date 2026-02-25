@@ -18,6 +18,13 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 
 ## 🔄 最新更新
 
+### v1.2.1 (2026-02)
+- ✅ **依赖漏洞修复**: 升级 Jackson 2.18.3、Logback 1.5.17、Vert.x 4.5.22、PostgreSQL 42.7.10
+- ✅ **版本统一管理**: 消除子模块硬编码版本，统一由父 POM 管理
+- ✅ **AOP 代理修复**: 修复 ServiceRegistry 中服务实例未应用 AOP 代理的问题
+- ✅ **JaCoCo 启用**: 恢复 core/core-database 模块的测试覆盖率报告
+- ✅ **文档版本同步**: 统一所有文档中的版本引用
+
 ### v1.2.0 (2026-02)
 - ✅ **DI 依赖注入修复**: ServiceRegistry 支持按类型查找，接口注入和具体类注入均正常工作
 - ✅ **注解包名修正**: `annotaions` → `annotations` 全项目统一修正
@@ -399,7 +406,13 @@ mvn test jacoco:report
 
 ## 📈 版本历史
 
-### v1.2.0 (当前版本)
+### v1.2.1 (当前版本)
+- ✅ **依赖漏洞修复**: 升级 Jackson 2.18.3、Logback 1.5.17、Vert.x 4.5.22、PostgreSQL 42.7.10
+- ✅ **版本统一管理**: 消除子模块硬编码版本，统一由父 POM 管理
+- ✅ **AOP 代理修复**: 修复 ServiceRegistry 中服务实例未应用 AOP 代理的问题
+- ✅ **JaCoCo 启用**: 恢复 core/core-database 模块的测试覆盖率报告
+
+### v1.2.0
 - ✅ **DI 依赖注入修复**: ServiceRegistry 按类型查找，接口/具体类注入均可用
 - ✅ **注解包名修正**: `annotaions` → `annotations`，全项目统一修正
 - ✅ **AOP 切面框架**: 基于 Byte Buddy 的 @Aspect/@Before/@After/@AfterThrowing

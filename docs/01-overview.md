@@ -335,7 +335,7 @@ public class UserController {
 
 ## 📈 版本规划
 
-### 当前版本 (v1.1.0)
+### 当前版本 (v1.2.1)
 - ✅ Lambda 查询增强
 - ✅ 多数据源支持
 - ✅ 批量操作优化
@@ -344,8 +344,11 @@ public class UserController {
 - ✅ AOP 切面编程
 - ✅ 安全认证框架
 - ✅ 依赖注入 (Dagger2)
+- ✅ 依赖漏洞修复 (Jackson/Logback/Vert.x/PostgreSQL)
+- ✅ AOP 代理修复
+- ✅ JaCoCo 测试覆盖率启用
 
-### 即将发布 (v1.2.0)
+### 即将发布 (v1.3.0)
 - 🔄 Code-gen 模板引擎
 - 🔄 HTML 模板引擎
 - 🔄 事件总线
