@@ -1,0 +1,15 @@
+server:
+  port: 18013
+
+custom:
+  asyncServiceInstances: 4
+  baseLocations: cn.qaiu.demo.database
+  routeTimeOut: 15000
+  gatewayPrefix: /
+
+datasources:
+  default:
+    url: "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_UPPER=FALSE;INIT=CREATE TABLE IF NOT EXISTS users(id BIGINT AUTO_INCREMENT PRIMARY KEY,user_name VARCHAR(100) NOT NULL,email VARCHAR(200),age INT,status VARCHAR(20) DEFAULT 'ACTIVE',create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,create_by BIGINT,update_by BIGINT)"
+    username: sa
+    password: ""
+    driver: org.h2.Driver

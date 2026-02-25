@@ -19,6 +19,7 @@
         <module>demo-09-exception</module>
         <module>demo-10-config</module>
         <module>demo-15-aop</module>
+        <module>demo-13-database</module>
     </modules>
 
     <properties>
