@@ -18,14 +18,16 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 
 ## 🔄 最新更新
 
-### 代码清理重构 (2024-12)
-- ✅ **清理冗余代码**: 删除AI生成的重复造轮子的工具类
-- ✅ **统一自动管理**: 统一DAO和Service的自动管理模式
-- ✅ **简化配置管理**: 使用Vert.x原生ConfigRetriever
-- ✅ **提高测试稳定性**: 修复CI环境中不稳定的测试
-- ✅ **优化类型转换**: 使用简化的基础类型转换实现
+### v1.2.0 (2026-02)
+- ✅ **DI 依赖注入修复**: ServiceRegistry 支持按类型查找，接口注入和具体类注入均正常工作
+- ✅ **注解包名修正**: `annotaions` → `annotations` 全项目统一修正
+- ✅ **AOP 切面框架**: 基于 Byte Buddy 的 @Aspect/@Before/@After 切面支持
+- ✅ **异常处理增强**: 内置全局异常处理器，统一 JSON 错误响应
+- ✅ **配置管理**: YAML 配置加载、合并、SharedData 访问
+- ✅ **路由注解增强**: 支持 {id} 路径变量自动转换、@RequestBody JSON 绑定
+- ✅ **全量文档验证**: 新增 vxcore-demo 项目（7 个子模块）验证所有文档示例
 
-详细重构内容请参考 [重构总结文档](docs/REFACTORING_SUMMARY.md)
+详细问题报告请参考 [验证报告](vxcore-demo/ISSUES.md)
 
 ## 🎯 核心特性
 
@@ -56,9 +58,11 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 - **监控审计**: SQL 审计、性能监控、错误追踪
 
 ### 📦 模块化设计
-- **core**: 核心框架模块（路由、注解、配置）
+- **core**: 核心框架模块（路由、注解、DI、AOP、配置）
 - **core-database**: 数据库操作模块（DSL、Lambda、多数据源）
+- **core-generator**: 代码生成器模块（根据数据库表结构生成代码）
 - **core-example**: 示例和演示模块
+- **vxcore-demo**: 文档验证项目（7 个独立子模块）
 
 ## 📁 项目结构
 
@@ -112,7 +116,7 @@ VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
 
 ```xml
 <properties>
-    <vxcore.version>1.1.0</vxcore.version>
+    <vxcore.version>1.2.0</vxcore.version>
 </properties>
 
 <dependencies>
@@ -165,17 +169,17 @@ mvn clean compile
 @RouteHandler("/api")
 public class UserController {
     
-    @RouteMapping(value = "/hello", method = HttpMethod.GET)
-    public Future<JsonResult> hello(@RequestParam("name") String name) {
+    @RouteMapping(value = "/hello", method = RouteMethod.GET)
+    public Future<JsonResult<String>> hello(@RequestParam("name") String name) {
         return Future.succeededFuture(
-            JsonResult.success("Hello, " + name + "!")
+            JsonResult.data("Hello, " + name + "!")
         );
     }
     
-    @RouteMapping(value = "/users", method = HttpMethod.POST)
-    public Future<JsonResult> createUser(@RequestBody User user) {
+    @RouteMapping(value = "/users", method = RouteMethod.POST)
+    public Future<JsonResult<User>> createUser(@RequestBody User user) {
         return userService.createUser(user)
-            .map(createdUser -> JsonResult.success(createdUser));
+            .map(createdUser -> JsonResult.data(createdUser));
     }
 }
 ```
@@ -395,15 +399,22 @@ mvn test jacoco:report
 
 ## 📈 版本历史
 
-### v1.1.0 (当前版本)
-- ✅ **无参构造函数DAO**: 自动初始化，无需手动传递参数，极大简化DAO使用
+### v1.2.0 (当前版本)
+- ✅ **DI 依赖注入修复**: ServiceRegistry 按类型查找，接口/具体类注入均可用
+- ✅ **注解包名修正**: `annotaions` → `annotations`，全项目统一修正
+- ✅ **AOP 切面框架**: 基于 Byte Buddy 的 @Aspect/@Before/@After/@AfterThrowing
+- ✅ **异常处理增强**: ExceptionHandlerManager 内置全局异常处理
+- ✅ **配置管理完善**: YAML 合并加载、SharedData 配置访问
+- ✅ **路由增强**: {id} 路径变量自动转换、@RequestBody/@RequestParam 完善
+- ✅ **vxcore-demo 验证项目**: 7 个独立子模块验证全部文档示例
+
+### v1.1.0
+- ✅ **无参构造函数DAO**: 自动初始化，无需手动传递参数
 - ✅ **代码生成器**: 根据数据库表结构自动生成三层架构代码
 - ✅ **Lambda 查询增强**: 支持 Join、聚合查询、子查询
 - ✅ **批量操作**: batchInsert、batchUpdate、batchDelete
 - ✅ **多数据源支持**: 动态数据源切换和事务隔离
 - ✅ **注解式路由**: 类似 Spring MVC 的路由注解
-- ✅ **参数绑定增强**: 支持方法重载、类型转换
-- ✅ **异常处理机制**: 全局和局部异常处理
 - ✅ **WebSocket 支持**: 注解式 WebSocket 路由
 - ✅ **反向代理**: HTTP/WebSocket 代理支持
 - ✅ **配置元数据**: IDE 自动提示和验证
@@ -414,21 +425,20 @@ mvn test jacoco:report
 - ✅ 支持 H2、MySQL、PostgreSQL
 - ✅ 完整的 DSL 框架
 - ✅ 集成 jOOQ 支持
-- ✅ 全面的测试覆盖
 
 ## 🎯 未来规划
 
-### 即将发布 (v2.1.0)
-- 🔄 **Code-gen 模板引擎**: 代码生成工具
-- 🔄 **HTML 模板引擎**: 视图渲染支持
-- 🔄 **AOP 支持**: 注解式切面编程
-- 🔄 **事件总线**: 注解式事件处理
+### 近期 (v1.3.0)
+- 🔄 **@ControllerAdvice**: 全局异常处理器扫描注册
+- 🔄 **Jackson JavaTimeModule**: 自动注册 Java 8 时间类型支持
+- 🔄 **安全框架完善**: JWT 认证 + @Authenticated/@RequiresRoles
+- 🔄 **文档示例修正**: 统一 API 用法与文档描述
 
 ### 长期规划
 - 📋 **微服务支持**: 服务发现、配置中心
 - 📋 **监控集成**: Prometheus、Grafana
 - 📋 **云原生**: Docker、Kubernetes 支持
-- 📋 **多语言**: Kotlin、Scala 支持
+- 📋 **HTML 模板引擎**: 视图渲染支持
 
 ---
 

@@ -7,7 +7,7 @@
     <groupId>cn.qaiu</groupId>
     <artifactId>vxcore</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <name>vxcore</name>
     <description>Vert.x Core Framework - A powerful DSL framework for database operations with jOOQ integration</description>
     <url>https://github.com/qaiu/vxcore</url>

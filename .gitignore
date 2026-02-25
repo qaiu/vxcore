@@ -82,6 +82,9 @@ generated-test-sources/
 # Flattened POM files
 .flattened-pom.xml
 settings.xml
+.git-commit-msg.txt
+.push_maven.xml
+.github_token
 
 # Demo verification project target dirs
 vxcore-demo/**/target/

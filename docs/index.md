@@ -42,7 +42,7 @@ VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
 <dependency>
     <groupId>cn.qaiu</groupId>
     <artifactId>core</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
