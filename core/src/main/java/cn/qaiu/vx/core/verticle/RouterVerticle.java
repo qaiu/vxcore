@@ -98,9 +98,7 @@ public class RouterVerticle extends AbstractVerticle {
     }
   }
 
-  /**
-   * 获取全局配置 优先从FrameworkLifecycleManager获取，否则从sharedData获取（兼容旧Deploy方式）
-   */
+  /** 获取全局配置 优先从FrameworkLifecycleManager获取，否则从sharedData获取（兼容旧Deploy方式） */
   private JsonObject getGlobalConfig() {
     // 尝试从FrameworkLifecycleManager获取
     FrameworkLifecycleManager lifecycleManager = FrameworkLifecycleManager.getInstance();
@@ -124,9 +122,7 @@ public class RouterVerticle extends AbstractVerticle {
     return null;
   }
 
-  /**
-   * 获取或创建路由器 优先从RouterComponent获取，否则新建（兼容旧Deploy方式）
-   */
+  /** 获取或创建路由器 优先从RouterComponent获取，否则新建（兼容旧Deploy方式） */
   private Router getOrCreateRouter(JsonObject globalConfig) {
     // 尝试从FrameworkLifecycleManager获取RouterComponent
     FrameworkLifecycleManager lifecycleManager = FrameworkLifecycleManager.getInstance();

@@ -869,7 +869,12 @@ public class CustomServiceGenProcessor extends AbstractProcessor {
     for (String genericType : genericTypes) {
       writer.println("    /**");
       writer.println("     * 根据" + genericType + "类型查询");
-      writer.println("     * @param " + genericType.toLowerCase(java.util.Locale.ROOT) + " " + genericType + "对象");
+      writer.println(
+          "     * @param "
+              + genericType.toLowerCase(java.util.Locale.ROOT)
+              + " "
+              + genericType
+              + "对象");
       writer.println("     * @return Future 包装的查询结果");
       writer.println("     */");
       writer.println(

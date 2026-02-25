@@ -69,9 +69,10 @@ public class SimpleLambdaTest {
     // 清空测试数据并插入
     pool.query("DELETE FROM products")
         .execute()
-        .compose(v -> {
-          String insertSql =
-              """
+        .compose(
+            v -> {
+              String insertSql =
+                  """
             INSERT INTO products (product_name, product_code, category_id, price, stock_quantity, description, is_active, created_at, updated_at) VALUES
             ('iPhone 15 Pro', 'IPHONE15PRO', 1, 999.99, 50, 'Latest iPhone with advanced features', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
             ('Samsung Galaxy S24', 'SAMSUNG_S24', 1, 899.99, 30, 'Flagship Android smartphone', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -79,12 +80,13 @@ public class SimpleLambdaTest {
             ('Dell XPS 13', 'DELL_XPS13', 2, 1299.99, 15, 'Ultrabook for business users', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
             ('AirPods Pro', 'AIRPODS_PRO', 3, 249.99, 100, 'Wireless earbuds with noise cancellation', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
-          return pool.query(insertSql).execute();
-        })
-        .onSuccess(result -> {
-          logger.debug("Products test data inserted: {} rows", result.rowCount());
-          testContext.completeNow();
-        })
+              return pool.query(insertSql).execute();
+            })
+        .onSuccess(
+            result -> {
+              logger.debug("Products test data inserted: {} rows", result.rowCount());
+              testContext.completeNow();
+            })
         .onFailure(testContext::failNow);
   }
 
@@ -98,14 +100,15 @@ public class SimpleLambdaTest {
         .findByCode("IPHONE15PRO")
         .onSuccess(
             product -> {
-              testContext.verify(() -> {
-                assertTrue(product.isPresent());
-                assertEquals("iPhone 15 Pro", product.get().getName());
-                assertEquals("IPHONE15PRO", product.get().getCode());
-                assertEquals(new BigDecimal("999.99"), product.get().getPrice());
-                assertTrue(product.get().getActive());
-                logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getName());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(product.isPresent());
+                    assertEquals("iPhone 15 Pro", product.get().getName());
+                    assertEquals("IPHONE15PRO", product.get().getCode());
+                    assertEquals(new BigDecimal("999.99"), product.get().getPrice());
+                    assertTrue(product.get().getActive());
+                    logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getName());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -119,25 +122,28 @@ public class SimpleLambdaTest {
     // 测试等值查询
     productDao
         .findByName("iPhone 15 Pro")
-        .compose(product -> {
-          testContext.verify(() -> {
-            assertTrue(product.isPresent());
-            assertEquals("IPHONE15PRO", product.get().getCode());
-            logger.info("✓ 等值查询测试通过: {}", product.get().getName());
-          });
-          // 测试分类查询
-          return productDao.findByCategoryId(1L);
-        })
+        .compose(
+            product -> {
+              testContext.verify(
+                  () -> {
+                    assertTrue(product.isPresent());
+                    assertEquals("IPHONE15PRO", product.get().getCode());
+                    logger.info("✓ 等值查询测试通过: {}", product.get().getName());
+                  });
+              // 测试分类查询
+              return productDao.findByCategoryId(1L);
+            })
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 2); // iPhone和Samsung
-                products.forEach(
-                    product -> {
-                      assertEquals(Long.valueOf(1L), product.getCategoryId());
-                    });
-                logger.info("✓ 分类查询测试通过: 找到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 2); // iPhone和Samsung
+                    products.forEach(
+                        product -> {
+                          assertEquals(Long.valueOf(1L), product.getCategoryId());
+                        });
+                    logger.info("✓ 分类查询测试通过: 找到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -164,17 +170,18 @@ public class SimpleLambdaTest {
         .lambdaList(wrapper)
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() <= 5);
-                products.forEach(
-                    product -> {
-                      assertTrue(product.getActive());
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("200.00")) >= 0);
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("2000.00")) <= 0);
-                      assertTrue(Arrays.asList(1L, 2L, 3L).contains(product.getCategoryId()));
-                    });
-                logger.info("✓ LambdaQueryWrapper测试通过: 查询到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() <= 5);
+                    products.forEach(
+                        product -> {
+                          assertTrue(product.getActive());
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("200.00")) >= 0);
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("2000.00")) <= 0);
+                          assertTrue(Arrays.asList(1L, 2L, 3L).contains(product.getCategoryId()));
+                        });
+                    logger.info("✓ LambdaQueryWrapper测试通过: 查询到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -185,17 +192,19 @@ public class SimpleLambdaTest {
   void testLambdaUtils(VertxTestContext testContext) {
     logger.info("=== 测试LambdaUtils ===");
 
-    testContext.verify(() -> {
-      // 测试LambdaUtils的字段名提取功能
-      String fieldName = LambdaUtils.getFieldName(Product::getName);
-      assertEquals("product_name", fieldName);
-      logger.info("✓ LambdaUtils字段名提取测试通过: {} -> {}", "Product::getName", fieldName);
+    testContext.verify(
+        () -> {
+          // 测试LambdaUtils的字段名提取功能
+          String fieldName = LambdaUtils.getFieldName(Product::getName);
+          assertEquals("product_name", fieldName);
+          logger.info("✓ LambdaUtils字段名提取测试通过: {} -> {}", "Product::getName", fieldName);
 
-      // 测试字段类型提取
-      Class<?> fieldType = LambdaUtils.getFieldType(Product::getName);
-      assertEquals(String.class, fieldType);
-      logger.info("✓ LambdaUtils字段类型提取测试通过: {} -> {}", "Product::getName", fieldType.getSimpleName());
-    });
+          // 测试字段类型提取
+          Class<?> fieldType = LambdaUtils.getFieldType(Product::getName);
+          assertEquals(String.class, fieldType);
+          logger.info(
+              "✓ LambdaUtils字段类型提取测试通过: {} -> {}", "Product::getName", fieldType.getSimpleName());
+        });
     testContext.completeNow();
   }
 
@@ -204,26 +213,27 @@ public class SimpleLambdaTest {
   void testLambdaQueryBuilder(VertxTestContext testContext) {
     logger.info("=== 测试Lambda查询构建器 ===");
 
-    testContext.verify(() -> {
-      // 测试查询构建
-      LambdaQueryWrapper<Product> wrapper =
-          productDao.lambdaQuery().eq(Product::getActive, true).orderByDesc(Product::getPrice);
+    testContext.verify(
+        () -> {
+          // 测试查询构建
+          LambdaQueryWrapper<Product> wrapper =
+              productDao.lambdaQuery().eq(Product::getActive, true).orderByDesc(Product::getPrice);
 
-      // 构建查询条件
-      org.jooq.Condition condition = wrapper.buildCondition();
-      assertNotNull(condition);
-      logger.info("✓ 查询条件构建测试通过");
+          // 构建查询条件
+          org.jooq.Condition condition = wrapper.buildCondition();
+          assertNotNull(condition);
+          logger.info("✓ 查询条件构建测试通过");
 
-      // 构建查询
-      org.jooq.Query selectQuery = wrapper.buildSelect();
-      assertNotNull(selectQuery);
-      logger.info("✓ 查询构建测试通过");
+          // 构建查询
+          org.jooq.Query selectQuery = wrapper.buildSelect();
+          assertNotNull(selectQuery);
+          logger.info("✓ 查询构建测试通过");
 
-      // 构建计数查询
-      org.jooq.Query countQuery = wrapper.buildCount();
-      assertNotNull(countQuery);
-      logger.info("✓ 计数查询构建测试通过");
-    });
+          // 构建计数查询
+          org.jooq.Query countQuery = wrapper.buildCount();
+          assertNotNull(countQuery);
+          logger.info("✓ 计数查询构建测试通过");
+        });
     testContext.completeNow();
   }
 }

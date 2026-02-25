@@ -28,7 +28,8 @@ public class EnhancedCreateTable {
 
   /** 创建表（自动从Pool检测数据库类型） */
   public static Future<Void> createTable(Pool pool, Class<?> clz) {
-    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> CreateTable.createTable(pool, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
+        .compose(dbType -> CreateTable.createTable(pool, dbType));
   }
 
   /** 创建表并启用严格DDL映射（自动从Pool检测数据库类型） */
@@ -40,7 +41,8 @@ public class EnhancedCreateTable {
   /** 同步表结构（自动从Pool检测数据库类型） */
   public static Future<List<TableStructureComparator.TableDifference>> syncTableStructure(
       Pool pool, Class<?> clz) {
-    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> synchronizeTable(pool, clz, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
+        .compose(dbType -> synchronizeTable(pool, clz, dbType));
   }
 
   /** 生成表结构报告（自动从Pool检测数据库类型） */
@@ -126,7 +128,7 @@ public class EnhancedCreateTable {
 
   /**
    * 获取指定包下使用DdlTable注解的类
-   * 
+   *
    * @param packageNames 包名数组，为空或null时扫描默认包
    * @return 带有@DdlTable注解的类集合
    */
@@ -134,13 +136,13 @@ public class EnhancedCreateTable {
     if (packageNames == null || packageNames.length == 0) {
       return getDdlTableClasses();
     }
-    
+
     Set<Class<?>> result = new java.util.HashSet<>();
     for (String packageName : packageNames) {
       if (packageName != null && !packageName.isEmpty()) {
         try {
-          result.addAll(ReflectionUtil.getReflections(packageName)
-              .getTypesAnnotatedWith(DdlTable.class));
+          result.addAll(
+              ReflectionUtil.getReflections(packageName).getTypesAnnotatedWith(DdlTable.class));
         } catch (Exception e) {
           LOGGER.warn("Failed to scan package '{}': {}", packageName, e.getMessage());
         }
@@ -156,7 +158,8 @@ public class EnhancedCreateTable {
 
   /** 检查是否有表需要同步（自动从Pool检测数据库类型） */
   public static Future<Boolean> hasTablesNeedingSync(Pool pool) {
-    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> hasTablesNeedingSync(pool, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
+        .compose(dbType -> hasTablesNeedingSync(pool, dbType));
   }
 
   /** 检查是否有表需要同步 */

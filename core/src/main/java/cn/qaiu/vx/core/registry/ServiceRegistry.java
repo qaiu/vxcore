@@ -204,8 +204,7 @@ public class ServiceRegistry {
   }
 
   /**
-   * 按类型查找已注册的服务实例。
-   * 先精确匹配，再按 assignable 兼容查找。
+   * 按类型查找已注册的服务实例。 先精确匹配，再按 assignable 兼容查找。
    *
    * @param serviceType 服务类型（接口或具体类）
    * @return 服务实例，未找到返回 null
@@ -243,14 +242,12 @@ public class ServiceRegistry {
     return registeredServices.size();
   }
 
-  /**
-   * 安全地检查接口是否有@ProxyGen注解
-   * 如果注解类不存在（如运行时缺少vertx-codegen依赖），则返回false
-   */
+  /** 安全地检查接口是否有@ProxyGen注解 如果注解类不存在（如运行时缺少vertx-codegen依赖），则返回false */
   private boolean hasProxyGenAnnotation(Class<?> serviceInterface) {
     try {
       Class<?> proxyGenClass = Class.forName("io.vertx.codegen.annotations.ProxyGen");
-      return serviceInterface.isAnnotationPresent((Class<java.lang.annotation.Annotation>) proxyGenClass);
+      return serviceInterface.isAnnotationPresent(
+          (Class<java.lang.annotation.Annotation>) proxyGenClass);
     } catch (ClassNotFoundException e) {
       LOGGER.debug("ProxyGen annotation class not found in classpath, skipping proxy check");
       return false;

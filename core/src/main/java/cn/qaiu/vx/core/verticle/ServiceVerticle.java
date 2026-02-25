@@ -70,7 +70,8 @@ public class ServiceVerticle extends AbstractVerticle {
 
       // 注册所有服务
       int registeredCount = serviceRegistry.registerServices(handlers);
-      LOGGER.info("Service registration completed (legacy mode). Total registered: {}", registeredCount);
+      LOGGER.info(
+          "Service registration completed (legacy mode). Total registered: {}", registeredCount);
 
       startPromise.complete();
     } catch (Exception e) {
@@ -79,10 +80,7 @@ public class ServiceVerticle extends AbstractVerticle {
     }
   }
 
-  /**
-   * 获取或创建ServiceRegistryComponent
-   * 优先从FrameworkLifecycleManager获取（如果已经初始化），否则返回null（表示使用旧模式）
-   */
+  /** 获取或创建ServiceRegistryComponent 优先从FrameworkLifecycleManager获取（如果已经初始化），否则返回null（表示使用旧模式） */
   private ServiceRegistryComponent getOrCreateServiceRegistryComponent() {
     try {
       FrameworkLifecycleManager lifecycleManager = FrameworkLifecycleManager.getInstance();
@@ -90,14 +88,15 @@ public class ServiceVerticle extends AbstractVerticle {
       // 检查FrameworkLifecycleManager是否已经初始化（通过检查globalConfig和状态）
       JsonObject globalConfig = lifecycleManager.getGlobalConfig();
       if (globalConfig == null) {
-        LOGGER.info("FrameworkLifecycleManager not initialized (globalConfig is null), using legacy mode");
+        LOGGER.info(
+            "FrameworkLifecycleManager not initialized (globalConfig is null), using legacy mode");
         return null;
       }
 
       // 检查状态是否已启动
       FrameworkLifecycleManager.LifecycleState state = lifecycleManager.getState();
-      if (state != FrameworkLifecycleManager.LifecycleState.STARTED &&
-          state != FrameworkLifecycleManager.LifecycleState.STARTING) {
+      if (state != FrameworkLifecycleManager.LifecycleState.STARTED
+          && state != FrameworkLifecycleManager.LifecycleState.STARTING) {
         LOGGER.info("FrameworkLifecycleManager state is {}, using legacy mode", state);
         return null;
       }

@@ -16,10 +16,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 配置管理组件 负责配置的加载、验证和分发
- * 
- * <p>使用 {@link ConfigAliasRegistry} 提供配置别名机制，
- * 使用 {@link ConfigResolver} 提供别名感知的配置值获取，
- * 使用 {@link ConfigBinder} 提供类型安全的配置绑定。
+ *
+ * <p>使用 {@link ConfigAliasRegistry} 提供配置别名机制， 使用 {@link ConfigResolver} 提供别名感知的配置值获取， 使用 {@link
+ * ConfigBinder} 提供类型安全的配置绑定。
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -43,7 +42,7 @@ public class ConfigurationComponent implements LifecycleComponent {
             // 0. 初始化配置解析器和绑定器
             this.configResolver = new ConfigResolver(config);
             this.configBinder = new ConfigBinder();
-            
+
             // 1. 自动检测扫描路径
             autoDetectScanPaths(config);
 
@@ -54,7 +53,8 @@ public class ConfigurationComponent implements LifecycleComponent {
             storeConfiguration(config);
 
             LOGGER.info("Configuration component initialized successfully");
-            LOGGER.info("ConfigAliasRegistry initialized with {} alias groups", 
+            LOGGER.info(
+                "ConfigAliasRegistry initialized with {} alias groups",
                 ConfigAliasRegistry.getInstance().getAllAliasGroups().size());
             promise.complete();
           } catch (Exception e) {
@@ -131,9 +131,7 @@ public class ConfigurationComponent implements LifecycleComponent {
     if (serverConfig == null) {
       LOGGER.warn("No 'server' configuration found, will use default settings");
       // 创建默认服务器配置
-      serverConfig = new JsonObject()
-          .put("port", 8080)
-          .put("host", "0.0.0.0");
+      serverConfig = new JsonObject().put("port", 8080).put("host", "0.0.0.0");
       config.put("server", serverConfig);
     }
 
@@ -153,14 +151,14 @@ public class ConfigurationComponent implements LifecycleComponent {
     }
     // 兼容旧的 dataSource 配置格式
     JsonObject oldDataSource = configResolver.getJsonObject("dataSource");
-    
+
     if ((datasources == null || datasources.isEmpty()) && oldDataSource != null) {
       LOGGER.info("Using legacy 'dataSource' configuration format");
       // 转换旧格式为新格式
       datasources = new JsonObject().put("primary", oldDataSource);
       config.put("datasources", datasources);
     }
-    
+
     if (datasources == null || datasources.isEmpty()) {
       LOGGER.warn("No datasource configuration found");
     }
@@ -184,6 +182,7 @@ public class ConfigurationComponent implements LifecycleComponent {
 
   /**
    * 获取配置解析器
+   *
    * @return ConfigResolver实例
    */
   public ConfigResolver getConfigResolver() {
@@ -192,6 +191,7 @@ public class ConfigurationComponent implements LifecycleComponent {
 
   /**
    * 获取配置绑定器
+   *
    * @return ConfigBinder实例
    */
   public ConfigBinder getConfigBinder() {
@@ -200,6 +200,7 @@ public class ConfigurationComponent implements LifecycleComponent {
 
   /**
    * 获取全局配置
+   *
    * @return 全局配置 JsonObject 的不可变副本
    */
   public JsonObject getGlobalConfig() {

@@ -267,8 +267,7 @@ public class DatabaseUrlUtil {
   }
 
   /**
-   * 从Pool连接中获取数据库类型（异步方式）
-   * 这是统一的数据库类型检测方法，供ddl包下的类使用
+   * 从Pool连接中获取数据库类型（异步方式） 这是统一的数据库类型检测方法，供ddl包下的类使用
    *
    * @param pool 数据库连接池
    * @return 数据库类型Future，检测失败时默认返回MySQL

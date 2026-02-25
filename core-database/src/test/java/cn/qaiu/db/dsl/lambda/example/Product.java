@@ -46,7 +46,8 @@ public class Product {
   // 构造函数
   public Product() {}
 
-  public Product(String name, String code, Long categoryId, BigDecimal price, Integer stockQuantity) {
+  public Product(
+      String name, String code, Long categoryId, BigDecimal price, Integer stockQuantity) {
     this.name = name;
     this.code = code;
     this.categoryId = categoryId;

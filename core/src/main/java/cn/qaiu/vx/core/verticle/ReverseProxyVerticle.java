@@ -49,21 +49,23 @@ public class ReverseProxyVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise) {
     CONFIG
-        .onSuccess(config -> {
-          try {
-            handleProxyConfList(config);
-            LOGGER.info("Reverse proxy configuration loaded successfully");
-            startPromise.complete();
-          } catch (Exception e) {
-            LOGGER.error("Failed to handle proxy configuration", e);
-            startPromise.fail(e);
-          }
-        })
-        .onFailure(e -> {
-          LOGGER.info("web代理配置已禁用，当前仅支持API调用");
-          // 配置不存在视为正常启动，只是禁用了代理功能
-          startPromise.complete();
-        });
+        .onSuccess(
+            config -> {
+              try {
+                handleProxyConfList(config);
+                LOGGER.info("Reverse proxy configuration loaded successfully");
+                startPromise.complete();
+              } catch (Exception e) {
+                LOGGER.error("Failed to handle proxy configuration", e);
+                startPromise.fail(e);
+              }
+            })
+        .onFailure(
+            e -> {
+              LOGGER.info("web代理配置已禁用，当前仅支持API调用");
+              // 配置不存在视为正常启动，只是禁用了代理功能
+              startPromise.complete();
+            });
   }
 
   /**

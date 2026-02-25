@@ -25,12 +25,13 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试绑定基本类型")
   void testBindBasicTypes() {
-    JsonObject config = new JsonObject()
-        .put("name", "TestApp")
-        .put("port", 8080)
-        .put("enabled", true)
-        .put("timeout", 30.5)
-        .put("maxConnections", 100L);
+    JsonObject config =
+        new JsonObject()
+            .put("name", "TestApp")
+            .put("port", 8080)
+            .put("enabled", true)
+            .put("timeout", 30.5)
+            .put("maxConnections", 100L);
 
     SimpleConfig result = binder.bind(config, SimpleConfig.class);
 
@@ -45,10 +46,11 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试绑定使用别名")
   void testBindWithAlias() {
-    JsonObject config = new JsonObject()
-        .put("jdbcUrl", "jdbc:mysql://localhost/test")
-        .put("user", "root")
-        .put("pwd", "secret");
+    JsonObject config =
+        new JsonObject()
+            .put("jdbcUrl", "jdbc:mysql://localhost/test")
+            .put("user", "root")
+            .put("pwd", "secret");
 
     DatabaseConfig result = binder.bind(config, DatabaseConfig.class);
 
@@ -61,11 +63,10 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试绑定嵌套对象")
   void testBindNestedObject() {
-    JsonObject config = new JsonObject()
-        .put("name", "MainApp")
-        .put("database", new JsonObject()
-            .put("url", "jdbc:h2:mem:test")
-            .put("username", "sa"));
+    JsonObject config =
+        new JsonObject()
+            .put("name", "MainApp")
+            .put("database", new JsonObject().put("url", "jdbc:h2:mem:test").put("username", "sa"));
 
     AppConfig result = binder.bind(config, AppConfig.class);
 
@@ -97,9 +98,7 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试绑定到已存在的实例")
   void testBindToInstance() {
-    JsonObject config = new JsonObject()
-        .put("name", "UpdatedName")
-        .put("port", 9090);
+    JsonObject config = new JsonObject().put("name", "UpdatedName").put("port", 9090);
 
     SimpleConfig instance = new SimpleConfig();
     instance.setName("OriginalName");
@@ -114,15 +113,16 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试注册自定义策略")
   void testRegisterCustomStrategy() {
-    binder.registerStrategy(CustomType.class, (value, targetType) -> {
-      if (value != null) {
-        return new CustomType(value.toString());
-      }
-      return null;
-    });
+    binder.registerStrategy(
+        CustomType.class,
+        (value, targetType) -> {
+          if (value != null) {
+            return new CustomType(value.toString());
+          }
+          return null;
+        });
 
-    JsonObject config = new JsonObject()
-        .put("customField", "custom-value");
+    JsonObject config = new JsonObject().put("customField", "custom-value");
 
     CustomConfig result = binder.bind(config, CustomConfig.class);
 
@@ -134,9 +134,10 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试类型转换 - 字符串到数字")
   void testTypeConversionStringToNumber() {
-    JsonObject config = new JsonObject()
-        .put("port", "8080")  // 字符串形式的数字
-        .put("timeout", "30.5");
+    JsonObject config =
+        new JsonObject()
+            .put("port", "8080") // 字符串形式的数字
+            .put("timeout", "30.5");
 
     SimpleConfig result = binder.bind(config, SimpleConfig.class);
 
@@ -148,8 +149,7 @@ public class ConfigBinderTest {
   @Test
   @DisplayName("测试类型转换 - 数字到字符串")
   void testTypeConversionNumberToString() {
-    JsonObject config = new JsonObject()
-        .put("name", 12345);  // 数字会被转换为字符串
+    JsonObject config = new JsonObject().put("name", 12345); // 数字会被转换为字符串
 
     SimpleConfig result = binder.bind(config, SimpleConfig.class);
 
@@ -194,20 +194,45 @@ public class ConfigBinderTest {
     private double timeout;
     private long maxConnections;
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+      return name;
+    }
 
-    public int getPort() { return port; }
-    public void setPort(int port) { this.port = port; }
+    public void setName(String name) {
+      this.name = name;
+    }
 
-    public boolean isEnabled() { return enabled; }
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public int getPort() {
+      return port;
+    }
 
-    public double getTimeout() { return timeout; }
-    public void setTimeout(double timeout) { this.timeout = timeout; }
+    public void setPort(int port) {
+      this.port = port;
+    }
 
-    public long getMaxConnections() { return maxConnections; }
-    public void setMaxConnections(long maxConnections) { this.maxConnections = maxConnections; }
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public double getTimeout() {
+      return timeout;
+    }
+
+    public void setTimeout(double timeout) {
+      this.timeout = timeout;
+    }
+
+    public long getMaxConnections() {
+      return maxConnections;
+    }
+
+    public void setMaxConnections(long maxConnections) {
+      this.maxConnections = maxConnections;
+    }
   }
 
   public static class DatabaseConfig {
@@ -215,40 +240,74 @@ public class ConfigBinderTest {
     private String username;
     private String password;
 
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
+    public String getUrl() {
+      return url;
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public void setUrl(String url) {
+      this.url = url;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getUsername() {
+      return username;
+    }
+
+    public void setUsername(String username) {
+      this.username = username;
+    }
+
+    public String getPassword() {
+      return password;
+    }
+
+    public void setPassword(String password) {
+      this.password = password;
+    }
   }
 
   public static class AppConfig {
     private String name;
     private JsonObject database;
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getName() {
+      return name;
+    }
 
-    public JsonObject getDatabase() { return database; }
-    public void setDatabase(JsonObject database) { this.database = database; }
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public JsonObject getDatabase() {
+      return database;
+    }
+
+    public void setDatabase(JsonObject database) {
+      this.database = database;
+    }
   }
 
   public static class CustomType {
     private final String value;
 
-    public CustomType(String value) { this.value = value; }
+    public CustomType(String value) {
+      this.value = value;
+    }
 
-    public String getValue() { return value; }
+    public String getValue() {
+      return value;
+    }
   }
 
   public static class CustomConfig {
     private CustomType customField;
 
-    public CustomType getCustomField() { return customField; }
-    public void setCustomField(CustomType customField) { this.customField = customField; }
+    public CustomType getCustomField() {
+      return customField;
+    }
+
+    public void setCustomField(CustomType customField) {
+      this.customField = customField;
+    }
   }
 
   public static class PrimitiveConfig {
@@ -257,17 +316,37 @@ public class ConfigBinderTest {
     private double doubleValue;
     private boolean boolValue;
 
-    public int getIntValue() { return intValue; }
-    public void setIntValue(int intValue) { this.intValue = intValue; }
+    public int getIntValue() {
+      return intValue;
+    }
 
-    public long getLongValue() { return longValue; }
-    public void setLongValue(long longValue) { this.longValue = longValue; }
+    public void setIntValue(int intValue) {
+      this.intValue = intValue;
+    }
 
-    public double getDoubleValue() { return doubleValue; }
-    public void setDoubleValue(double doubleValue) { this.doubleValue = doubleValue; }
+    public long getLongValue() {
+      return longValue;
+    }
 
-    public boolean isBoolValue() { return boolValue; }
-    public void setBoolValue(boolean boolValue) { this.boolValue = boolValue; }
+    public void setLongValue(long longValue) {
+      this.longValue = longValue;
+    }
+
+    public double getDoubleValue() {
+      return doubleValue;
+    }
+
+    public void setDoubleValue(double doubleValue) {
+      this.doubleValue = doubleValue;
+    }
+
+    public boolean isBoolValue() {
+      return boolValue;
+    }
+
+    public void setBoolValue(boolean boolValue) {
+      this.boolValue = boolValue;
+    }
   }
 
   public static class WrapperConfig {
@@ -276,16 +355,36 @@ public class ConfigBinderTest {
     private Double doubleValue;
     private Boolean boolValue;
 
-    public Integer getIntegerValue() { return integerValue; }
-    public void setIntegerValue(Integer integerValue) { this.integerValue = integerValue; }
+    public Integer getIntegerValue() {
+      return integerValue;
+    }
 
-    public Long getLongValue() { return longValue; }
-    public void setLongValue(Long longValue) { this.longValue = longValue; }
+    public void setIntegerValue(Integer integerValue) {
+      this.integerValue = integerValue;
+    }
 
-    public Double getDoubleValue() { return doubleValue; }
-    public void setDoubleValue(Double doubleValue) { this.doubleValue = doubleValue; }
+    public Long getLongValue() {
+      return longValue;
+    }
 
-    public Boolean getBoolValue() { return boolValue; }
-    public void setBoolValue(Boolean boolValue) { this.boolValue = boolValue; }
+    public void setLongValue(Long longValue) {
+      this.longValue = longValue;
+    }
+
+    public Double getDoubleValue() {
+      return doubleValue;
+    }
+
+    public void setDoubleValue(Double doubleValue) {
+      this.doubleValue = doubleValue;
+    }
+
+    public Boolean getBoolValue() {
+      return boolValue;
+    }
+
+    public void setBoolValue(Boolean boolValue) {
+      this.boolValue = boolValue;
+    }
   }
 }

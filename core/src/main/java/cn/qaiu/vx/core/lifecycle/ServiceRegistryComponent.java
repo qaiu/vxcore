@@ -48,7 +48,9 @@ public class ServiceRegistryComponent implements LifecycleComponent {
             //    Controller 时已有可用的服务实例
             Set<Class<?>> serviceClasses = serviceComponent.serviceClasses();
             int registeredCount = serviceRegistry.registerServices(serviceClasses);
-            LOGGER.info("Service registration completed in initialize phase. Total registered: {}", registeredCount);
+            LOGGER.info(
+                "Service registration completed in initialize phase. Total registered: {}",
+                registeredCount);
 
             LOGGER.info("Service registry component initialized successfully");
             promise.complete();

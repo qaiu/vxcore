@@ -82,7 +82,8 @@ public class ForeignKeyInfo {
   }
 
   public ForeignKeyInfo setReferencedColumnNames(List<String> referencedColumnNames) {
-    this.referencedColumnNames = referencedColumnNames != null ? new ArrayList<>(referencedColumnNames) : null;
+    this.referencedColumnNames =
+        referencedColumnNames != null ? new ArrayList<>(referencedColumnNames) : null;
     return this;
   }
 

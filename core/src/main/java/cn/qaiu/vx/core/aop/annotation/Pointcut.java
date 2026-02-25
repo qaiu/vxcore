@@ -4,9 +4,8 @@ import java.lang.annotation.*;
 
 /**
  * 切点定义注解
- * <p>
- * 用于定义可重用的切点表达式，可以在其他通知注解中引用。
- * </p>
+ *
+ * <p>用于定义可重用的切点表达式，可以在其他通知注解中引用。
  *
  * <pre>
  * &#64;Aspect
@@ -35,18 +34,18 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Pointcut {
-    
-    /**
-     * 切点表达式
-     * <p>
-     * 支持的表达式格式:
-     * <ul>
-     *   <li>execution(modifiers? return-type declaring-type? method-name(params) throws?)</li>
-     *   <li>@annotation(annotation-type) - 匹配带有指定注解的方法</li>
-     *   <li>within(type-pattern) - 匹配指定类型内的所有方法</li>
-     *   <li>组合表达式: && (与), || (或), ! (非)</li>
-     * </ul>
-     * </p>
-     */
-    String value();
+
+  /**
+   * 切点表达式
+   *
+   * <p>支持的表达式格式:
+   *
+   * <ul>
+   *   <li>execution(modifiers? return-type declaring-type? method-name(params) throws?)
+   *   <li>@annotation(annotation-type) - 匹配带有指定注解的方法
+   *   <li>within(type-pattern) - 匹配指定类型内的所有方法
+   *   <li>组合表达式: && (与), || (或), ! (非)
+   * </ul>
+   */
+  String value();
 }

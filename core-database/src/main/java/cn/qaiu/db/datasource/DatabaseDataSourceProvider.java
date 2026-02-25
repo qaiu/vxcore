@@ -69,7 +69,10 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
       LOGGER.warn("No database configuration found");
       return Future.succeededFuture();
     }
-    LOGGER.info("Found database configuration with {} entries: {}", databaseConfig.fieldNames().size(), databaseConfig.fieldNames());
+    LOGGER.info(
+        "Found database configuration with {} entries: {}",
+        databaseConfig.fieldNames().size(),
+        databaseConfig.fieldNames());
 
     // 注册所有数据源
     Future<Void> registrationFuture = Future.succeededFuture();
@@ -77,7 +80,7 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
       JsonObject dataSourceConfig = databaseConfig.getJsonObject(dataSourceName);
       if (dataSourceConfig != null) {
         String type = dataSourceConfig.getString("type");
-        
+
         // 如果没有指定 type，从 jdbcUrl 推断
         if (type == null || type.isEmpty()) {
           String jdbcUrl = dataSourceConfig.getString("jdbcUrl");
@@ -85,9 +88,10 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
             jdbcUrl = dataSourceConfig.getString("url");
           }
           type = inferDatabaseType(jdbcUrl);
-          LOGGER.info("Inferred database type '{}' from URL for datasource: {}", type, dataSourceName);
+          LOGGER.info(
+              "Inferred database type '{}' from URL for datasource: {}", type, dataSourceName);
         }
-        
+
         if (supports(type)) {
           // 转换为DataSourceConfig对象
           DataSourceConfig configObj = new DataSourceConfig();
@@ -126,24 +130,26 @@ public class DatabaseDataSourceProvider implements DataSourceProvider {
 
     // 保存第一个数据源名称用于设置默认数据源
     final String firstDataSourceName = databaseConfig.fieldNames().iterator().next();
-    
+
     // 初始化所有数据源
-    return registrationFuture.compose(v -> {
-      LOGGER.info("Initializing all registered datasources...");
-      return dataSourceManager.initializeAllDataSources();
-    }).compose(v -> {
-      // 设置第一个数据源为默认数据源
-      if (firstDataSourceName != null) {
-        dataSourceManager.setDefaultDataSource(firstDataSourceName);
-        LOGGER.info("Set default datasource to: {}", firstDataSourceName);
-      }
-      return Future.succeededFuture();
-    });
+    return registrationFuture
+        .compose(
+            v -> {
+              LOGGER.info("Initializing all registered datasources...");
+              return dataSourceManager.initializeAllDataSources();
+            })
+        .compose(
+            v -> {
+              // 设置第一个数据源为默认数据源
+              if (firstDataSourceName != null) {
+                dataSourceManager.setDefaultDataSource(firstDataSourceName);
+                LOGGER.info("Set default datasource to: {}", firstDataSourceName);
+              }
+              return Future.succeededFuture();
+            });
   }
-  
-  /**
-   * 从 JDBC URL 推断数据库类型
-   */
+
+  /** 从 JDBC URL 推断数据库类型 */
   private String inferDatabaseType(String jdbcUrl) {
     if (jdbcUrl == null) {
       return null;

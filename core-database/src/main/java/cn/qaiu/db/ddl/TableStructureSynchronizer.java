@@ -23,7 +23,8 @@ public class TableStructureSynchronizer {
   /** 同步所有表结构（自动从Pool检测数据库类型） */
   public static Future<List<TableStructureComparator.TableDifference>> synchronizeAllTables(
       Pool pool) {
-    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> synchronizeAllTables(pool, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
+        .compose(dbType -> synchronizeAllTables(pool, dbType));
   }
 
   /** 同步所有表结构 */
@@ -73,7 +74,8 @@ public class TableStructureSynchronizer {
   /** 同步单个表结构（自动从Pool检测数据库类型） */
   public static Future<List<TableStructureComparator.TableDifference>> synchronizeTable(
       Pool pool, Class<?> clz) {
-    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> synchronizeTable(pool, clz, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
+        .compose(dbType -> synchronizeTable(pool, clz, dbType));
   }
 
   /** 同步单个表结构 */
@@ -321,7 +323,8 @@ public class TableStructureSynchronizer {
 
   /** 检查表是否需要同步（自动从Pool检测数据库类型） */
   public static Future<Boolean> needsSynchronization(Pool pool, Class<?> clz) {
-    return DatabaseUrlUtil.getJDBCTypeFromPool(pool).compose(dbType -> needsSynchronization(pool, clz, dbType));
+    return DatabaseUrlUtil.getJDBCTypeFromPool(pool)
+        .compose(dbType -> needsSynchronization(pool, clz, dbType));
   }
 
   /** 检查表是否需要同步 */

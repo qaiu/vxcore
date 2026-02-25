@@ -1,10 +1,9 @@
 package cn.qaiu.vx.core.codegen;
 
 import io.vertx.core.Vertx;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * 代码生成器CLI工具 提供命令行接口来生成代码

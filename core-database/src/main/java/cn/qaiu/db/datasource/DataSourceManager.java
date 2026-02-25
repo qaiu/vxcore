@@ -158,7 +158,8 @@ public class DataSourceManager implements DataSourceManagerInterface {
     if (pool == null && !pools.isEmpty()) {
       // 如果默认数据源不存在，回退到第一个可用的数据源
       String firstKey = pools.keySet().iterator().next();
-      LOGGER.info("Default datasource '{}' not found, falling back to '{}'", defaultDataSource, firstKey);
+      LOGGER.info(
+          "Default datasource '{}' not found, falling back to '{}'", defaultDataSource, firstKey);
       pool = pools.get(firstKey);
       // 更新默认数据源为第一个可用的
       this.defaultDataSource = firstKey;

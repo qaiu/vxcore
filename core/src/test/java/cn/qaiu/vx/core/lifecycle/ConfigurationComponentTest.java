@@ -207,8 +207,8 @@ public class ConfigurationComponentTest {
             v -> {
               testContext.verify(
                   () -> {
-                    assertNotNull(configurationComponent.getConfigResolver(), 
-                        "ConfigResolver应该已初始化");
+                    assertNotNull(
+                        configurationComponent.getConfigResolver(), "ConfigResolver应该已初始化");
                     testContext.completeNow();
                   });
             })
@@ -226,8 +226,7 @@ public class ConfigurationComponentTest {
             v -> {
               testContext.verify(
                   () -> {
-                    assertNotNull(configurationComponent.getConfigBinder(), 
-                        "ConfigBinder应该已初始化");
+                    assertNotNull(configurationComponent.getConfigBinder(), "ConfigBinder应该已初始化");
                     testContext.completeNow();
                   });
             })
@@ -257,12 +256,15 @@ public class ConfigurationComponentTest {
   @Test
   @DisplayName("测试旧格式dataSource配置兼容")
   void testLegacyDataSourceConfig(VertxTestContext testContext) {
-    JsonObject legacyConfig = new JsonObject()
-        .put("server", new JsonObject().put("port", 8080).put("host", "0.0.0.0"))
-        .put("dataSource", new JsonObject()
-            .put("url", "jdbc:h2:mem:testdb")
-            .put("username", "sa")
-            .put("password", ""));
+    JsonObject legacyConfig =
+        new JsonObject()
+            .put("server", new JsonObject().put("port", 8080).put("host", "0.0.0.0"))
+            .put(
+                "dataSource",
+                new JsonObject()
+                    .put("url", "jdbc:h2:mem:testdb")
+                    .put("username", "sa")
+                    .put("password", ""));
 
     configurationComponent
         .initialize(vertx, legacyConfig)
@@ -274,16 +276,17 @@ public class ConfigurationComponentTest {
                     // dataSource 是 datasources 的别名，所以两者都应该能获取到值
                     ConfigResolver resolver = configurationComponent.getConfigResolver();
                     assertNotNull(resolver, "ConfigResolver应该已初始化");
-                    
+
                     // 通过 datasources 别名获取值（实际上是 dataSource）
                     JsonObject datasourcesByAlias = resolver.getJsonObject("datasources");
                     assertNotNull(datasourcesByAlias, "应该通过别名datasources获取到dataSource的值");
-                    
+
                     // 验证原始 dataSource 键的值可以获取
                     JsonObject dataSourceDirect = resolver.getJsonObject("dataSource");
                     assertNotNull(dataSourceDirect, "应该能获取dataSource的值");
-                    assertEquals("jdbc:h2:mem:testdb", dataSourceDirect.getString("url"), "URL应该正确");
-                    
+                    assertEquals(
+                        "jdbc:h2:mem:testdb", dataSourceDirect.getString("url"), "URL应该正确");
+
                     testContext.completeNow();
                   });
             })

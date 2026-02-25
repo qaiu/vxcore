@@ -4,9 +4,8 @@ import java.lang.annotation.*;
 
 /**
  * 标记一个类为切面类
- * <p>
- * 切面类中可以定义切点和通知方法，用于在目标方法执行前后插入横切逻辑。
- * </p>
+ *
+ * <p>切面类中可以定义切点和通知方法，用于在目标方法执行前后插入横切逻辑。
  *
  * <pre>
  * &#64;Aspect
@@ -26,9 +25,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Aspect {
-    
-    /**
-     * 切面名称，默认为类名
-     */
-    String value() default "";
+
+  /** 切面名称，默认为类名 */
+  String value() default "";
 }

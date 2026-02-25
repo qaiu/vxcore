@@ -19,15 +19,16 @@ public class ConfigResolverTest {
 
   @BeforeEach
   void setUp() {
-    testConfig = new JsonObject()
-        .put("url", "jdbc:mysql://localhost:3306/test")
-        .put("user", "root")
-        .put("password", "secret")
-        .put("port", 8080)
-        .put("maxPoolSize", 10)
-        .put("enabled", true)
-        .put("timeout", 30L)
-        .put("nested", new JsonObject().put("key", "value"));
+    testConfig =
+        new JsonObject()
+            .put("url", "jdbc:mysql://localhost:3306/test")
+            .put("user", "root")
+            .put("password", "secret")
+            .put("port", 8080)
+            .put("maxPoolSize", 10)
+            .put("enabled", true)
+            .put("timeout", 30L)
+            .put("nested", new JsonObject().put("key", "value"));
   }
 
   @Test
@@ -164,9 +165,7 @@ public class ConfigResolverTest {
   @DisplayName("测试别名优先级 - 实际键优先")
   void testAliasPriority() {
     // 如果配置中同时存在实际键和别名键，应该优先返回实际键的值
-    JsonObject config = new JsonObject()
-        .put("url", "actual-url")
-        .put("jdbcUrl", "alias-url");
+    JsonObject config = new JsonObject().put("url", "actual-url").put("jdbcUrl", "alias-url");
 
     ConfigResolver resolver = new ConfigResolver(config);
 
@@ -200,10 +199,12 @@ public class ConfigResolverTest {
   @Test
   @DisplayName("测试数据源配置别名")
   void testDataSourceAliases() {
-    JsonObject config = new JsonObject()
-        .put("database", new JsonObject()
-            .put("primary", new JsonObject()
-                .put("url", "jdbc:mysql://localhost/db")));
+    JsonObject config =
+        new JsonObject()
+            .put(
+                "database",
+                new JsonObject()
+                    .put("primary", new JsonObject().put("url", "jdbc:mysql://localhost/db")));
 
     ConfigResolver resolver = new ConfigResolver(config);
 

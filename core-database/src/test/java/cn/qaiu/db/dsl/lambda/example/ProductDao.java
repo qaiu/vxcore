@@ -37,10 +37,7 @@ public class ProductDao extends LambdaDao<Product, Long> {
 
   /** 根据分类ID查找产品列表 */
   public Future<List<Product>> findByCategoryId(Long categoryId) {
-    return lambdaQuery()
-        .eq(Product::getCategoryId, categoryId)
-        .eq(Product::getActive, true)
-        .list();
+    return lambdaQuery().eq(Product::getCategoryId, categoryId).eq(Product::getActive, true).list();
   }
 
   /** 根据价格范围查找活跃产品 */
@@ -62,10 +59,7 @@ public class ProductDao extends LambdaDao<Product, Long> {
 
   /** 根据名称模糊查询 */
   public Future<List<Product>> findByNameLike(String keyword) {
-    return lambdaQuery()
-        .like(Product::getName, keyword)
-        .eq(Product::getActive, true)
-        .list();
+    return lambdaQuery().like(Product::getName, keyword).eq(Product::getActive, true).list();
   }
 
   /** 复杂条件查询 */
@@ -128,7 +122,12 @@ public class ProductDao extends LambdaDao<Product, Long> {
   /** 查询产品基本信息（字段选择） */
   public Future<List<Product>> findProductBasicInfo() {
     return lambdaQuery()
-        .select(Product::getId, Product::getName, Product::getCode, Product::getPrice, Product::getActive)
+        .select(
+            Product::getId,
+            Product::getName,
+            Product::getCode,
+            Product::getPrice,
+            Product::getActive)
         .eq(Product::getActive, true)
         .list();
   }

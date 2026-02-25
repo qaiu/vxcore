@@ -4,9 +4,8 @@ import java.lang.annotation.*;
 
 /**
  * 日志记录注解
- * <p>
- * 标记在方法上，自动记录方法的调用和返回信息。
- * </p>
+ *
+ * <p>标记在方法上，自动记录方法的调用和返回信息。
  *
  * <pre>
  * &#64;Loggable
@@ -28,35 +27,27 @@ import java.lang.annotation.*;
 @Documented
 public @interface Loggable {
 
-    /**
-     * 日志级别
-     */
-    LogLevel level() default LogLevel.INFO;
+  /** 日志级别 */
+  LogLevel level() default LogLevel.INFO;
 
-    /**
-     * 是否记录方法参数
-     */
-    boolean includeArgs() default false;
+  /** 是否记录方法参数 */
+  boolean includeArgs() default false;
 
-    /**
-     * 是否记录返回值
-     */
-    boolean includeResult() default false;
+  /** 是否记录返回值 */
+  boolean includeResult() default false;
 
-    /**
-     * 是否记录执行时间
-     */
-    boolean includeTime() default true;
+  /** 是否记录执行时间 */
+  boolean includeTime() default true;
 
-    /**
-     * 自定义日志消息前缀
-     */
-    String prefix() default "";
+  /** 自定义日志消息前缀 */
+  String prefix() default "";
 
-    /**
-     * 日志级别枚举
-     */
-    enum LogLevel {
-        TRACE, DEBUG, INFO, WARN, ERROR
-    }
+  /** 日志级别枚举 */
+  enum LogLevel {
+    TRACE,
+    DEBUG,
+    INFO,
+    WARN,
+    ERROR
+  }
 }

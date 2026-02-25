@@ -33,63 +33,67 @@ public class HttpProxyVerticle extends AbstractVerticle {
   @Override
   public void start(io.vertx.core.Promise<Void> startPromise) {
     try {
-      JsonObject globalConfig = (JsonObject) vertx.sharedData().getLocalMap(LOCAL).get(GLOBAL_CONFIG);
+      JsonObject globalConfig =
+          (JsonObject) vertx.sharedData().getLocalMap(LOCAL).get(GLOBAL_CONFIG);
       if (globalConfig == null) {
         startPromise.fail("Global configuration not found");
         return;
       }
-      
+
       proxyServerConf = globalConfig.getJsonObject("proxy-server");
       if (proxyServerConf == null) {
         startPromise.fail("Missing proxy-server configuration");
         return;
       }
-      
+
       proxyPreConf = globalConfig.getJsonObject("proxy-pre");
       Integer serverPort = proxyServerConf.getInteger("port");
 
-    ProxyOptions proxyOptions = null;
-    if (proxyPreConf != null && StringUtils.isNotBlank(proxyPreConf.getString("ip"))) {
-      proxyOptions = new ProxyOptions(proxyPreConf);
-    }
+      ProxyOptions proxyOptions = null;
+      if (proxyPreConf != null && StringUtils.isNotBlank(proxyPreConf.getString("ip"))) {
+        proxyOptions = new ProxyOptions(proxyPreConf);
+      }
 
-    // 初始化 HTTP 客户端，用于向目标服务器发送 HTTP 请求
-    HttpClientOptions httpClientOptions = new HttpClientOptions();
-    if (proxyOptions != null) {
-      httpClientOptions.setProxyOptions(proxyOptions);
-    }
-    httpClient = vertx.createHttpClient(httpClientOptions);
+      // 初始化 HTTP 客户端，用于向目标服务器发送 HTTP 请求
+      HttpClientOptions httpClientOptions = new HttpClientOptions();
+      if (proxyOptions != null) {
+        httpClientOptions.setProxyOptions(proxyOptions);
+      }
+      httpClient = vertx.createHttpClient(httpClientOptions);
 
-    // 创建并启动 HTTP 代理服务器，监听指定端口
-    HttpServerOptions httpServerOptions = new HttpServerOptions();
-    if (proxyServerConf.containsKey("username")
-        && StringUtils.isNotBlank(proxyServerConf.getString("username"))) {
-      httpServerOptions.setClientAuth(ClientAuth.REQUIRED);
-    }
+      // 创建并启动 HTTP 代理服务器，监听指定端口
+      HttpServerOptions httpServerOptions = new HttpServerOptions();
+      if (proxyServerConf.containsKey("username")
+          && StringUtils.isNotBlank(proxyServerConf.getString("username"))) {
+        httpServerOptions.setClientAuth(ClientAuth.REQUIRED);
+      }
 
-    HttpServer server = vertx.createHttpServer();
-    server.requestHandler(this::handleClientRequest);
+      HttpServer server = vertx.createHttpServer();
+      server.requestHandler(this::handleClientRequest);
 
-    // 初始化 NetClient，用于在 CONNECT 请求中建立 TCP 连接隧道
-    NetClientOptions netClientOptions = new NetClientOptions();
+      // 初始化 NetClient，用于在 CONNECT 请求中建立 TCP 连接隧道
+      NetClientOptions netClientOptions = new NetClientOptions();
 
-    if (proxyOptions != null) {
-      httpClientOptions.setProxyOptions(proxyOptions);
-    }
+      if (proxyOptions != null) {
+        httpClientOptions.setProxyOptions(proxyOptions);
+      }
 
-    netClient = vertx.createNetClient(netClientOptions.setConnectTimeout(15000).setTrustAll(true));
+      netClient =
+          vertx.createNetClient(netClientOptions.setConnectTimeout(15000).setTrustAll(true));
 
-    // 启动 HTTP 代理服务器
-    server
-        .listen(serverPort)
-        .onSuccess(res -> {
-          LOGGER.info("HTTP Proxy server started on port {}", serverPort);
-          startPromise.complete();
-        })
-        .onFailure(err -> {
-          LOGGER.error("Failed to start HTTP Proxy server: {}", err.getMessage());
-          startPromise.fail(err);
-        });
+      // 启动 HTTP 代理服务器
+      server
+          .listen(serverPort)
+          .onSuccess(
+              res -> {
+                LOGGER.info("HTTP Proxy server started on port {}", serverPort);
+                startPromise.complete();
+              })
+          .onFailure(
+              err -> {
+                LOGGER.error("Failed to start HTTP Proxy server: {}", err.getMessage());
+                startPromise.fail(err);
+              });
     } catch (Exception e) {
       LOGGER.error("Failed to initialize HTTP Proxy server", e);
       startPromise.fail(e);
@@ -163,7 +167,9 @@ public class HttpProxyVerticle extends AbstractVerticle {
         clientRequest.response().setStatusCode(403).end();
         return;
       }
-      String[] split = new String(Base64.getDecoder().decode(s.replace("Basic ", "")), StandardCharsets.UTF_8).split(":");
+      String[] split =
+          new String(Base64.getDecoder().decode(s.replace("Basic ", "")), StandardCharsets.UTF_8)
+              .split(":");
       if (split.length > 1) {
         // 验证代理认证信息
         String username = proxyServerConf.getString("username");

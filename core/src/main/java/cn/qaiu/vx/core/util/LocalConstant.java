@@ -87,9 +87,7 @@ public class LocalConstant {
     return LOCAL_CONST.remove(k);
   }
 
-  /**
-   * 清空本地常量映射
-   */
+  /** 清空本地常量映射 */
   public static void clear() {
     LOCAL_CONST.clear();
   }

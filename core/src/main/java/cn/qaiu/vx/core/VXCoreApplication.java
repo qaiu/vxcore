@@ -110,7 +110,7 @@ public class VXCoreApplication {
   public static void run(String[] args, Handler<JsonObject> userHandler) {
     // 在主线程中检测并保存主类
     MainClassHolder.detectAndSetMainClass();
-    
+
     VXCoreApplication app = new VXCoreApplication();
     app.start(args, userHandler)
         .onFailure(

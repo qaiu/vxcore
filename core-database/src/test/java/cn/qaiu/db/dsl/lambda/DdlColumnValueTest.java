@@ -9,7 +9,6 @@ import io.vertx.core.Vertx;
 import io.vertx.jdbcclient.JDBCPool;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.sqlclient.PoolOptions;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -67,10 +66,11 @@ public class DdlColumnValueTest {
     // 清空测试数据
     pool.query("DELETE FROM products")
         .execute()
-        .compose(v -> {
-          // 插入测试数据
-          String insertSql =
-              """
+        .compose(
+            v -> {
+              // 插入测试数据
+              String insertSql =
+                  """
             INSERT INTO products (product_name, product_code, category_id, price, stock_quantity, description, is_active, created_at, updated_at) VALUES
             ('iPhone 15 Pro', 'IPHONE15PRO', 1, 999.99, 50, 'Latest iPhone with advanced features', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
             ('Samsung Galaxy S24', 'SAMSUNG_S24', 1, 899.99, 30, 'Flagship Android smartphone', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -80,12 +80,13 @@ public class DdlColumnValueTest {
             ('Sony WH-1000XM5', 'SONY_WH1000XM5', 3, 399.99, 25, 'Premium noise-canceling headphones', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
             ('Discontinued Product', 'DISCONTINUED', 1, 99.99, 0, 'This product is no longer available', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """;
-          return pool.query(insertSql).execute();
-        })
-        .onSuccess(result -> {
-          logger.debug("Products test data inserted: {} rows", result.rowCount());
-          testContext.completeNow();
-        })
+              return pool.query(insertSql).execute();
+            })
+        .onSuccess(
+            result -> {
+              logger.debug("Products test data inserted: {} rows", result.rowCount());
+              testContext.completeNow();
+            })
         .onFailure(testContext::failNow);
   }
 
@@ -99,14 +100,15 @@ public class DdlColumnValueTest {
         .findByCode("IPHONE15PRO")
         .onSuccess(
             product -> {
-              testContext.verify(() -> {
-                assertTrue(product.isPresent());
-                assertEquals("iPhone 15 Pro", product.get().getName());
-                assertEquals("IPHONE15PRO", product.get().getCode());
-                assertEquals(new BigDecimal("999.99"), product.get().getPrice());
-                assertTrue(product.get().getActive());
-                logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getName());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(product.isPresent());
+                    assertEquals("iPhone 15 Pro", product.get().getName());
+                    assertEquals("IPHONE15PRO", product.get().getCode());
+                    assertEquals(new BigDecimal("999.99"), product.get().getPrice());
+                    assertTrue(product.get().getActive());
+                    logger.info("✓ DdlColumn value字段映射测试通过: {}", product.get().getName());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -120,25 +122,28 @@ public class DdlColumnValueTest {
     // 测试等值查询
     productDao
         .findByName("iPhone 15 Pro")
-        .compose(product -> {
-          testContext.verify(() -> {
-            assertTrue(product.isPresent());
-            assertEquals("IPHONE15PRO", product.get().getCode());
-            logger.info("✓ 等值查询测试通过: {}", product.get().getName());
-          });
-          // 测试分类查询
-          return productDao.findByCategoryId(1L);
-        })
+        .compose(
+            product -> {
+              testContext.verify(
+                  () -> {
+                    assertTrue(product.isPresent());
+                    assertEquals("IPHONE15PRO", product.get().getCode());
+                    logger.info("✓ 等值查询测试通过: {}", product.get().getName());
+                  });
+              // 测试分类查询
+              return productDao.findByCategoryId(1L);
+            })
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 2); // iPhone和Samsung
-                products.forEach(
-                    product -> {
-                      assertEquals(Long.valueOf(1L), product.getCategoryId());
-                    });
-                logger.info("✓ 分类查询测试通过: 找到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 2); // iPhone和Samsung
+                    products.forEach(
+                        product -> {
+                          assertEquals(Long.valueOf(1L), product.getCategoryId());
+                        });
+                    logger.info("✓ 分类查询测试通过: 找到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -152,31 +157,34 @@ public class DdlColumnValueTest {
     // 测试价格范围查询
     productDao
         .findByPriceRange(new BigDecimal("500.00"), new BigDecimal("1500.00"))
-        .compose(products -> {
-          testContext.verify(() -> {
-            assertTrue(products.size() >= 3);
-            products.forEach(
-                product -> {
-                  assertTrue(product.getPrice().compareTo(new BigDecimal("500.00")) >= 0);
-                  assertTrue(product.getPrice().compareTo(new BigDecimal("1500.00")) <= 0);
-                  assertTrue(product.getActive());
-                });
-            logger.info("✓ 价格范围查询测试通过: 找到 {} 个产品", products.size());
-          });
-          // 测试库存不足查询
-          return productDao.findLowStockProducts(30);
-        })
+        .compose(
+            products -> {
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 3);
+                    products.forEach(
+                        product -> {
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("500.00")) >= 0);
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("1500.00")) <= 0);
+                          assertTrue(product.getActive());
+                        });
+                    logger.info("✓ 价格范围查询测试通过: 找到 {} 个产品", products.size());
+                  });
+              // 测试库存不足查询
+              return productDao.findLowStockProducts(30);
+            })
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 1);
-                products.forEach(
-                    product -> {
-                      assertTrue(product.getStockQuantity() <= 30);
-                      assertTrue(product.getActive());
-                    });
-                logger.info("✓ 库存不足查询测试通过: 找到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 1);
+                    products.forEach(
+                        product -> {
+                          assertTrue(product.getStockQuantity() <= 30);
+                          assertTrue(product.getActive());
+                        });
+                    logger.info("✓ 库存不足查询测试通过: 找到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -192,12 +200,13 @@ public class DdlColumnValueTest {
         .findByNameLike("iPhone")
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertEquals(1, products.size());
-                assertEquals("iPhone 15 Pro", products.get(0).getName());
-                assertTrue(products.get(0).getActive());
-                logger.info("✓ LIKE查询测试通过: 找到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertEquals(1, products.size());
+                    assertEquals("iPhone 15 Pro", products.get(0).getName());
+                    assertTrue(products.get(0).getActive());
+                    logger.info("✓ LIKE查询测试通过: 找到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -213,17 +222,18 @@ public class DdlColumnValueTest {
         .findProductsByComplexCondition(1L, new BigDecimal("800.00"), 20)
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 1);
-                products.forEach(
-                    product -> {
-                      assertEquals(Long.valueOf(1L), product.getCategoryId());
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("800.00")) >= 0);
-                      assertTrue(product.getStockQuantity() >= 20);
-                      assertTrue(product.getActive());
-                    });
-                logger.info("✓ 复杂查询测试通过: 找到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 1);
+                    products.forEach(
+                        product -> {
+                          assertEquals(Long.valueOf(1L), product.getCategoryId());
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("800.00")) >= 0);
+                          assertTrue(product.getStockQuantity() >= 20);
+                          assertTrue(product.getActive());
+                        });
+                    logger.info("✓ 复杂查询测试通过: 找到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -239,18 +249,19 @@ public class DdlColumnValueTest {
         .findProductsWithNestedCondition(1L, new BigDecimal("1000.00"))
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 1);
-                products.forEach(
-                    product -> {
-                      assertEquals(Long.valueOf(1L), product.getCategoryId());
-                      // 价格 <= 1000 或者 (活跃且库存 > 0)
-                      assertTrue(
-                          product.getPrice().compareTo(new BigDecimal("1000.00")) <= 0
-                              || (product.getActive() && product.getStockQuantity() > 0));
-                    });
-                logger.info("✓ 嵌套条件查询测试通过: 找到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 1);
+                    products.forEach(
+                        product -> {
+                          assertEquals(Long.valueOf(1L), product.getCategoryId());
+                          // 价格 <= 1000 或者 (活跃且库存 > 0)
+                          assertTrue(
+                              product.getPrice().compareTo(new BigDecimal("1000.00")) <= 0
+                                  || (product.getActive() && product.getStockQuantity() > 0));
+                        });
+                    logger.info("✓ 嵌套条件查询测试通过: 找到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -266,28 +277,30 @@ public class DdlColumnValueTest {
         .findProductsByPage(1, 3, 1L)
         .onSuccess(
             pageResult -> {
-              testContext.verify(() -> {
-                assertNotNull(pageResult);
-                // 放宽断言：分页结果可能为空或有数据
-                assertTrue(pageResult.getTotal() >= 0, "总数应该>=0, 实际值: " + pageResult.getTotal());
-                assertEquals(3, pageResult.getSize());
-                assertEquals(1, pageResult.getCurrent());
-                assertTrue(pageResult.getRecords().size() <= 3);
+              testContext.verify(
+                  () -> {
+                    assertNotNull(pageResult);
+                    // 放宽断言：分页结果可能为空或有数据
+                    assertTrue(
+                        pageResult.getTotal() >= 0, "总数应该>=0, 实际值: " + pageResult.getTotal());
+                    assertEquals(3, pageResult.getSize());
+                    assertEquals(1, pageResult.getCurrent());
+                    assertTrue(pageResult.getRecords().size() <= 3);
 
-                pageResult
-                    .getRecords()
-                    .forEach(
-                        product -> {
-                          assertEquals(Long.valueOf(1L), product.getCategoryId());
-                          assertTrue(product.getActive());
-                        });
+                    pageResult
+                        .getRecords()
+                        .forEach(
+                            product -> {
+                              assertEquals(Long.valueOf(1L), product.getCategoryId());
+                              assertTrue(product.getActive());
+                            });
 
-                logger.info(
-                    "✓ 分页查询测试通过: 总数={}, 当前页={}, 页大小={}",
-                    pageResult.getTotal(),
-                    pageResult.getCurrent(),
-                    pageResult.getSize());
-              });
+                    logger.info(
+                        "✓ 分页查询测试通过: 总数={}, 当前页={}, 页大小={}",
+                        pageResult.getTotal(),
+                        pageResult.getCurrent(),
+                        pageResult.getSize());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -301,20 +314,23 @@ public class DdlColumnValueTest {
     // 测试活跃产品统计
     productDao
         .countActiveProducts()
-        .compose(count1 -> {
-          testContext.verify(() -> {
-            assertTrue(count1 >= 6);
-            logger.info("✓ 活跃产品统计测试通过: 数量 = {}", count1);
-          });
-          // 测试分类产品统计
-          return productDao.countProductsByCategory(1L);
-        })
+        .compose(
+            count1 -> {
+              testContext.verify(
+                  () -> {
+                    assertTrue(count1 >= 6);
+                    logger.info("✓ 活跃产品统计测试通过: 数量 = {}", count1);
+                  });
+              // 测试分类产品统计
+              return productDao.countProductsByCategory(1L);
+            })
         .onSuccess(
             count2 -> {
-              testContext.verify(() -> {
-                assertTrue(count2 >= 2);
-                logger.info("✓ 分类产品统计测试通过: 数量 = {}", count2);
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(count2 >= 2);
+                    logger.info("✓ 分类产品统计测试通过: 数量 = {}", count2);
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -328,20 +344,23 @@ public class DdlColumnValueTest {
     // 测试产品代码存在性
     productDao
         .existsByCode("IPHONE15PRO")
-        .compose(exists1 -> {
-          testContext.verify(() -> {
-            assertTrue(exists1);
-            logger.info("✓ 产品代码存在性测试通过: 存在 = {}", exists1);
-          });
-          // 测试不存在的产品代码
-          return productDao.existsByCode("NONEXISTENT");
-        })
+        .compose(
+            exists1 -> {
+              testContext.verify(
+                  () -> {
+                    assertTrue(exists1);
+                    logger.info("✓ 产品代码存在性测试通过: 存在 = {}", exists1);
+                  });
+              // 测试不存在的产品代码
+              return productDao.existsByCode("NONEXISTENT");
+            })
         .onSuccess(
             exists2 -> {
-              testContext.verify(() -> {
-                assertFalse(exists2);
-                logger.info("✓ 产品代码不存在性测试通过: 存在 = {}", exists2);
-              });
+              testContext.verify(
+                  () -> {
+                    assertFalse(exists2);
+                    logger.info("✓ 产品代码不存在性测试通过: 存在 = {}", exists2);
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -357,22 +376,23 @@ public class DdlColumnValueTest {
         .findProductBasicInfo()
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 1);
-                products.forEach(
-                    product -> {
-                      assertNotNull(product.getId());
-                      assertNotNull(product.getName());
-                      assertNotNull(product.getCode());
-                      assertNotNull(product.getPrice());
-                      assertNotNull(product.getActive());
-                      // 其他字段应该为null（未选择）
-                      assertNull(product.getCategoryId());
-                      assertNull(product.getStockQuantity());
-                      assertNull(product.getDescription());
-                    });
-                logger.info("✓ 字段选择查询测试通过: 查询到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 1);
+                    products.forEach(
+                        product -> {
+                          assertNotNull(product.getId());
+                          assertNotNull(product.getName());
+                          assertNotNull(product.getCode());
+                          assertNotNull(product.getPrice());
+                          assertNotNull(product.getActive());
+                          // 其他字段应该为null（未选择）
+                          assertNull(product.getCategoryId());
+                          assertNull(product.getStockQuantity());
+                          assertNull(product.getDescription());
+                        });
+                    logger.info("✓ 字段选择查询测试通过: 查询到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -386,24 +406,28 @@ public class DdlColumnValueTest {
     // 先查询前两个产品的ID
     productDao
         .lambdaList(productDao.lambdaQuery().eq(Product::getActive, true).limit(2))
-        .compose(products -> {
-          List<Long> productIds = products.stream().map(Product::getId).toList();
-          // 测试批量更新产品状态
-          return productDao.updateProductStatus(productIds, false);
-        })
-        .compose(updatedCount -> {
-          testContext.verify(() -> {
-            assertEquals(2, updatedCount);
-          });
-          // 验证更新结果
-          return productDao.lambdaList(Product::getActive, false);
-        })
+        .compose(
+            products -> {
+              List<Long> productIds = products.stream().map(Product::getId).toList();
+              // 测试批量更新产品状态
+              return productDao.updateProductStatus(productIds, false);
+            })
+        .compose(
+            updatedCount -> {
+              testContext.verify(
+                  () -> {
+                    assertEquals(2, updatedCount);
+                  });
+              // 验证更新结果
+              return productDao.lambdaList(Product::getActive, false);
+            })
         .onSuccess(
             updatedProducts -> {
-              testContext.verify(() -> {
-                assertTrue(updatedProducts.size() >= 2);
-                logger.info("✓ 批量更新状态测试通过: 更新了 2 个产品");
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(updatedProducts.size() >= 2);
+                    logger.info("✓ 批量更新状态测试通过: 更新了 2 个产品");
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -430,17 +454,18 @@ public class DdlColumnValueTest {
         .lambdaList(wrapper)
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() <= 5);
-                products.forEach(
-                    product -> {
-                      assertTrue(product.getActive());
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("200.00")) >= 0);
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("2000.00")) <= 0);
-                      assertTrue(Arrays.asList(1L, 2L, 3L).contains(product.getCategoryId()));
-                    });
-                logger.info("✓ LambdaQueryWrapper高级功能测试通过: 查询到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() <= 5);
+                    products.forEach(
+                        product -> {
+                          assertTrue(product.getActive());
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("200.00")) >= 0);
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("2000.00")) <= 0);
+                          assertTrue(Arrays.asList(1L, 2L, 3L).contains(product.getCategoryId()));
+                        });
+                    logger.info("✓ LambdaQueryWrapper高级功能测试通过: 查询到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -457,14 +482,15 @@ public class DdlColumnValueTest {
         .lambdaList(productDao.lambdaQuery().in(Product::getCode, codes))
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertEquals(3, products.size());
-                products.forEach(
-                    product -> {
-                      assertTrue(codes.contains(product.getCode()));
-                    });
-                logger.info("✓ IN查询测试通过: 查询到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertEquals(3, products.size());
+                    products.forEach(
+                        product -> {
+                          assertTrue(codes.contains(product.getCode()));
+                        });
+                    logger.info("✓ IN查询测试通过: 查询到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -487,23 +513,27 @@ public class DdlColumnValueTest {
 
     productDao
         .insert(newProduct)
-        .compose(inserted -> {
-          testContext.verify(() -> {
-            assertTrue(inserted.isPresent());
-          });
-          // 测试IS NULL查询
-          return productDao.lambdaList(productDao.lambdaQuery().isNull(Product::getDescription));
-        })
+        .compose(
+            inserted -> {
+              testContext.verify(
+                  () -> {
+                    assertTrue(inserted.isPresent());
+                  });
+              // 测试IS NULL查询
+              return productDao.lambdaList(
+                  productDao.lambdaQuery().isNull(Product::getDescription));
+            })
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 1);
-                products.forEach(
-                    product -> {
-                      assertNull(product.getDescription());
-                    });
-                logger.info("✓ IS NULL查询测试通过: 查询到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 1);
+                    products.forEach(
+                        product -> {
+                          assertNull(product.getDescription());
+                        });
+                    logger.info("✓ IS NULL查询测试通过: 查询到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);
@@ -523,16 +553,17 @@ public class DdlColumnValueTest {
                 .eq(Product::getActive, true))
         .onSuccess(
             products -> {
-              testContext.verify(() -> {
-                assertTrue(products.size() >= 1);
-                products.forEach(
-                    product -> {
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("100.00")) >= 0);
-                      assertTrue(product.getPrice().compareTo(new BigDecimal("1000.00")) <= 0);
-                      assertTrue(product.getActive());
-                    });
-                logger.info("✓ BETWEEN查询测试通过: 查询到 {} 个产品", products.size());
-              });
+              testContext.verify(
+                  () -> {
+                    assertTrue(products.size() >= 1);
+                    products.forEach(
+                        product -> {
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("100.00")) >= 0);
+                          assertTrue(product.getPrice().compareTo(new BigDecimal("1000.00")) <= 0);
+                          assertTrue(product.getActive());
+                        });
+                    logger.info("✓ BETWEEN查询测试通过: 查询到 {} 个产品", products.size());
+                  });
               testContext.completeNow();
             })
         .onFailure(testContext::failNow);

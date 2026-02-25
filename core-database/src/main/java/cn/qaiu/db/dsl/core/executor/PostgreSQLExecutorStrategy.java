@@ -36,8 +36,7 @@ public class PostgreSQLExecutorStrategy extends AbstractExecutorStrategy {
   }
 
   /**
-   * 获取连接池类型
-   * 使用通用Pool类型，避免依赖已废弃的PgPool
+   * 获取连接池类型 使用通用Pool类型，避免依赖已废弃的PgPool
    *
    * @return Pool类型
    */
@@ -47,9 +46,7 @@ public class PostgreSQLExecutorStrategy extends AbstractExecutorStrategy {
   }
 
   /**
-   * 检查是否支持指定的连接池
-   * 通过检查连接池的类名来判断，避免阻塞操作
-   * 注意：不能在这里使用异步数据库操作，因为这个方法可能在事件循环线程中被调用
+   * 检查是否支持指定的连接池 通过检查连接池的类名来判断，避免阻塞操作 注意：不能在这里使用异步数据库操作，因为这个方法可能在事件循环线程中被调用
    *
    * @param pool 连接池
    * @return 是否支持
@@ -61,7 +58,9 @@ public class PostgreSQLExecutorStrategy extends AbstractExecutorStrategy {
     boolean supported = className.contains("pg") || className.contains("postgres");
 
     if (supported) {
-      LOGGER.debug("PostgreSQL executor strategy supports pool (detected by class name): {}", pool.getClass().getName());
+      LOGGER.debug(
+          "PostgreSQL executor strategy supports pool (detected by class name): {}",
+          pool.getClass().getName());
     }
 
     return supported;

@@ -100,7 +100,8 @@ public class ConfigAliasRegistryTest {
   @Test
   @DisplayName("测试注册自定义别名组")
   void testRegisterCustomAliasGroup() {
-    registry.registerAliasGroup("timeout", "timeout", "connectTimeout", "connTimeout", "connection-timeout");
+    registry.registerAliasGroup(
+        "timeout", "timeout", "connectTimeout", "connTimeout", "connection-timeout");
 
     String canonical = registry.getCanonicalName("connectTimeout");
     assertEquals("timeout", canonical, "connectTimeout应该映射到timeout");

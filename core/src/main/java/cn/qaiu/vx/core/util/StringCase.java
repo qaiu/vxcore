@@ -1,8 +1,7 @@
 package cn.qaiu.vx.core.util;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Locale;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * 驼峰式下划线命名的字符串相互转换 <br>

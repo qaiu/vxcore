@@ -7,7 +7,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -267,13 +266,19 @@ public class FrameworkLifecycleManagerTest {
             .findFirst()
             .orElse(null);
     assertNotNull(configComponent, "应该包含配置组件");
-    assertEquals(10, ((cn.qaiu.vx.core.lifecycle.LifecycleComponent) configComponent).getPriority(), "配置组件优先级应该是10");
+    assertEquals(
+        10,
+        ((cn.qaiu.vx.core.lifecycle.LifecycleComponent) configComponent).getPriority(),
+        "配置组件优先级应该是10");
 
     // 验证数据源组件优先级第二
     Object dataSourceComponent =
         components.stream().filter(c -> c instanceof DataSourceComponent).findFirst().orElse(null);
     assertNotNull(dataSourceComponent, "应该包含数据源组件");
-    assertEquals(20, ((cn.qaiu.vx.core.lifecycle.LifecycleComponent) dataSourceComponent).getPriority(), "数据源组件优先级应该是20");
+    assertEquals(
+        20,
+        ((cn.qaiu.vx.core.lifecycle.LifecycleComponent) dataSourceComponent).getPriority(),
+        "数据源组件优先级应该是20");
   }
 
   @Test

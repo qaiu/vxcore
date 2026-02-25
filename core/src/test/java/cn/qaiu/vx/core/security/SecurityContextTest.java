@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 /**
  * SecurityContext 单元测试
@@ -22,11 +21,9 @@ public class SecurityContextTest {
         .put("sub", "user123")
         .put("username", "testuser")
         .put("roles", new JsonArray().add("admin").add("user"))
-        .put("permissions", new JsonArray()
-            .add("user:read")
-            .add("user:write")
-            .add("system:*")
-            .add("admin:manage"));
+        .put(
+            "permissions",
+            new JsonArray().add("user:read").add("user:write").add("system:*").add("admin:manage"));
   }
 
   @Test
@@ -62,9 +59,7 @@ public class SecurityContextTest {
   @Test
   @DisplayName("测试获取用户名")
   void testGetUsername() {
-    JsonObject principal = new JsonObject()
-        .put("sub", "user123")
-        .put("username", "testuser");
+    JsonObject principal = new JsonObject().put("sub", "user123").put("username", "testuser");
     User user = User.create(principal);
     SecurityContext ctx = new SecurityContext(user);
 
@@ -129,9 +124,8 @@ public class SecurityContextTest {
   @Test
   @DisplayName("测试hasPermission方法 - 资源通配符")
   void testHasPermissionResourceWildcard() {
-    JsonObject principal = new JsonObject()
-        .put("sub", "admin")
-        .put("permissions", new JsonArray().add("*:read"));
+    JsonObject principal =
+        new JsonObject().put("sub", "admin").put("permissions", new JsonArray().add("*:read"));
     User user = User.create(principal);
     SecurityContext ctx = new SecurityContext(user);
 
@@ -143,9 +137,8 @@ public class SecurityContextTest {
   @Test
   @DisplayName("测试hasPermission方法 - 超级权限")
   void testHasPermissionSuperAdmin() {
-    JsonObject principal = new JsonObject()
-        .put("sub", "superadmin")
-        .put("permissions", new JsonArray().add("*:*"));
+    JsonObject principal =
+        new JsonObject().put("sub", "superadmin").put("permissions", new JsonArray().add("*:*"));
     User user = User.create(principal);
     SecurityContext ctx = new SecurityContext(user);
 
@@ -203,9 +196,7 @@ public class SecurityContextTest {
   @Test
   @DisplayName("测试从逗号分隔的字符串提取角色")
   void testExtractRolesFromString() {
-    JsonObject principal = new JsonObject()
-        .put("sub", "user1")
-        .put("roles", "admin,user,guest");
+    JsonObject principal = new JsonObject().put("sub", "user1").put("roles", "admin,user,guest");
     User user = User.create(principal);
     SecurityContext ctx = new SecurityContext(user);
 
@@ -217,9 +208,8 @@ public class SecurityContextTest {
   @Test
   @DisplayName("测试从空格分隔的字符串提取权限")
   void testExtractPermissionsFromString() {
-    JsonObject principal = new JsonObject()
-        .put("sub", "user1")
-        .put("scope", "user:read user:write system:admin");
+    JsonObject principal =
+        new JsonObject().put("sub", "user1").put("scope", "user:read user:write system:admin");
     User user = User.create(principal);
     SecurityContext ctx = new SecurityContext(user);
 
@@ -244,10 +234,9 @@ public class SecurityContextTest {
     User user = User.create(createPrincipal());
     SecurityContext ctx = new SecurityContext(user);
 
-    assertThrows(UnsupportedOperationException.class, 
-        () -> ctx.getRoles().add("newRole"));
-    assertThrows(UnsupportedOperationException.class, 
-        () -> ctx.getPermissions().add("new:permission"));
+    assertThrows(UnsupportedOperationException.class, () -> ctx.getRoles().add("newRole"));
+    assertThrows(
+        UnsupportedOperationException.class, () -> ctx.getPermissions().add("new:permission"));
   }
 
   @Test

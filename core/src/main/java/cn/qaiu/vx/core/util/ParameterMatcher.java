@@ -124,7 +124,8 @@ public class ParameterMatcher {
       } else {
         // 使用ParamUtil提取参数值，如果Java -parameters不可用，尝试使用Javassist
         String paramName = getParameterName(method, parameter, i);
-        args[i] = getParameterValueWithName(parameter, paramName, pathParams, queryParams, requestBody);
+        args[i] =
+            getParameterValueWithName(parameter, paramName, pathParams, queryParams, requestBody);
       }
     }
 
@@ -132,10 +133,8 @@ public class ParameterMatcher {
   }
 
   /**
-   * 获取参数名称
-   * 优先使用Java反射（需要-parameters编译选项），
-   * 如果不可用则尝试使用Javassist
-   * 
+   * 获取参数名称 优先使用Java反射（需要-parameters编译选项）， 如果不可用则尝试使用Javassist
+   *
    * @param method 方法
    * @param parameter 参数
    * @param index 参数索引
@@ -146,7 +145,7 @@ public class ParameterMatcher {
     if (parameter.isNamePresent()) {
       return parameter.getName();
     }
-    
+
     // 如果不可用，尝试使用Javassist
     try {
       Map<String, ?> paramMap = ReflectionUtil.getMethodParameter(method);
@@ -155,24 +154,24 @@ public class ParameterMatcher {
         return paramNames.get(index);
       }
     } catch (Exception e) {
-      LOGGER.debug("Failed to get parameter name via Javassist for method {}, param index {}", 
-          method.getName(), index);
+      LOGGER.debug(
+          "Failed to get parameter name via Javassist for method {}, param index {}",
+          method.getName(),
+          index);
     }
-    
+
     // 如果都失败了，返回默认名称
     return "arg" + index;
   }
 
-  /**
-   * 使用指定的参数名称获取参数值
-   */
+  /** 使用指定的参数名称获取参数值 */
   private static Object getParameterValueWithName(
       Parameter parameter,
       String paramName,
       Map<String, String> pathParams,
       MultiMap queryParams,
       JsonObject requestBody) {
-    
+
     Class<?> paramType = parameter.getType();
 
     // 检查路径变量注解

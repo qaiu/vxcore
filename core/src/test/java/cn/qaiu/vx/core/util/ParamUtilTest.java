@@ -2,14 +2,8 @@ package cn.qaiu.vx.core.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import cn.qaiu.vx.core.annotations.param.PathVariable;
-import cn.qaiu.vx.core.annotations.param.RequestBody;
-import cn.qaiu.vx.core.annotations.param.RequestParam;
 import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonObject;
-import java.lang.reflect.Parameter;
 import java.util.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -147,8 +141,8 @@ class ParamUtilTest {
       "X, java.lang.Character, X"
     })
     @DisplayName("基本类型转换")
-    void testBasicTypeConversion(String value, String typeName, String expected) throws
-        ClassNotFoundException {
+    void testBasicTypeConversion(String value, String typeName, String expected)
+        throws ClassNotFoundException {
       Class<?> targetType = Class.forName(typeName);
       Object result = ParamUtil.convertValue(value, targetType);
 
@@ -300,16 +294,14 @@ class ParamUtilTest {
     @DisplayName("无效Integer转换")
     void testInvalidIntegerConversion() {
       assertThrows(
-          IllegalArgumentException.class,
-          () -> ParamUtil.convertValue("abc", Integer.class));
+          IllegalArgumentException.class, () -> ParamUtil.convertValue("abc", Integer.class));
     }
 
     @Test
     @DisplayName("不支持的类型转换")
     void testUnsupportedTypeConversion() {
       assertThrows(
-          IllegalArgumentException.class,
-          () -> ParamUtil.convertValue("test", UUID.class));
+          IllegalArgumentException.class, () -> ParamUtil.convertValue("test", UUID.class));
     }
   }
 

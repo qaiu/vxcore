@@ -18,7 +18,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -29,7 +28,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
  */
 @ExtendWith(VertxExtension.class)
 @DisplayName("EnhancedCreateTable集成测试")
-@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "CI 环境下 H2 数据库 DDL 同步不稳定")
+@DisabledIfEnvironmentVariable(
+    named = "CI",
+    matches = "true",
+    disabledReason = "CI 环境下 H2 数据库 DDL 同步不稳定")
 public class EnhancedCreateTableIntegrationTest {
 
   private Pool pool;

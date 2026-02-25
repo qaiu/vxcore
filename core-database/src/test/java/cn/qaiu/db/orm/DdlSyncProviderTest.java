@@ -94,7 +94,7 @@ public class DdlSyncProviderTest {
     EnableDdlSync annotation = CustomConfigClass.class.getAnnotation(EnableDdlSync.class);
     assertNotNull(annotation);
     assertEquals(DdlSyncStrategy.CREATE, annotation.strategy());
-    assertArrayEquals(new String[]{"cn.qaiu.entity"}, annotation.entityPackages());
+    assertArrayEquals(new String[] {"cn.qaiu.entity"}, annotation.entityPackages());
     assertTrue(annotation.failOnError());
     assertTrue(annotation.showDdl());
     assertEquals("secondary", annotation.dataSource());
@@ -103,23 +103,19 @@ public class DdlSyncProviderTest {
   // ============ 测试用辅助类 ============
 
   // 无注解的类
-  static class NoAnnotationClass {
-  }
+  static class NoAnnotationClass {}
 
   // 有EnableDdlSync注解的类
   @EnableDdlSync
-  static class EnabledClass {
-  }
+  static class EnabledClass {}
 
   // 策略为NONE的类
   @EnableDdlSync(strategy = DdlSyncStrategy.NONE)
-  static class DisabledStrategyClass {
-  }
+  static class DisabledStrategyClass {}
 
   // autoExecute为false的类
   @EnableDdlSync(autoExecute = false)
-  static class NoAutoExecuteClass {
-  }
+  static class NoAutoExecuteClass {}
 
   // 自定义配置的类
   @EnableDdlSync(
@@ -127,8 +123,6 @@ public class DdlSyncProviderTest {
       entityPackages = {"cn.qaiu.entity"},
       failOnError = true,
       showDdl = true,
-      dataSource = "secondary"
-  )
-  static class CustomConfigClass {
-  }
+      dataSource = "secondary")
+  static class CustomConfigClass {}
 }

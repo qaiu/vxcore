@@ -30,13 +30,14 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试自定义配置")
   void testCustomConfig() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-enable", true)
-        .put("jwt-algorithm", "HS256")
-        .put("jwt-expire-seconds", 7200)
-        .put("jwt-issuer", "my-app")
-        .put("token-header", "X-Auth-Token")
-        .put("token-prefix", "Token ");
+    JsonObject configJson =
+        new JsonObject()
+            .put("jwt-enable", true)
+            .put("jwt-algorithm", "HS256")
+            .put("jwt-expire-seconds", 7200)
+            .put("jwt-issuer", "my-app")
+            .put("token-header", "X-Auth-Token")
+            .put("token-prefix", "Token ");
 
     SecurityConfig config = new SecurityConfig(configJson);
 
@@ -51,10 +52,11 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试认证路径配置")
   void testAuthPaths() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-auth-reg", new io.vertx.core.json.JsonArray()
-            .add("/api/secure/.*")
-            .add("/api/admin/.*"));
+    JsonObject configJson =
+        new JsonObject()
+            .put(
+                "jwt-auth-reg",
+                new io.vertx.core.json.JsonArray().add("/api/secure/.*").add("/api/admin/.*"));
 
     SecurityConfig config = new SecurityConfig(configJson);
     String[] authPaths = config.getAuthPaths();
@@ -68,11 +70,14 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试忽略路径配置")
   void testIgnorePaths() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-ignores-reg", new io.vertx.core.json.JsonArray()
-            .add("/api/auth/login")
-            .add("/api/auth/register")
-            .add("/health"));
+    JsonObject configJson =
+        new JsonObject()
+            .put(
+                "jwt-ignores-reg",
+                new io.vertx.core.json.JsonArray()
+                    .add("/api/auth/login")
+                    .add("/api/auth/register")
+                    .add("/health"));
 
     SecurityConfig config = new SecurityConfig(configJson);
     String[] ignorePaths = config.getIgnorePaths();
@@ -85,8 +90,7 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试禁用JWT")
   void testJwtDisabled() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-enable", false);
+    JsonObject configJson = new JsonObject().put("jwt-enable", false);
 
     SecurityConfig config = new SecurityConfig(configJson);
 
@@ -96,9 +100,10 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试公钥私钥路径配置")
   void testKeyPaths() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-public-key", "/path/to/public.pem")
-        .put("jwt-private-key", "/path/to/private.pem");
+    JsonObject configJson =
+        new JsonObject()
+            .put("jwt-public-key", "/path/to/public.pem")
+            .put("jwt-private-key", "/path/to/private.pem");
 
     SecurityConfig config = new SecurityConfig(configJson);
 
@@ -109,9 +114,8 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试HS256密钥配置")
   void testHs256Secret() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-algorithm", "HS256")
-        .put("jwt-secret", "my-secret-key-for-hs256");
+    JsonObject configJson =
+        new JsonObject().put("jwt-algorithm", "HS256").put("jwt-secret", "my-secret-key-for-hs256");
 
     SecurityConfig config = new SecurityConfig(configJson);
 
@@ -131,9 +135,10 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试空数组配置")
   void testEmptyArrayConfig() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-auth-reg", new io.vertx.core.json.JsonArray())
-        .put("jwt-ignores-reg", new io.vertx.core.json.JsonArray());
+    JsonObject configJson =
+        new JsonObject()
+            .put("jwt-auth-reg", new io.vertx.core.json.JsonArray())
+            .put("jwt-ignores-reg", new io.vertx.core.json.JsonArray());
 
     SecurityConfig config = new SecurityConfig(configJson);
 
@@ -146,8 +151,7 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试Refresh Token过期配置")
   void testRefreshTokenExpire() {
-    JsonObject configJson = new JsonObject()
-        .put("refresh-token-expire-seconds", 86400);
+    JsonObject configJson = new JsonObject().put("refresh-token-expire-seconds", 86400);
 
     SecurityConfig config = new SecurityConfig(configJson);
 
@@ -157,9 +161,7 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试fromJson静态方法")
   void testFromJson() {
-    JsonObject configJson = new JsonObject()
-        .put("jwt-enable", true)
-        .put("jwt-algorithm", "RS256");
+    JsonObject configJson = new JsonObject().put("jwt-enable", true).put("jwt-algorithm", "RS256");
 
     SecurityConfig config = SecurityConfig.fromJson(configJson);
 
@@ -187,13 +189,14 @@ public class SecurityConfigTest {
   @Test
   @DisplayName("测试驼峰式配置键兼容")
   void testCamelCaseConfigKeys() {
-    JsonObject configJson = new JsonObject()
-        .put("jwtEnabled", true)
-        .put("jwtAlgorithm", "HS256")
-        .put("jwtExpireSeconds", 7200)
-        .put("jwtIssuer", "test-app")
-        .put("tokenHeader", "X-Token")
-        .put("tokenPrefix", "JWT ");
+    JsonObject configJson =
+        new JsonObject()
+            .put("jwtEnabled", true)
+            .put("jwtAlgorithm", "HS256")
+            .put("jwtExpireSeconds", 7200)
+            .put("jwtIssuer", "test-app")
+            .put("tokenHeader", "X-Token")
+            .put("tokenPrefix", "JWT ");
 
     SecurityConfig config = new SecurityConfig(configJson);
 
