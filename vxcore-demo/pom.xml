@@ -27,7 +27,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <vxcore.version>1.2.0</vxcore.version>
+        <vxcore.version>1.2.1</vxcore.version>
         <vertx.version>4.5.21</vertx.version>
         <slf4j.version>2.0.5</slf4j.version>
         <logback.version>1.5.8</logback.version>
