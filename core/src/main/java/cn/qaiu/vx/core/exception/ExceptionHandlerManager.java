@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.exception;
 
-import cn.qaiu.vx.core.annotaions.exception.ExceptionHandler;
+import cn.qaiu.vx.core.annotations.exception.ExceptionHandler;
 import cn.qaiu.vx.core.model.JsonResult;
 import cn.qaiu.vx.core.util.ReflectionUtil;
 import io.vertx.ext.web.RoutingContext;

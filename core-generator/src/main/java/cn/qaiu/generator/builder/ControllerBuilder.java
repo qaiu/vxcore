@@ -66,12 +66,12 @@ public class ControllerBuilder {
     imports.add(packageConfig.getServicePackage() + "." + serviceClassName);
 
     // Core 模块注解导入
-    imports.add("cn.qaiu.vx.core.annotaions.RouteHandler");
-    imports.add("cn.qaiu.vx.core.annotaions.RouteMapping");
-    imports.add("cn.qaiu.vx.core.annotaions.RouteMethod");
-    imports.add("cn.qaiu.vx.core.annotaions.param.RequestParam");
-    imports.add("cn.qaiu.vx.core.annotaions.param.PathVariable");
-    imports.add("cn.qaiu.vx.core.annotaions.param.RequestBody");
+    imports.add("cn.qaiu.vx.core.annotations.RouteHandler");
+    imports.add("cn.qaiu.vx.core.annotations.RouteMapping");
+    imports.add("cn.qaiu.vx.core.annotations.RouteMethod");
+    imports.add("cn.qaiu.vx.core.annotations.param.RequestParam");
+    imports.add("cn.qaiu.vx.core.annotations.param.PathVariable");
+    imports.add("cn.qaiu.vx.core.annotations.param.RequestBody");
     imports.add("cn.qaiu.vx.core.util.JsonResult");
 
     // 基础导入

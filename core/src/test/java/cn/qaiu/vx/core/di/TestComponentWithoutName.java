@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.di;
 
-import cn.qaiu.vx.core.annotaions.Component;
+import cn.qaiu.vx.core.annotations.Component;
 
 /**
  * 测试用的组件实现（没有指定name） <br>

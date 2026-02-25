@@ -112,8 +112,8 @@
 
 ```
 找不到符号: 类 WebSocketHandler
-程序包cn.qaiu.vx.core.annotaions.websocket不存在
-程序包cn.qaiu.vx.core.annotaions.param不存在
+程序包cn.qaiu.vx.core.annotations.websocket不存在
+程序包cn.qaiu.vx.core.annotations.param不存在
 程序包cn.qaiu.vx.core.exception不存在
 ```
 

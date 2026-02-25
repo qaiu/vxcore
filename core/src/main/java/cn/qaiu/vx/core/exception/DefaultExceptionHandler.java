@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author QAIU
  */
-@cn.qaiu.vx.core.annotaions.exception.GlobalExceptionHandler(order = 100)
+@cn.qaiu.vx.core.annotations.exception.GlobalExceptionHandler(order = 100)
 public class DefaultExceptionHandler implements ExceptionHandlerInterface {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class);

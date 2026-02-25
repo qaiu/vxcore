@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>core</artifactId>
 
+    <name>vxcore-core</name>
+    <description>VxCore framework core module - Reactive web framework based on Vert.x</description>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -163,26 +166,11 @@
             <!-- Javadoc Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
-                <configuration>
-                    <sourcepath>
-                        ${project.build.sourceDirectory};
-                        ${project.basedir}/src/main/generated
-                    </sourcepath>
-                    <failOnError>false</failOnError>
-                    <additionalJOption>-Xdoclint:none</additionalJOption>
-                    <quiet>true</quiet>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                    <charset>${project.build.sourceEncoding}</charset>
-                    <docencoding>${project.build.sourceEncoding}</docencoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <release>${java.version}</release>
+                    <!-- 保留参数名称以支持无注解的参数绑定 -->
+                    <parameters>true</parameters>
                     <!-- 代码生成器 -->
                     <annotationProcessorPaths>
                         <path>

@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.handlerfactory;
 
-import cn.qaiu.vx.core.annotaions.websocket.*;
+import cn.qaiu.vx.core.annotations.websocket.*;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;

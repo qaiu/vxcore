@@ -1,8 +1,8 @@
 package cn.qaiu.vx.core.util;
 
-import cn.qaiu.vx.core.annotaions.param.PathVariable;
-import cn.qaiu.vx.core.annotaions.param.RequestBody;
-import cn.qaiu.vx.core.annotaions.param.RequestParam;
+import cn.qaiu.vx.core.annotations.param.PathVariable;
+import cn.qaiu.vx.core.annotations.param.RequestBody;
+import cn.qaiu.vx.core.annotations.param.RequestParam;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import java.lang.reflect.Parameter;
@@ -87,6 +87,9 @@ public final class ParamUtil {
     RequestBody requestBodyAnn = parameter.getAnnotation(RequestBody.class);
     if (requestBodyAnn != null) {
       if (requestBody != null) {
+        if (paramType == JsonObject.class) {
+          return requestBody;
+        }
         return requestBody.mapTo(paramType);
       } else if (requestBodyAnn.required()) {
         throw new IllegalArgumentException("Required request body is missing");
@@ -110,16 +113,19 @@ public final class ParamUtil {
     }
 
     // 无注解的参数，尝试按名称匹配
+    // 首先尝试从路径参数中获取（支持 :paramName 语法）
     String value = pathParams.get(paramName);
     if (value != null) {
       return convertValue(value, paramType);
     }
 
+    // 然后尝试从查询参数中获取
     value = queryParams.get(paramName);
     if (value != null) {
       return convertValue(value, paramType);
     }
 
+    // 如果是基本类型或包装类型，返回默认值；否则返回null
     return null;
   }
 

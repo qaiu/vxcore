@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.util;
 
-import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.annotations.App;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

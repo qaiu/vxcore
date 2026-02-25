@@ -1,6 +1,7 @@
 package cn.qaiu.vx.core.lifecycle;
 
 import cn.qaiu.vx.core.handlerfactory.RouterHandlerFactory;
+import cn.qaiu.vx.core.registry.ServiceRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -32,7 +33,14 @@ public class RouterComponent implements LifecycleComponent {
             // 2. 创建路由处理器工厂
             routerHandlerFactory = new RouterHandlerFactory(gatewayPrefix);
 
-            // 3. 创建路由器
+            // 3. 注入 ServiceRegistry 供 Controller DI 使用
+            ServiceRegistry registry = findServiceRegistry();
+            if (registry != null) {
+              routerHandlerFactory.setServiceRegistry(registry);
+              LOGGER.info("ServiceRegistry injected into RouterHandlerFactory");
+            }
+
+            // 4. 创建路由器
             router = routerHandlerFactory.createRouter();
 
             LOGGER.info("Router component initialized successfully with prefix: {}", gatewayPrefix);
@@ -42,6 +50,20 @@ public class RouterComponent implements LifecycleComponent {
             promise.fail(e);
           }
         });
+  }
+
+  /** 从 FrameworkLifecycleManager 查找已初始化的 ServiceRegistry */
+  private ServiceRegistry findServiceRegistry() {
+    try {
+      for (LifecycleComponent component : FrameworkLifecycleManager.getInstance().getComponents()) {
+        if (component instanceof ServiceRegistryComponent src) {
+          return src.getServiceRegistry();
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to find ServiceRegistry: {}", e.getMessage());
+    }
+    return null;
   }
 
   /** 获取网关前缀 */

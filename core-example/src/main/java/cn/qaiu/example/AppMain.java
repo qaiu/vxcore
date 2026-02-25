@@ -1,7 +1,8 @@
 package cn.qaiu.example;
 
 import cn.qaiu.vx.core.VXCoreApplication;
-import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.annotations.App;
+import cn.qaiu.vx.core.util.VertxHolder;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,5 +53,9 @@ public class AppMain {
     log.info("Configuration summary:");
     log.info("  - Server port: {}", server != null ? server.getInteger("port") : "default");
     log.info("  - Gateway prefix: {}", config.getJsonObject("custom", new JsonObject()).getString("gatewayPrefix", "/"));
+
+    // 部署应用主Verticle
+//    ExampleApplication verticle = new ExampleApplication();
+//    VertxHolder.getVertxInstance().deployVerticle(verticle);
   }
 }

@@ -165,7 +165,7 @@ public final class Deploy {
         if ("main".equals(element.getMethodName())) {
           String className = element.getClassName();
           Class<?> mainClass = Class.forName(className);
-          return mainClass.isAnnotationPresent(cn.qaiu.vx.core.annotaions.App.class);
+          return mainClass.isAnnotationPresent(cn.qaiu.vx.core.annotations.App.class);
         }
       }
     } catch (Exception e) {
@@ -386,15 +386,29 @@ public final class Deploy {
     LOGGER.info("==============server info================");
   }
 
-  /**
-   * 部署失败
-   *
-   * @param throwable Exception信息
-   */
-  private void deployVerticalFailed(Throwable throwable) {
-    LOGGER.error(throwable.getClass().getName() + ": " + throwable.getMessage());
-    System.exit(-1);
-  }
+    /**
+     * 部署失败
+     *
+     * @param throwable Exception信息
+     */
+    private void deployVerticalFailed(Throwable throwable) {
+        // 记录完整异常
+        LOGGER.error("{}: {}", throwable.getClass().getName(), throwable.getMessage(), throwable);
+
+        // 优雅关闭 Vertx（如果已初始化）
+        var vertx = VertxHolder.getVertxInstance();
+        if (vertx != null) {
+            vertx.close(ar -> {
+                if (ar.failed()) {
+                    LOGGER.error("Failed to close Vertx", ar.cause());
+                }
+            });
+        } else {
+            // Vertx 未初始化：仅记录，不强制退出，或抛出异常交由上层处理
+            // throw new RuntimeException("Vertx not initialized", throwable);
+            LOGGER.error("Vertx 未初始化");
+        }
+    }
 
   /**
    * 启动时间信息

@@ -1,0 +1,14 @@
+server:
+  port: 18084
+
+# vertx核心线程配置
+vertx:
+  eventLoopPoolSize: 0
+  workerPoolSize: 0
+
+# vertx-service配置
+custom:
+  asyncServiceInstances: 4
+  baseLocations: cn.qaiu.demo.routing
+  routeTimeOut: 15000
+  gatewayPrefix: /

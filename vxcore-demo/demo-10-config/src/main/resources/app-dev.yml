@@ -1,0 +1,14 @@
+server:
+  port: 18086
+
+custom:
+  asyncServiceInstances: 4
+  baseLocations: cn.qaiu.demo.config
+  routeTimeOut: 15000
+  gatewayPrefix: /
+
+demo:
+  app-name: VXCore Config Demo
+  version: 1.0.0
+  max-connections: 100
+  debug-mode: true

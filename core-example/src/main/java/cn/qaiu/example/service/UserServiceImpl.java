@@ -3,7 +3,7 @@ package cn.qaiu.example.service;
 import cn.qaiu.db.dsl.lambda.JServiceImpl;
 import cn.qaiu.example.entity.User;
 import cn.qaiu.example.model.UserRegistrationRequest;
-import cn.qaiu.vx.core.annotaions.Service;
+import cn.qaiu.vx.core.annotations.Service;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import java.math.BigDecimal;

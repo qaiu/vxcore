@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.lifecycle;
 
-import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.annotations.App;
 import cn.qaiu.vx.core.config.DataSourceConfigResolver;
 import cn.qaiu.vx.core.spi.OrmSyncProvider;
 import cn.qaiu.vx.core.spi.OrmSyncProviderRegistry;

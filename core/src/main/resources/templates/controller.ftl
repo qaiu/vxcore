@@ -3,12 +3,12 @@ package ${package.controllerPackage};
 
 import ${package.entityPackage}.${entity.className};
 import ${package.daoPackage}.${entity.className}Dao;
-import cn.qaiu.vx.core.annotaions.RouteHandler;
-import cn.qaiu.vx.core.annotaions.RouteMapping;
-import cn.qaiu.vx.core.annotaions.RouteMethod;
-import cn.qaiu.vx.core.annotaions.param.RequestParam;
-import cn.qaiu.vx.core.annotaions.param.PathVariable;
-import cn.qaiu.vx.core.annotaions.param.RequestBody;
+import cn.qaiu.vx.core.annotations.RouteHandler;
+import cn.qaiu.vx.core.annotations.RouteMapping;
+import cn.qaiu.vx.core.annotations.RouteMethod;
+import cn.qaiu.vx.core.annotations.param.RequestParam;
+import cn.qaiu.vx.core.annotations.param.PathVariable;
+import cn.qaiu.vx.core.annotations.param.RequestBody;
 import cn.qaiu.vx.core.util.JsonResult;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;

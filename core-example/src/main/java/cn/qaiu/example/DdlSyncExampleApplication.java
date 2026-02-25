@@ -3,7 +3,7 @@ package cn.qaiu.example;
 import cn.qaiu.db.orm.DdlSyncStrategy;
 import cn.qaiu.db.orm.EnableDdlSync;
 import cn.qaiu.vx.core.VXCoreApplication;
-import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.annotations.App;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

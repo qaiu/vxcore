@@ -78,3 +78,10 @@ generated-test-sources/
 
 .github_token
 .tmp/
+
+# Flattened POM files
+.flattened-pom.xml
+settings.xml
+
+# Demo verification project target dirs
+vxcore-demo/**/target/

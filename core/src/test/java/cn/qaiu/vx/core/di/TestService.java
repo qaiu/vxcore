@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.di;
 
-import cn.qaiu.vx.core.annotaions.Service;
+import cn.qaiu.vx.core.annotations.Service;
 import io.vertx.core.Future;
 
 /**

@@ -1,0 +1,8 @@
+server:
+  port: 18085
+
+custom:
+  asyncServiceInstances: 4
+  baseLocations: cn.qaiu.demo.exception
+  routeTimeOut: 15000
+  gatewayPrefix: /

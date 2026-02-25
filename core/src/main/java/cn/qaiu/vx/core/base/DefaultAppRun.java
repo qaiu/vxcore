@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.base;
 
-import cn.qaiu.vx.core.annotaions.HandleSortFilter;
+import cn.qaiu.vx.core.annotations.HandleSortFilter;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.registry;
 
-import cn.qaiu.vx.core.annotaions.Service;
+import cn.qaiu.vx.core.annotations.Service;
 import cn.qaiu.vx.core.util.AnnotationNameGenerator;
 import cn.qaiu.vx.core.util.ReflectionUtil;
 import io.vertx.core.Vertx;
@@ -26,11 +26,13 @@ public class ServiceRegistry {
   private final Vertx vertx;
   private final ServiceBinder serviceBinder;
   private final Map<String, Object> registeredServices;
+  private final Map<Class<?>, Object> servicesByType;
 
   public ServiceRegistry(Vertx vertx) {
     this.vertx = vertx;
     this.serviceBinder = new ServiceBinder(vertx);
     this.registeredServices = new HashMap<>();
+    this.servicesByType = new HashMap<>();
   }
 
   /**
@@ -105,25 +107,22 @@ public class ServiceRegistry {
    */
   private ServiceInfo analyzeServiceClass(Class<?> serviceClass) {
     try {
-      // 检查是否有@Service注解
       Service serviceAnnotation = serviceClass.getAnnotation(Service.class);
       if (serviceAnnotation == null) {
         LOGGER.warn("Class {} is not annotated with @Service", serviceClass.getName());
         return null;
       }
 
-      // 获取实现的接口
-      Class<?>[] interfaces = serviceClass.getInterfaces();
-      if (interfaces.length == 0) {
-        LOGGER.warn("Service class {} does not implement any interface", serviceClass.getName());
-        return null;
-      }
-
-      // 使用第一个接口作为服务接口
-      Class<?> serviceInterface = interfaces[0];
-      String address = serviceInterface.getName();
       String serviceName = AnnotationNameGenerator.getEffectiveName(serviceClass);
 
+      Class<?>[] interfaces = serviceClass.getInterfaces();
+      if (interfaces.length == 0) {
+        // 无接口的具体类也允许注册到本地注册表
+        return new ServiceInfo(serviceName, serviceClass.getName(), null, serviceClass);
+      }
+
+      Class<?> serviceInterface = interfaces[0];
+      String address = serviceInterface.getName();
       return new ServiceInfo(serviceName, address, serviceInterface, serviceClass);
     } catch (Exception e) {
       LOGGER.error("Failed to analyze service class: {}", serviceClass.getName(), e);
@@ -141,51 +140,54 @@ public class ServiceRegistry {
   @SuppressWarnings("unchecked")
   private boolean registerService(ServiceInfo serviceInfo, Object serviceInstance) {
     try {
-      // 检查服务接口是否有@ProxyGen注解
-      boolean hasProxyGen = hasProxyGenAnnotation(serviceInfo.getServiceInterface());
+      Class<?> serviceInterface = serviceInfo.getServiceInterface();
 
-      if (hasProxyGen) {
-        // 有@ProxyGen注解，检查代理处理器类是否存在
-        String proxyHandlerClassName =
-            serviceInfo.getServiceInterface().getName() + "VertxProxyHandler";
-        try {
-          Class.forName(proxyHandlerClassName);
-          // 代理处理器类存在，使用ServiceBinder注册
-          serviceBinder
-              .setAddress(serviceInfo.getAddress())
-              .register((Class<Object>) serviceInfo.getServiceInterface(), serviceInstance);
+      if (serviceInterface != null) {
+        boolean hasProxyGen = hasProxyGenAnnotation(serviceInterface);
+        if (hasProxyGen) {
+          String proxyHandlerClassName = serviceInterface.getName() + "VertxProxyHandler";
+          try {
+            Class.forName(proxyHandlerClassName);
+            serviceBinder
+                .setAddress(serviceInfo.getAddress())
+                .register((Class<Object>) serviceInterface, serviceInstance);
+            LOGGER.info(
+                "Successfully registered @ProxyGen service: {} -> {}",
+                serviceInfo.getServiceName(),
+                serviceInfo.getAddress());
+          } catch (ClassNotFoundException e) {
+            LOGGER.warn(
+                "Proxy handler class not found for @ProxyGen service {}: {}. "
+                    + "Skipping ServiceBinder registration.",
+                serviceInfo.getServiceName(),
+                proxyHandlerClassName);
+          } catch (Exception proxyError) {
+            LOGGER.warn(
+                "Failed to register @ProxyGen service {} with ServiceBinder: {}. "
+                    + "Skipping proxy registration.",
+                serviceInfo.getServiceName(),
+                proxyError.getMessage());
+          }
+        } else {
           LOGGER.info(
-              "Successfully registered @ProxyGen service: {} -> {}",
-              serviceInfo.getServiceName(),
-              serviceInfo.getAddress());
-        } catch (ClassNotFoundException e) {
-          LOGGER.warn(
-              "Proxy handler class not found for @ProxyGen service {}: {}. "
-                  + "Skipping ServiceBinder registration. This is normal in test environments.",
-              serviceInfo.getServiceName(),
-              proxyHandlerClassName);
-          // 继续注册到本地映射，但不使用ServiceBinder
-        } catch (Exception proxyError) {
-          LOGGER.warn(
-              "Failed to register @ProxyGen service {} with ServiceBinder: {}. "
-                  + "Skipping proxy registration.",
-              serviceInfo.getServiceName(),
-              proxyError.getMessage());
-          // 继续注册到本地映射，但不使用ServiceBinder
+              "Service {} registering to local registry (no @ProxyGen)",
+              serviceInfo.getServiceName());
         }
+        // 建立接口到实例的类型索引
+        servicesByType.put(serviceInterface, serviceInstance);
       } else {
-        // 没有@ProxyGen注解，直接注册到本地映射
         LOGGER.info(
-            "Service {} does not have @ProxyGen annotation, registering to local registry",
+            "Concrete service {} registering to local registry (no interface)",
             serviceInfo.getServiceName());
       }
 
-      // 无论是否使用ServiceBinder，都注册到本地映射
+      // 注册到本地映射（按名称）
       registeredServices.put(serviceInfo.getServiceName(), serviceInstance);
+      // 建立具体类到实例的类型索引
+      servicesByType.put(serviceInfo.getServiceClass(), serviceInstance);
       return true;
     } catch (Exception e) {
       LOGGER.error("Failed to register service: {}", serviceInfo.getServiceName(), e);
-      // 不再抛出异常，而是记录错误并继续
       LOGGER.warn("Skipping service registration for: {}", serviceInfo.getServiceName());
       return false;
     }
@@ -199,6 +201,28 @@ public class ServiceRegistry {
    */
   public Object getService(String serviceName) {
     return registeredServices.get(serviceName);
+  }
+
+  /**
+   * 按类型查找已注册的服务实例。
+   * 先精确匹配，再按 assignable 兼容查找。
+   *
+   * @param serviceType 服务类型（接口或具体类）
+   * @return 服务实例，未找到返回 null
+   */
+  public Object getServiceByType(Class<?> serviceType) {
+    // 1. 精确匹配
+    Object instance = servicesByType.get(serviceType);
+    if (instance != null) {
+      return instance;
+    }
+    // 2. assignable 兼容查找
+    for (Map.Entry<Class<?>, Object> entry : servicesByType.entrySet()) {
+      if (serviceType.isAssignableFrom(entry.getKey())) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
   /**

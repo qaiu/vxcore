@@ -44,6 +44,12 @@ public class ServiceRegistryComponent implements LifecycleComponent {
             // 4. 记录扫描结果
             logAnnotatedClasses();
 
+            // 5. 在 initialize 阶段完成服务注册，确保 RouterComponent 创建
+            //    Controller 时已有可用的服务实例
+            Set<Class<?>> serviceClasses = serviceComponent.serviceClasses();
+            int registeredCount = serviceRegistry.registerServices(serviceClasses);
+            LOGGER.info("Service registration completed in initialize phase. Total registered: {}", registeredCount);
+
             LOGGER.info("Service registry component initialized successfully");
             promise.complete();
           } catch (Exception e) {
@@ -58,13 +64,14 @@ public class ServiceRegistryComponent implements LifecycleComponent {
     return Future.future(
         promise -> {
           try {
-            // 获取Service注解的类集合
+            if (serviceRegistry.getServiceCount() > 0) {
+              LOGGER.info("Services already registered in initialize phase, skipping");
+              promise.complete();
+              return;
+            }
             Set<Class<?>> handlers = serviceComponent.serviceClasses();
-
-            // 注册所有服务
             int registeredCount = serviceRegistry.registerServices(handlers);
             LOGGER.info("Service registration completed. Total registered: {}", registeredCount);
-
             promise.complete();
           } catch (Exception e) {
             LOGGER.error("Failed to start service registry", e);

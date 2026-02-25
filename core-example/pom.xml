@@ -16,6 +16,8 @@
 
     <properties>
         <!-- 继承父pom的属性，只在需要时覆盖 -->
+        <!-- 跳过发布到Maven中央仓库 -->
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencies>
@@ -72,7 +74,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-codegen</artifactId>
-            <scope>provided</scope>
         </dependency>
         
         <dependency>

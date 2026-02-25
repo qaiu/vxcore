@@ -41,7 +41,7 @@
   - 支持事件描述
 
 **关键文件**:
-- `core/src/main/java/cn/qaiu/vx/core/annotaions/websocket/` (5个注解文件)
+- `core/src/main/java/cn/qaiu/vx/core/annotations/websocket/` (5个注解文件)
 - `core/src/main/java/cn/qaiu/vx/core/handlerfactory/WebSocketHandlerFactory.java` (308行)
 - `core/src/main/java/cn/qaiu/vx/core/model/WebSocketHandlerInfo.java` (支持类)
 

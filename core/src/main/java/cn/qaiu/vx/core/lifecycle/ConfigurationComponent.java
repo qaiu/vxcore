@@ -115,7 +115,7 @@ public class ConfigurationComponent implements LifecycleComponent {
         if ("main".equals(element.getMethodName())) {
           String className = element.getClassName();
           Class<?> mainClass = Class.forName(className);
-          return mainClass.isAnnotationPresent(cn.qaiu.vx.core.annotaions.App.class);
+          return mainClass.isAnnotationPresent(cn.qaiu.vx.core.annotations.App.class);
         }
       }
     } catch (Exception e) {

@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.util;
 
-import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.annotations.App;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

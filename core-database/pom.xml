@@ -11,6 +11,9 @@
 
     <artifactId>core-database</artifactId>
 
+    <name>vxcore-database</name>
+    <description>VxCore database module - jOOQ integration with DSL query support</description>
+
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -92,7 +95,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-codegen</artifactId>
-            <scope>compile</scope>
         </dependency>
         <!-- Vert.x SQL Client -->
         <dependency>

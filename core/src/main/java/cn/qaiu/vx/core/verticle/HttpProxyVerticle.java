@@ -249,6 +249,9 @@ public class HttpProxyVerticle extends AbstractVerticle {
    * @return 提取的端口号，如果没有指定端口，则返回默认端口
    */
   public static int extractPortFromUrl(String urlString) {
+    if (urlString == null || urlString.isBlank()) {
+      return -1;
+    }
     try {
       URI uri = new URI(urlString);
       int port = uri.getPort();

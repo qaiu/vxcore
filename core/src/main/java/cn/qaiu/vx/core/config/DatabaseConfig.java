@@ -1,7 +1,7 @@
 package cn.qaiu.vx.core.config;
 
-import cn.qaiu.vx.core.annotaions.config.ConfigurationProperties;
-import cn.qaiu.vx.core.annotaions.config.ConfigurationProperty;
+import cn.qaiu.vx.core.annotations.config.ConfigurationProperties;
+import cn.qaiu.vx.core.annotations.config.ConfigurationProperty;
 
 /**
  * 数据库配置类 演示配置元数据功能

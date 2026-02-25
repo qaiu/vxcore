@@ -842,7 +842,7 @@ public abstract class EnhancedDao<T, ID> implements JooqDao<T, ID> {
       @SuppressWarnings("unchecked")
       Class<? extends java.lang.annotation.Annotation> daoAnnotationClass =
           (Class<? extends java.lang.annotation.Annotation>)
-              Class.forName("cn.qaiu.vx.core.annotaions.Dao");
+              Class.forName("cn.qaiu.vx.core.annotations.Dao");
       if (this.getClass().isAnnotationPresent(daoAnnotationClass)) {
         LOGGER.debug("Found @Dao annotation on class: {}", this.getClass().getName());
       }

@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.TimeUnit;
@@ -15,9 +16,9 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * VXCoreApplication核心应用测试类
  * 测试应用启动、停止、状态管理等核心功能
- * 
- * 注意: 这些测试需要完整的配置文件,属于集成测试范畴
- * 在CI环境中禁用,本地可手动运行
+ *
+ * 注意: 这些测试需要完整的配置文件,属于集成测试范畴。
+ * CI 环境下自动跳过；本地可手动运行。
  *
  * @author <a href="https://qaiu.top">QAIU</a>
  */
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("VXCore应用核心功能测试")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Disabled("集成测试 - 需要完整配置文件,本地可手动运行")
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "CI 中需要完整配置，跳过集成测试")
 public class VXCoreApplicationTest {
 
     private VXCoreApplication application;

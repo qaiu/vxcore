@@ -4,8 +4,8 @@ import cn.qaiu.example.entity.User;
 import cn.qaiu.example.model.UserRegistrationRequest;
 import cn.qaiu.example.service.UserService;
 import cn.qaiu.example.service.UserServiceImpl;
-import cn.qaiu.vx.core.annotaions.RouteHandler;
-import cn.qaiu.vx.core.annotaions.RouteMapping;
+import cn.qaiu.vx.core.annotations.RouteHandler;
+import cn.qaiu.vx.core.annotations.RouteMapping;
 import cn.qaiu.vx.core.enums.RouteMethod;
 import cn.qaiu.vx.core.model.JsonResult;
 import io.vertx.core.Future;
@@ -156,5 +156,89 @@ public class UserController {
               LOGGER.error("Failed to register user: {}", request, error);
               return Future.succeededFuture(JsonResult.error("注册失败: " + error.getMessage()));
             });
+  }
+
+  // ========== 参数绑定测试用例 ==========
+
+  /**
+   * 测试1: PathVariable注解不填写字段名时自动根据参数名称映射
+   * 路径: GET /api/users/test1/:userId
+   * 示例: GET /api/users/test1/123
+   */
+  @RouteMapping(value = "test1/:userId", method = RouteMethod.GET, order = 100)
+  public Future<JsonResult<String>> testPathVariableWithoutValue(Long userId) {
+    LOGGER.info("Test1 - PathVariable without value annotation, userId: {}", userId);
+    return Future.succeededFuture(JsonResult.data("PathVariable无注解值测试成功，userId: " + userId));
+  }
+
+  /**
+   * 测试2: 使用 :语法 的路径变量自动绑定（无注解）
+   * 路径: GET /api/users/test2/:id
+   * 示例: GET /api/users/test2/456
+   */
+  @RouteMapping(value = "test2/:id", method = RouteMethod.GET, order = 100)
+  public Future<JsonResult<String>> testColonSyntaxAutoBinding(Long id) {
+    LOGGER.info("Test2 - Colon syntax auto binding without annotation, id: {}", id);
+    return Future.succeededFuture(JsonResult.data("冒号语法自动绑定成功，id: " + id));
+  }
+
+  /**
+   * 测试3: 使用 :语法 的多个路径变量自动绑定（无注解）
+   * 路径: GET /api/users/test3/:id/:name
+   * 示例: GET /api/users/test3/789/张三
+   */
+  @RouteMapping(value = "test3/:id/:name", method = RouteMethod.GET, order = 100)
+  public Future<JsonResult<String>> testMultipleColonSyntax(Long id, String name) {
+    LOGGER.info("Test3 - Multiple colon syntax auto binding, id: {}, name: {}", id, name);
+    return Future.succeededFuture(JsonResult.data("多参数自动绑定成功，id: " + id + ", name: " + name));
+  }
+
+  /**
+   * 测试4: 混合使用 {variable} 和 :variable 语法
+   * 路径: GET /api/users/test4/{userId}/detail/:type
+   * 示例: GET /api/users/test4/111/detail/full
+   */
+  @RouteMapping(value = "test4/{userId}/detail/:type", method = RouteMethod.GET, order = 100)
+  public Future<JsonResult<String>> testMixedSyntax(Long userId, String type) {
+    LOGGER.info("Test4 - Mixed syntax, userId: {}, type: {}", userId, type);
+    return Future.succeededFuture(JsonResult.data("混合语法测试成功，userId: " + userId + ", type: " + type));
+  }
+
+  // ========== 路由优先级自动排序测试用例 ==========
+
+  /**
+   * 测试5: 路由优先级测试 - 具体路径（最高优先级）
+   * 路径: GET /api/users/priority/fixed/path
+   * 示例: GET /api/users/priority/fixed/path
+   * 期望: 匹配此方法而不是下面的带参数路径
+   */
+  @RouteMapping(value = "priority/fixed/path", method = RouteMethod.GET)
+  public Future<JsonResult<String>> testPriorityFixedPath() {
+    LOGGER.info("Test5 - Matched fixed path (highest priority)");
+    return Future.succeededFuture(JsonResult.data("匹配到固定路径：priority/fixed/path"));
+  }
+
+  /**
+   * 测试6: 路由优先级测试 - 部分参数路径（中等优先级）
+   * 路径: GET /api/users/priority/fixed/:param
+   * 示例: GET /api/users/priority/fixed/abc
+   * 期望: 当路径不匹配test5时匹配此方法
+   */
+  @RouteMapping(value = "priority/fixed/:param", method = RouteMethod.GET)
+  public Future<JsonResult<String>> testPriorityPartialParam(String param) {
+    LOGGER.info("Test6 - Matched partial param path, param: {}", param);
+    return Future.succeededFuture(JsonResult.data("匹配到部分参数路径：priority/fixed/" + param));
+  }
+
+  /**
+   * 测试7: 路由优先级测试 - 全参数路径（最低优先级）
+   * 路径: GET /api/users/priority/:id/:name
+   * 示例: GET /api/users/priority/123/test
+   * 期望: 当路径不匹配test5和test6时匹配此方法
+   */
+  @RouteMapping(value = "priority/:id/:name", method = RouteMethod.GET)
+  public Future<JsonResult<String>> testPriorityFullParam(Long id, String name) {
+    LOGGER.info("Test7 - Matched full param path, id: {}, name: {}", id, name);
+    return Future.succeededFuture(JsonResult.data("匹配到全参数路径：priority/" + id + "/" + name));
   }
 }

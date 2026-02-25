@@ -44,7 +44,7 @@
    - `@RequestParam(value, required, defaultValue)`
    - `@PathVariable(value)`
    - `@RequestBody(required)`
-   - 位置：`core/src/main/java/cn/qaiu/vx/core/annotaions/param/`
+   - 位置：`core/src/main/java/cn/qaiu/vx/core/annotations/param/`
 
 4. 增强 `ParamUtil.java` 类型转换
 
@@ -354,7 +354,7 @@ public class UserDao extends AbstractDao<User> {
    - `@OnMessage`：消息接收
    - `@OnClose`：连接关闭
    - `@OnError`：错误处理
-   - 位置：`core/src/main/java/cn/qaiu/vx/core/annotaions/websocket/`
+   - 位置：`core/src/main/java/cn/qaiu/vx/core/annotations/websocket/`
 
 2. 创建WebSocket处理器工厂
 

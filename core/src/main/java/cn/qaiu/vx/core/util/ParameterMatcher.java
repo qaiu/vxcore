@@ -1,8 +1,8 @@
 package cn.qaiu.vx.core.util;
 
-import cn.qaiu.vx.core.annotaions.param.PathVariable;
-import cn.qaiu.vx.core.annotaions.param.RequestBody;
-import cn.qaiu.vx.core.annotaions.param.RequestParam;
+import cn.qaiu.vx.core.annotations.param.PathVariable;
+import cn.qaiu.vx.core.annotations.param.RequestBody;
+import cn.qaiu.vx.core.annotations.param.RequestParam;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -121,12 +122,113 @@ public class ParameterMatcher {
       } else if (paramType == HttpServerResponse.class) {
         args[i] = ctx.response();
       } else {
-        // 使用ParamUtil提取参数值
-        args[i] = ParamUtil.getParameterValue(parameter, pathParams, queryParams, requestBody);
+        // 使用ParamUtil提取参数值，如果Java -parameters不可用，尝试使用Javassist
+        String paramName = getParameterName(method, parameter, i);
+        args[i] = getParameterValueWithName(parameter, paramName, pathParams, queryParams, requestBody);
       }
     }
 
     return args;
+  }
+
+  /**
+   * 获取参数名称
+   * 优先使用Java反射（需要-parameters编译选项），
+   * 如果不可用则尝试使用Javassist
+   * 
+   * @param method 方法
+   * @param parameter 参数
+   * @param index 参数索引
+   * @return 参数名称
+   */
+  private static String getParameterName(Method method, Parameter parameter, int index) {
+    // 首先尝试使用Java反射获取参数名称（需要-parameters编译选项）
+    if (parameter.isNamePresent()) {
+      return parameter.getName();
+    }
+    
+    // 如果不可用，尝试使用Javassist
+    try {
+      Map<String, ?> paramMap = ReflectionUtil.getMethodParameter(method);
+      List<String> paramNames = new ArrayList<>(paramMap.keySet());
+      if (index < paramNames.size()) {
+        return paramNames.get(index);
+      }
+    } catch (Exception e) {
+      LOGGER.debug("Failed to get parameter name via Javassist for method {}, param index {}", 
+          method.getName(), index);
+    }
+    
+    // 如果都失败了，返回默认名称
+    return "arg" + index;
+  }
+
+  /**
+   * 使用指定的参数名称获取参数值
+   */
+  private static Object getParameterValueWithName(
+      Parameter parameter,
+      String paramName,
+      Map<String, String> pathParams,
+      MultiMap queryParams,
+      JsonObject requestBody) {
+    
+    Class<?> paramType = parameter.getType();
+
+    // 检查路径变量注解
+    PathVariable pathVar = parameter.getAnnotation(PathVariable.class);
+    if (pathVar != null) {
+      String varName = pathVar.value().isEmpty() ? paramName : pathVar.value();
+      String value = pathParams.get(varName);
+      if (value != null) {
+        return ParamUtil.convertValue(value, paramType);
+      } else if (pathVar.required()) {
+        throw new IllegalArgumentException("Required path variable '" + varName + "' is missing");
+      }
+      return null;
+    }
+
+    // 检查请求体注解
+    RequestBody requestBodyAnn = parameter.getAnnotation(RequestBody.class);
+    if (requestBodyAnn != null) {
+      if (requestBody != null) {
+        if (paramType == JsonObject.class) {
+          return requestBody;
+        }
+        return requestBody.mapTo(paramType);
+      } else if (requestBodyAnn.required()) {
+        throw new IllegalArgumentException("Required request body is missing");
+      }
+      return null;
+    }
+
+    // 检查请求参数注解
+    RequestParam requestParam = parameter.getAnnotation(RequestParam.class);
+    if (requestParam != null) {
+      String paramKey = requestParam.value().isEmpty() ? paramName : requestParam.value();
+      String value = queryParams.get(paramKey);
+      if (value != null) {
+        return ParamUtil.convertValue(value, paramType);
+      } else if (requestParam.required()) {
+        throw new IllegalArgumentException("Required parameter '" + paramKey + "' is missing");
+      } else if (!requestParam.defaultValue().isEmpty()) {
+        return ParamUtil.convertValue(requestParam.defaultValue(), paramType);
+      }
+      return null;
+    }
+
+    // 无注解的参数，尝试按名称匹配
+    String value = pathParams.get(paramName);
+    if (value != null) {
+      return ParamUtil.convertValue(value, paramType);
+    }
+
+    value = queryParams.get(paramName);
+    if (value != null) {
+      return ParamUtil.convertValue(value, paramType);
+    }
+
+    return null;
   }
 
   /**

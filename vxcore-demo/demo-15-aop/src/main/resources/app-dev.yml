@@ -1,0 +1,13 @@
+server:
+  port: 18087
+
+custom:
+  asyncServiceInstances: 4
+  baseLocations: cn.qaiu.demo.aop
+  routeTimeOut: 15000
+  gatewayPrefix: /
+
+aop:
+  enabled: true
+  scan-packages:
+    - cn.qaiu.demo.aop.aspect

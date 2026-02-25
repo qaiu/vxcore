@@ -2,7 +2,7 @@ package cn.qaiu.vx.core.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import cn.qaiu.vx.core.annotaions.App;
+import cn.qaiu.vx.core.annotations.App;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.di;
 
-import cn.qaiu.vx.core.annotaions.Controller;
+import cn.qaiu.vx.core.annotations.Controller;
 
 /**
  * 测试用的控制器实现 <br>

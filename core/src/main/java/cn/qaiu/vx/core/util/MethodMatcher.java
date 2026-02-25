@@ -1,8 +1,8 @@
 package cn.qaiu.vx.core.util;
 
-import cn.qaiu.vx.core.annotaions.param.PathVariable;
-import cn.qaiu.vx.core.annotaions.param.RequestBody;
-import cn.qaiu.vx.core.annotaions.param.RequestParam;
+import cn.qaiu.vx.core.annotations.param.PathVariable;
+import cn.qaiu.vx.core.annotations.param.RequestBody;
+import cn.qaiu.vx.core.annotations.param.RequestParam;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;

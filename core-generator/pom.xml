@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>core-generator</artifactId>
 
+    <name>vxcore-generator</name>
+    <description>VxCore code generator - Generate service proxy and database models</description>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

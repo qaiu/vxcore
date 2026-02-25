@@ -152,9 +152,10 @@ public class HttpProxyVerticleTest {
     @Order(8)
     @DisplayName("测试extractPortFromUrl - 空字符串")
     void testExtractPortFromEmptyUrl() {
-        // 空字符串被URI解析为相对路径，会使用HTTP默认端口
-        assertEquals(80, HttpProxyVerticle.extractPortFromUrl(""), 
-            "空URL应返回HTTP默认端口80");
+        assertEquals(-1, HttpProxyVerticle.extractPortFromUrl(""), 
+            "空URL应返回-1");
+        assertEquals(-1, HttpProxyVerticle.extractPortFromUrl("   "), 
+            "空白URL应返回-1");
     }
 
     @Test
@@ -283,20 +284,17 @@ public class HttpProxyVerticleTest {
     @DisplayName("测试端口冲突处理")
     @Timeout(value = 15, unit = TimeUnit.SECONDS)
     void testPortConflict(Vertx vertx, VertxTestContext testContext) {
-        // 注意: Vert.x在某些平台上允许端口重用(SO_REUSEPORT)
-        // 所以这个测试可能在不同环境有不同行为
+        // Vert.x 在某些平台上允许端口重用(SO_REUSEPORT)，同一端口部署可能成功或失败，两种结果均接受
         vertx.deployVerticle(new HttpProxyVerticle())
             .compose(id1 -> {
                 deploymentId = id1;
-                // 尝试用相同端口部署第二个实例
                 return vertx.deployVerticle(new HttpProxyVerticle());
             })
             .onComplete(ar -> {
-                testContext.verify(() -> {
-                    // 在支持SO_REUSEPORT的平台上可能成功，否则失败
-                    // 两种结果都可以接受
-                    assertNotNull(ar, "应该有结果返回");
-                });
+                testContext.verify(() -> assertNotNull(ar, "应该有结果返回"));
+                if (ar.succeeded()) {
+                    deploymentId = ar.result();
+                }
                 testContext.completeNow();
             });
     }

@@ -4,7 +4,7 @@ import cn.qaiu.db.dsl.core.JooqExecutor;
 import cn.qaiu.db.dsl.lambda.JServiceImpl;
 import cn.qaiu.db.dsl.lambda.LambdaPageResult;
 import cn.qaiu.example.entity.Product;
-import cn.qaiu.vx.core.annotaions.Service;
+import cn.qaiu.vx.core.annotations.Service;
 import io.vertx.core.Future;
 import java.math.BigDecimal;
 import java.util.List;

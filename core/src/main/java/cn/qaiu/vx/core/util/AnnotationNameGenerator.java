@@ -1,6 +1,12 @@
 package cn.qaiu.vx.core.util;
 
-import cn.qaiu.vx.core.annotaions.*;
+import cn.qaiu.vx.core.annotations.*;
+import cn.qaiu.vx.core.annotations.Component;
+import cn.qaiu.vx.core.annotations.Controller;
+import cn.qaiu.vx.core.annotations.Dao;
+import cn.qaiu.vx.core.annotations.Repository;
+import cn.qaiu.vx.core.annotations.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;

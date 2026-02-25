@@ -374,9 +374,9 @@ package com.example.controller;
 
 import com.example.entity.User;
 import com.example.service.UserService;
-import cn.qaiu.vx.core.annotaions.RouteHandler;
-import cn.qaiu.vx.core.annotaions.RouteMapping;
-import cn.qaiu.vx.core.annotaions.RouteMethod;
+import cn.qaiu.vx.core.annotations.RouteHandler;
+import cn.qaiu.vx.core.annotations.RouteMapping;
+import cn.qaiu.vx.core.annotations.RouteMethod;
 import cn.qaiu.vx.core.util.JsonResult;
 import io.vertx.core.Future;
 import java.util.List;

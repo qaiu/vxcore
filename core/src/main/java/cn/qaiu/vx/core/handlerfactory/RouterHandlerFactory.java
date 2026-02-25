@@ -5,11 +5,11 @@ import static cn.qaiu.vx.core.verticle.ReverseProxyVerticle.REROUTE_PATH_PREFIX;
 import static io.vertx.core.http.HttpHeaders.*;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-import cn.qaiu.vx.core.annotaions.DateFormat;
-import cn.qaiu.vx.core.annotaions.RouteHandler;
-import cn.qaiu.vx.core.annotaions.RouteMapping;
-import cn.qaiu.vx.core.annotaions.SockRouteMapper;
-import cn.qaiu.vx.core.annotaions.websocket.WebSocketHandler;
+import cn.qaiu.vx.core.annotations.websocket.WebSocketHandler;
+import cn.qaiu.vx.core.annotations.DateFormat;
+import cn.qaiu.vx.core.annotations.RouteHandler;
+import cn.qaiu.vx.core.annotations.RouteMapping;
+import cn.qaiu.vx.core.annotations.SockRouteMapper;
 import cn.qaiu.vx.core.base.BaseHttpApi;
 import cn.qaiu.vx.core.exception.BuiltinExceptionHandler;
 import cn.qaiu.vx.core.exception.BusinessException;
@@ -68,6 +68,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
   private final String gatewayPrefix;
   private final ExceptionHandlerManager exceptionHandlerManager;
   private SecurityInterceptor securityInterceptor;
+  private cn.qaiu.vx.core.registry.ServiceRegistry serviceRegistry;
 
   public RouterHandlerFactory(String gatewayPrefix) {
     this.webSocketHandlerFactory = new WebSocketHandlerFactory(VertxHolder.getVertxInstance());
@@ -76,6 +77,13 @@ public class RouterHandlerFactory implements BaseHttpApi {
     this.exceptionHandlerManager = new ExceptionHandlerManager();
     initBuiltinExceptionHandlers();
     initSecurityInterceptor();
+  }
+
+  /**
+   * 设置服务注册表，用于 Controller 依赖注入时查找已注册的服务实例
+   */
+  public void setServiceRegistry(cn.qaiu.vx.core.registry.ServiceRegistry serviceRegistry) {
+    this.serviceRegistry = serviceRegistry;
   }
 
   /** 初始化安全拦截器 */
@@ -235,7 +243,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
   /** 注册单个处理器 */
   private void registerHandler(Router router, Class<?> handler) throws Throwable {
     String root = getRootPath(handler);
-    Object instance = ReflectionUtil.newWithNoParam(handler);
+    Object instance = createControllerInstance(handler);
     Method[] methods = handler.getMethods();
 
     // 获取路由方法
@@ -254,13 +262,159 @@ public class RouterHandlerFactory implements BaseHttpApi {
     }
   }
 
+  /** 
+   * 创建Controller实例并自动注入依赖
+   * 支持构造器注入和字段注入
+   */
+  private Object createControllerInstance(Class<?> handlerClass) throws Throwable {
+    // 1. 尝试构造器注入
+    Object instance = tryConstructorInjection(handlerClass);
+    
+    if (instance != null) {
+      // 构造器注入成功,返回实例
+      return instance;
+    }
+    
+    // 2. 使用无参构造器创建实例
+    instance = ReflectionUtil.newWithNoParam(handlerClass);
+    
+    // 3. 执行字段注入
+    injectFields(instance);
+    
+    return instance;
+  }
+
+  /**
+   * 尝试使用带@Inject注解的构造器进行依赖注入
+   * @return 成功返回实例,失败返回null
+   */
+  private Object tryConstructorInjection(Class<?> handlerClass) {
+    try {
+      // 查找带@Inject注解的构造器
+      java.lang.reflect.Constructor<?>[] constructors = handlerClass.getDeclaredConstructors();
+      for (java.lang.reflect.Constructor<?> constructor : constructors) {
+        if (constructor.isAnnotationPresent(javax.inject.Inject.class)) {
+          // 找到@Inject构造器,获取参数并注入
+          Class<?>[] paramTypes = constructor.getParameterTypes();
+          Object[] args = new Object[paramTypes.length];
+          
+          for (int i = 0; i < paramTypes.length; i++) {
+            args[i] = resolveService(paramTypes[i]);
+            if (args[i] == null) {
+              LOGGER.warn("Failed to resolve dependency for parameter type: {}", paramTypes[i].getName());
+              return null;
+            }
+          }
+          
+          constructor.setAccessible(true);
+          return constructor.newInstance(args);
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Constructor injection failed for {}: {}", handlerClass.getName(), e.getMessage());
+    }
+    return null;
+  }
+
+  /**
+   * 为实例的字段注入依赖
+   */
+  private void injectFields(Object instance) {
+    Class<?> clazz = instance.getClass();
+    
+    // 遍历所有字段
+    java.lang.reflect.Field[] fields = clazz.getDeclaredFields();
+    for (java.lang.reflect.Field field : fields) {
+      // 检查是否有@Inject注解
+      if (field.isAnnotationPresent(javax.inject.Inject.class)) {
+        try {
+          Class<?> fieldType = field.getType();
+          Object service = resolveService(fieldType);
+          
+          if (service != null) {
+            field.setAccessible(true);
+            field.set(instance, service);
+            LOGGER.debug("Injected {} into {}.{}", fieldType.getSimpleName(), 
+                        clazz.getSimpleName(), field.getName());
+          } else {
+            LOGGER.warn("Failed to inject field {}.{}: service not found", 
+                       clazz.getSimpleName(), field.getName());
+          }
+        } catch (Exception e) {
+          LOGGER.error("Failed to inject field {}.{}", clazz.getSimpleName(), field.getName(), e);
+        }
+      }
+    }
+  }
+
+  /**
+   * 解析Service依赖。
+   * 优先从 ServiceRegistry 查找已注册的实例（支持接口和具体类），
+   * 找不到时再 fallback 到 EventBus 代理（接口）或反射创建（具体类）。
+   */
+  private Object resolveService(Class<?> serviceType) {
+    try {
+      if (serviceType.isPrimitive() ||
+          serviceType == String.class ||
+          serviceType.getName().startsWith("java.lang") ||
+          serviceType.getName().startsWith("java.util")) {
+        LOGGER.debug("Skipping basic type: {}", serviceType.getName());
+        return null;
+      }
+
+      // 1. 优先从 ServiceRegistry 查找已注册的服务实例
+      if (serviceRegistry != null) {
+        Object registered = serviceRegistry.getServiceByType(serviceType);
+        if (registered != null) {
+          LOGGER.debug("Resolved {} from ServiceRegistry: {}",
+              serviceType.getSimpleName(), registered.getClass().getSimpleName());
+          return registered;
+        }
+      }
+
+      // 2. ServiceRegistry 中未找到，按类型 fallback
+      if (serviceType.isInterface()) {
+        try {
+          return cn.qaiu.vx.core.util.AsyncServiceUtil.getAsyncServiceInstance(serviceType);
+        } catch (Exception proxyEx) {
+          LOGGER.warn("EventBus proxy not available for {}: {}",
+              serviceType.getName(), proxyEx.getMessage());
+          return null;
+        }
+      }
+
+      // 3. 具体类：反射创建新实例
+      try {
+        return ReflectionUtil.newWithNoParam(serviceType);
+      } catch (Exception createEx) {
+        LOGGER.debug("Failed to create instance for {}: {}",
+            serviceType.getName(), createEx.getMessage());
+        return null;
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to resolve service {}: {}", serviceType.getName(), e.getMessage());
+      return null;
+    }
+  }
+
   /** 获取路由方法 */
   private List<Method> getRouteMethods(Method[] methods) {
     Comparator<Method> comparator =
         (m1, m2) -> {
           RouteMapping mapping1 = m1.getAnnotation(RouteMapping.class);
           RouteMapping mapping2 = m2.getAnnotation(RouteMapping.class);
-          return Integer.compare(mapping2.order(), mapping1.order());
+          
+          // 首先按照用户配置的order排序（降序）
+          int orderCompare = Integer.compare(mapping2.order(), mapping1.order());
+          if (orderCompare != 0) {
+            return orderCompare;
+          }
+          
+          // 如果order相同（都为默认值0），则按路径复杂度自动排序
+          return Integer.compare(
+              calculatePathPriority(mapping2.value()),
+              calculatePathPriority(mapping1.value())
+          );
         };
 
     List<Method> methodList =
@@ -277,10 +431,59 @@ public class RouterHandlerFactory implements BaseHttpApi {
     return methodList;
   }
 
+  /**
+   * 计算路径优先级分数
+   * 优先级原则：具体路径 > 路径变量路径
+   * 评分规则：
+   * - 每个固定路径段: +100分
+   * - 每个路径变量({var}或:var): +10分
+   * - 路径深度（段数）: 基础分
+   * 
+   * 示例：
+   * /a/b/c -> 300分（3个固定段）
+   * /a/b/:param -> 210分（2个固定段 + 1个变量）
+   * /a/:id -> 110分（1个固定段 + 1个变量）
+   * 
+   * @param path 路径
+   * @return 优先级分数，分数越高优先级越高
+   */
+  private int calculatePathPriority(String path) {
+    if (path == null || path.isEmpty() || "/".equals(path)) {
+      return 0;
+    }
+
+    // 移除开头和结尾的斜杠
+    String cleanPath = path.replaceAll("^/+|/+$", "");
+    if (cleanPath.isEmpty()) {
+      return 0;
+    }
+
+    // 分割路径段
+    String[] segments = cleanPath.split("/");
+    int score = 0;
+
+    for (String segment : segments) {
+      if (segment.isEmpty()) {
+        continue;
+      }
+      
+      // 检查是否是路径变量
+      if (segment.startsWith(":") || segment.matches("^\\{.+\\}$")) {
+        // 路径变量段，得分较低
+        score += 10;
+      } else {
+        // 固定路径段，得分较高
+        score += 100;
+      }
+    }
+
+    return score;
+  }
+
   /** 注册异常处理器 */
   private void registerExceptionHandlers(Class<?> handler, Method[] methods) {
     for (Method method : methods) {
-      if (method.isAnnotationPresent(cn.qaiu.vx.core.annotaions.exception.ExceptionHandler.class)) {
+      if (method.isAnnotationPresent(cn.qaiu.vx.core.annotations.exception.ExceptionHandler.class)) {
         exceptionHandlerManager.registerLocalHandler(handler, method);
       }
     }
@@ -321,7 +524,7 @@ public class RouterHandlerFactory implements BaseHttpApi {
 
     // 创建路由
     Route route = router.route(method, vertxPath);
-    configureHttpRoute(route, mapping, routeMethods, method, path);
+    configureHttpRoute(route, mapping, routeMethods, method, vertxPath);
 
     // 添加安全拦截器（如果启用）
     if (securityInterceptor != null) {
@@ -353,7 +556,10 @@ public class RouterHandlerFactory implements BaseHttpApi {
     // 转换{userId}格式为:userId格式
     String converted = path.replaceAll("\\{([^}]+)\\}", ":$1");
 
-    LOGGER.debug("Path variable conversion: {} -> {}", path, converted);
+    // 只在实际发生转换时才记录日志
+    if (!path.equals(converted)) {
+      LOGGER.debug("Path variable conversion: {} -> {}", path, converted);
+    }
     return converted;
   }
 
@@ -363,10 +569,10 @@ public class RouterHandlerFactory implements BaseHttpApi {
       RouteMapping mapping,
       List<Method> routeMethods,
       HttpMethod method,
-      String path) {
+      String vertxPath) {
     String mineType = mapping.requestMIMEType().getValue();
     LOGGER.info(
-        "route -> {}:{} -> {} ({} methods)", method.name(), path, mineType, routeMethods.size());
+        "route -> {}:{} -> {} ({} methods)", method.name(), vertxPath, mineType, routeMethods.size());
 
     if (StringUtils.isNotEmpty(mineType)) {
       route.consumes(mineType);

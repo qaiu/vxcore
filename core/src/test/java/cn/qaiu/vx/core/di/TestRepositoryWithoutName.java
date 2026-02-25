@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.di;
 
-import cn.qaiu.vx.core.annotaions.Repository;
+import cn.qaiu.vx.core.annotations.Repository;
 
 /**
  * 测试用的仓储实现（没有指定name） <br>

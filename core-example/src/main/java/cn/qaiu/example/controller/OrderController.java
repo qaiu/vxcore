@@ -2,9 +2,9 @@ package cn.qaiu.example.controller;
 
 import cn.qaiu.example.entity.Order;
 import cn.qaiu.example.service.OrderService;
-import cn.qaiu.vx.core.annotaions.Controller;
-import cn.qaiu.vx.core.annotaions.RouteHandler;
-import cn.qaiu.vx.core.annotaions.RouteMapping;
+import cn.qaiu.vx.core.annotations.Controller;
+import cn.qaiu.vx.core.annotations.RouteHandler;
+import cn.qaiu.vx.core.annotations.RouteMapping;
 import cn.qaiu.vx.core.base.BaseHttpApi;
 import cn.qaiu.vx.core.enums.RouteMethod;
 import io.vertx.core.Future;

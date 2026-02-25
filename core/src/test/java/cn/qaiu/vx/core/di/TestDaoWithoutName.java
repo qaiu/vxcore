@@ -1,6 +1,6 @@
 package cn.qaiu.vx.core.di;
 
-import cn.qaiu.vx.core.annotaions.Dao;
+import cn.qaiu.vx.core.annotations.Dao;
 
 /**
  * 测试用的DAO实现（没有指定name） <br>
