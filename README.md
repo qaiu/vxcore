@@ -116,7 +116,7 @@ VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
 
 ```xml
 <properties>
-    <vxcore.version>1.2.0</vxcore.version>
+    <vxcore.version>1.2.1</vxcore.version>
 </properties>
 
 <dependencies>
