@@ -184,6 +184,18 @@
                                     <mainClass>cn.qaiu.generator.cli.GeneratorCli</mainClass>
                                 </transformer>
                             </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/maven/plugin.xml</exclude>
+                                        <exclude>META-INF/maven/plugin-help.xml</exclude>
+                                        <exclude>META-INF/maven/**/plugin*.xml</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
