@@ -1,5 +1,6 @@
 package cn.qaiu.vx.core.lifecycle;
 
+import cn.qaiu.vx.core.aop.AopComponent;
 import cn.qaiu.vx.core.util.ConfigUtil;
 import cn.qaiu.vx.core.util.VertxHolder;
 import cn.qaiu.vx.core.verticle.*;
@@ -61,6 +62,7 @@ public class FrameworkLifecycleManager {
     // 按依赖顺序添加组件
     components.add(new ConfigurationComponent());
     components.add(new DataSourceComponent());
+    components.add(new AopComponent());
     components.add(new ServiceRegistryComponent());
     components.add(new RouterComponent());
     components.add(new ProxyComponent());

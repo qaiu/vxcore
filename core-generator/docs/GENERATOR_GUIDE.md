@@ -54,7 +54,7 @@ java -jar core-generator.jar \
 <plugin>
     <groupId>cn.qaiu</groupId>
     <artifactId>core-generator-maven-plugin</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.2</version>
     <executions>
         <execution>
             <goals>

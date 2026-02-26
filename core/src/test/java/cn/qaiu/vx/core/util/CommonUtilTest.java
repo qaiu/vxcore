@@ -2,9 +2,13 @@ package cn.qaiu.vx.core.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cn.qaiu.vx.core.annotations.HandleSortFilter;
+import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -158,24 +162,113 @@ class CommonUtilTest {
     @Test
     @DisplayName("空集合排序测试")
     void testEmptySet() {
-      // 由于需要HandleSortFilter注解，这里只测试空集合
-      // 实际测试需要创建带有注解的测试类
-      assertDoesNotThrow(
-          () -> {
-            // 这里应该不会抛出异常
-          });
+      Set<Class<? extends Runnable>> emptySet = new HashSet<>();
+      Set<Runnable> result = CommonUtil.sortClassSet(emptySet);
+      assertTrue(result.isEmpty());
     }
 
     @Test
-    @DisplayName("排序功能基础测试")
-    void testSortFunction() {
-      // 由于需要HandleSortFilter注解和ReflectionUtil，
-      // 这里只测试方法不会抛出异常
-      assertDoesNotThrow(
-          () -> {
-            // 实际测试需要创建带有HandleSortFilter注解的测试类
-          });
+    @DisplayName("无注解类直接实例化不过滤")
+    void testNoAnnotationClass() {
+      Set<Class<? extends Runnable>> set = new HashSet<>();
+      set.add(NoAnnotationRunnable.class);
+      Set<Runnable> result = CommonUtil.sortClassSet(set);
+      assertFalse(result.isEmpty());
+      assertEquals(1, result.size());
     }
+
+    @Test
+    @DisplayName("负值注解类被过滤掉")
+    void testNegativeAnnotationFiltered() {
+      Set<Class<? extends Runnable>> set = new HashSet<>();
+      set.add(NegativeFilterRunnable.class);
+      Set<Runnable> result = CommonUtil.sortClassSet(set);
+      assertTrue(result.isEmpty(), "负值注解的类应该被过滤掉");
+    }
+
+    @Test
+    @DisplayName("有正值注解的类被保留")
+    void testPositiveAnnotationKept() {
+      Set<Class<? extends Runnable>> set = new HashSet<>();
+      set.add(PositiveFilterRunnable.class);
+      Set<Runnable> result = CommonUtil.sortClassSet(set);
+      assertEquals(1, result.size());
+    }
+
+    @Test
+    @DisplayName("混合注解类过滤和保留")
+    void testMixedAnnotations() {
+      Set<Class<? extends Runnable>> set = new HashSet<>();
+      set.add(PositiveFilterRunnable.class);
+      set.add(NegativeFilterRunnable.class);
+      set.add(NoAnnotationRunnable.class);
+      Set<Runnable> result = CommonUtil.sortClassSet(set);
+      assertEquals(2, result.size(), "应该保留2个类：正值注解和无注解");
+    }
+  }
+
+  @Nested
+  @DisplayName("getSubJsonForEntity测试")
+  class GetSubJsonForEntityTest {
+
+    @Test
+    @DisplayName("提取实体类字段对应的JSON子集")
+    void testExtractMatchingFields() {
+      JsonObject json = new JsonObject()
+          .put("name", "Alice")
+          .put("age", 30)
+          .put("extra", "ignored")
+          .put("unknown", "nope");
+
+      JsonObject result = CommonUtil.getSubJsonForEntity(json, SimpleEntity.class);
+
+      assertTrue(result.containsKey("name"), "应包含name字段");
+      assertTrue(result.containsKey("age"), "应包含age字段");
+      assertFalse(result.containsKey("extra"), "不应包含extra字段");
+      assertFalse(result.containsKey("unknown"), "不应包含unknown字段");
+      assertEquals("Alice", result.getString("name"));
+      assertEquals(30, result.getInteger("age"));
+    }
+
+    @Test
+    @DisplayName("JSON不包含实体字段时返回空JSON")
+    void testNoMatchingFields() {
+      JsonObject json = new JsonObject().put("unrelated", "value");
+      JsonObject result = CommonUtil.getSubJsonForEntity(json, SimpleEntity.class);
+      assertTrue(result.isEmpty(), "应返回空JSON");
+    }
+
+    @Test
+    @DisplayName("空JSON返回空JSON")
+    void testEmptyJson() {
+      JsonObject json = new JsonObject();
+      JsonObject result = CommonUtil.getSubJsonForEntity(json, SimpleEntity.class);
+      assertTrue(result.isEmpty());
+    }
+  }
+
+  // ===== 测试用辅助类 =====
+
+  public static class NoAnnotationRunnable implements Runnable {
+    @Override
+    public void run() {}
+  }
+
+  @HandleSortFilter(-1)
+  public static class NegativeFilterRunnable implements Runnable {
+    @Override
+    public void run() {}
+  }
+
+  @HandleSortFilter(5)
+  public static class PositiveFilterRunnable implements Runnable {
+    @Override
+    public void run() {}
+  }
+
+  public static class SimpleEntity {
+    private String name;
+    private int age;
   }
 
   @Nested

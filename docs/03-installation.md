@@ -212,8 +212,8 @@ mvn archetype:generate \
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vxcore.version>1.2.0</vxcore.version>
-        <vertx.version>4.5.21</vertx.version>
+        <vxcore.version>1.2.2</vxcore.version>
+        <vertx.version>4.5.22</vertx.version>
     </properties>
     
     <dependencies>
@@ -271,28 +271,28 @@ mvn archetype:generate \
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.2.224</version>
+            <version>2.3.232</version>
         </dependency>
         
         <!-- MySQL Driver (生产环境) -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>9.2.0</version>
         </dependency>
         
         <!-- PostgreSQL Driver (生产环境) -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.1</version>
+            <version>42.7.10</version>
         </dependency>
         
         <!-- 测试依赖 -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>5.10.1</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
         

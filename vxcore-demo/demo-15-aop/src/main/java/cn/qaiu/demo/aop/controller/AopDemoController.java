@@ -42,5 +42,17 @@ public class AopDemoController {
         } catch (ArithmeticException e) {
             return Future.succeededFuture(JsonResult.error(e.getMessage(), 400));
         }
+
+
     }
+
+    @RouteMapping(value = "/except", method = RouteMethod.GET)
+    public Future<JsonResult<JsonObject>>  except(Integer a, Integer b) {
+        JsonObject data = new JsonObject()
+            .put("operation", "divide")
+            .put("a", a).put("b", b)
+            .put("result", a/b);
+        return Future.succeededFuture(JsonResult.data(data));
+    }
+
 }

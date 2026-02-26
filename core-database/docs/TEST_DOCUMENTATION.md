@@ -66,7 +66,7 @@ core-database/src/test/
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>5.9.2</version>
+    <version>5.11.4</version>
     <scope>test</scope>
 </dependency>
 
@@ -74,7 +74,7 @@ core-database/src/test/
 <dependency>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-junit5</artifactId>
-    <version>4.4.0</version>
+    <version>${vertx.version}</version>
     <scope>test</scope>
 </dependency>
 
@@ -82,7 +82,7 @@ core-database/src/test/
 <dependency>
     <groupId>org.mockito</groupId>
     <artifactId>mockito-core</artifactId>
-    <version>4.11.0</version>
+    <version>5.15.2</version>
     <scope>test</scope>
 </dependency>
 
@@ -90,7 +90,7 @@ core-database/src/test/
 <dependency>
     <groupId>org.assertj</groupId>
     <artifactId>assertj-core</artifactId>
-    <version>3.24.2</version>
+    <version>3.27.7</version>
     <scope>test</scope>
 </dependency>
 ```

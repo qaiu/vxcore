@@ -13,7 +13,7 @@
 <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>5.10.1</version>
+    <version>5.11.4</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -68,7 +68,7 @@
 <dependency>
     <groupId>org.assertj</groupId>
     <artifactId>assertj-core</artifactId>
-    <version>3.25.1</version>
+    <version>3.27.7</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -120,7 +120,7 @@
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.10.1</version>
+                <version>5.11.4</version>
             </dependency>
         </dependencies>
     </configuration>
@@ -176,9 +176,9 @@ core-database/src/test/
 |------|------|--------|
 | Java | 17+ | ✅ |
 | JUnit 5 | 5.10.1 | ✅ |
-| Vert.x | 4.5.21 | ✅ |
-| Mockito | 5.8.0 | ✅ |
-| AssertJ | 3.25.1 | ✅ |
+| Vert.x | 4.5.22 | ✅ |
+| Mockito | 5.15.2 | ✅ |
+| AssertJ | 3.27.7 | ✅ |
 | H2 | 2.2.220 | ✅ |
 | Maven Surefire | 3.2.5 | ✅ |
 

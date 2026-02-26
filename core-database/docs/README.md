@@ -81,7 +81,7 @@ core-database/src/main/java/cn/qaiu/db/
 <dependency>
     <groupId>cn.qaiu</groupId>
     <artifactId>vxcore-database</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.2</version>
 </dependency>
 ```
 
@@ -800,13 +800,30 @@ public class DatabaseConfig {
 ## 🚨 版本要求
 
 - **Java**: 17+ (使用现代 Java 特性)
-- **jOOQ**: 3.19.2+ (修复了多子查询的BUG)
-- **Vert.x**: 4.5.2+ (最新稳定版)
+- **jOOQ**: 3.19.11+ (修复了多子查询的BUG)
+- **Vert.x**: 4.5.22 (最新稳定版)
 - **Maven**: 3.9.0+ (支持最新的插件和依赖解析)
 
 ## 📝 更新记录
 
-### v1.1.0 - 无参构造函数DAO + Lambda查询增强 (当前版本)
+### v1.2.2 - 依赖安全升级 + 版本统一 (当前版本)
+
+#### ✅ 主要变化
+
+1. **依赖安全升级**
+   - 升级 H2 至 2.3.232 修复 CVE-2022-45868
+   - 升级 HikariCP 至 6.2.1、SLF4J 至 2.0.16、Byte Buddy 至 1.15.11
+   - 升级 JUnit Jupiter 至 5.11.4、Mockito 至 5.15.2
+
+2. **版本统一管理**
+   - 消除子模块硬编码版本，统一由父 POM 管理
+   - 文档中所有版本引用统一为 1.2.2
+
+3. **代码质量提升**
+   - JaCoCo 测试覆盖率报告恢复
+   - 移除已废弃的 mockito-inline 依赖
+
+### v1.1.0 - 无参构造函数DAO + Lambda查询增强
 
 #### ✅ 主要变化
 

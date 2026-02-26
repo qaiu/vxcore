@@ -5,6 +5,7 @@ import static cn.qaiu.vx.core.verticle.ReverseProxyVerticle.REROUTE_PATH_PREFIX;
 import static io.vertx.core.http.HttpHeaders.*;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+import cn.qaiu.vx.core.aop.AopUtils;
 import cn.qaiu.vx.core.annotations.RouteHandler;
 import cn.qaiu.vx.core.annotations.RouteMapping;
 import cn.qaiu.vx.core.annotations.SockRouteMapper;
@@ -239,6 +240,8 @@ public class RouterHandlerFactory implements BaseHttpApi {
   private void registerHandler(Router router, Class<?> handler) throws Throwable {
     String root = getRootPath(handler);
     Object instance = createControllerInstance(handler);
+    // 使用 AOP 代理包装，使针对 Controller 的切面（如 @Before 等）能生效；若无匹配切面则返回原实例
+    instance = AopUtils.proxy(instance);
     Method[] methods = handler.getMethods();
 
     // 获取路由方法

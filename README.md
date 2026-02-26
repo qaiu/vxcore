@@ -18,7 +18,7 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 
 ## 🔄 最新更新
 
-### v1.2.1 (2026-02)
+### v1.2.2 (2026-02)
 - ✅ **依赖漏洞修复**: 升级 Jackson 2.18.3、Logback 1.5.17、Vert.x 4.5.22、PostgreSQL 42.7.10
 - ✅ **版本统一管理**: 消除子模块硬编码版本，统一由父 POM 管理
 - ✅ **AOP 代理修复**: 修复 ServiceRegistry 中服务实例未应用 AOP 代理的问题
@@ -123,7 +123,7 @@ VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
 
 ```xml
 <properties>
-    <vxcore.version>1.2.1</vxcore.version>
+    <vxcore.version>1.2.2</vxcore.version>
 </properties>
 
 <dependencies>
@@ -406,7 +406,7 @@ mvn test jacoco:report
 
 ## 📈 版本历史
 
-### v1.2.1 (当前版本)
+### v1.2.2 (当前版本)
 - ✅ **依赖漏洞修复**: 升级 Jackson 2.18.3、Logback 1.5.17、Vert.x 4.5.22、PostgreSQL 42.7.10
 - ✅ **版本统一管理**: 消除子模块硬编码版本，统一由父 POM 管理
 - ✅ **AOP 代理修复**: 修复 ServiceRegistry 中服务实例未应用 AOP 代理的问题

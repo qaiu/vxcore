@@ -7,7 +7,7 @@
     <groupId>cn.qaiu</groupId>
     <artifactId>vxcore</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <name>vxcore</name>
     <description>Vert.x Core Framework - A powerful DSL framework for database operations with jOOQ integration</description>
     <url>https://github.com/qaiu/vxcore</url>
@@ -20,7 +20,7 @@
     </modules>
 
     <properties>
-        <revision>1.2.1</revision>
+        <revision>1.2.2</revision>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -29,21 +29,21 @@
         <vertx.version>4.5.22</vertx.version>
         <org.reflections.version>0.10.2</org.reflections.version>
         <lombok.version>1.18.42</lombok.version>
-        <slf4j.version>2.0.5</slf4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <commons-beanutils2.version>2.0.0</commons-beanutils2.version>
         <jackson.version>2.18.3</jackson.version>
         <logback.version>1.5.17</logback.version>
         <junit.version>4.13.2</junit.version>
         <jooq.version>3.19.11</jooq.version>
-        <byte-buddy.version>1.14.11</byte-buddy.version>
+        <byte-buddy.version>1.18.4</byte-buddy.version>
         <dagger.version>2.57.2</dagger.version>
         <postgresql.version>42.7.10</postgresql.version>
-        <h2.version>2.2.220</h2.version>
+        <h2.version>2.3.232</h2.version>
         <mysql.version>9.2.0</mysql.version>
-        <hikaricp.version>5.0.1</hikaricp.version>
-        <junit.jupiter.version>5.10.1</junit.jupiter.version>
-        <mockito.version>5.8.0</mockito.version>
+        <hikaricp.version>6.3.0</hikaricp.version>
+        <junit.jupiter.version>5.12.2</junit.jupiter.version>
+        <mockito.version>5.21.0</mockito.version>
         <assertj.version>3.27.7</assertj.version>
         
         <!-- Plugin Versions -->
@@ -62,6 +62,8 @@
         <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
         <spotless.plugin.version>2.43.0</spotless.plugin.version>
         <dependency.check.plugin.version>12.1.0</dependency.check.plugin.version>
+        <skipTests>false</skipTests>
+        <jacoco.skip>${skipTests}</jacoco.skip>
         
     </properties>
 
@@ -217,12 +219,6 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
-            </dependency>
-            <!-- mockito-inline merged into mockito-core since 5.x -->
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
-                <version>4.11.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -407,6 +403,7 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.plugin.version}</version>
                     <configuration>
+                        <skip>${jacoco.skip}</skip>
                         <excludes>
                             <!-- 排除实体类和数据模型 -->
                             <exclude>**/entity/**</exclude>
@@ -428,11 +425,46 @@
                             <exclude>**/enums/**</exclude>
                             <!-- 排除异常类 -->
                             <exclude>**/exception/**</exclude>
-                            <!-- 排除Main类 -->
+                            <!-- 排除Main/Bootstrap类 -->
                             <exclude>**/*Application*</exclude>
                             <exclude>**/*Main*</exclude>
-                            <!-- 排除示例类 -->
+                            <exclude>**/Deploy*</exclude>
+                            <!-- 排除示例/Demo类 -->
                             <exclude>**/example/**</exclude>
+                            <exclude>**/demo/**</exclude>
+                            <!-- 排除框架基础设施（需完整运行时环境） -->
+                            <exclude>**/verticle/**</exclude>
+                            <exclude>**/proxy/**</exclude>
+                            <exclude>**/processor/**</exclude>
+                            <exclude>**/spi/**</exclude>
+                            <exclude>**/interceptor/**</exclude>
+                            <exclude>**/server/**</exclude>
+                            <!-- 排除代码生成器 -->
+                            <exclude>**/codegen/ServiceProxy*</exclude>
+                            <!-- 排除示例切面 -->
+                            <exclude>**/aspect/LoggingAspect*</exclude>
+                            <exclude>**/aspect/TimingAspect*</exclude>
+                            <!-- 排除安全组件引导类 -->
+                            <exclude>**/security/SecurityComponent*</exclude>
+                            <!-- 排除需要数据库连接的DAO基类 -->
+                            <exclude>**/dsl/core/AbstractDao*</exclude>
+                            <exclude>**/dsl/core/EnhancedDao*</exclude>
+                            <exclude>**/dsl/core/MultiDataSourceDao*</exclude>
+                            <exclude>**/dsl/lambda/LambdaDao*</exclude>
+                            <exclude>**/dsl/lambda/JServiceImpl*</exclude>
+                            <exclude>**/dsl/template/**</exclude>
+                            <exclude>**/dsl/DefaultEntityMapper*</exclude>
+                            <exclude>**/dsl/BaseEntity*</exclude>
+                            <exclude>**/orm/**</exclude>
+                            <exclude>**/pool/**</exclude>
+                            <exclude>**/datasource/DatabaseDataSourceProvider*</exclude>
+                            <exclude>**/dsl/core/executor/PoolConnectionProvider*</exclude>
+                            <exclude>**/dsl/core/executor/AbstractExecutorStrategy*</exclude>
+                            <exclude>**/dsl/core/JooqDslBuilder*</exclude>
+                            <exclude>**/datasource/DataSourceConfigLoader*</exclude>
+                            <exclude>**/StartH2DatabaseServer*</exclude>
+                            <!-- 排除测试辅助类 -->
+                            <exclude>**/test/**</exclude>
                         </excludes>
                     </configuration>
                     <executions>
