@@ -1,6 +1,8 @@
-# VXCore 文档中心
+# VXCore（微克）文档中心
 
-欢迎来到 VXCore 项目文档中心！这里包含了项目的完整技术文档、使用指南和最佳实践。
+[English](en/README.md) | 中文
+
+欢迎来到 VXCore（微克）项目文档中心！轻量、专注 JSON API、核心 30MB 以内。这里包含完整技术文档、使用指南与最佳实践。
 
 ## 🎯 快速导航
 
@@ -42,7 +44,7 @@ VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
 <dependency>
     <groupId>cn.qaiu</groupId>
     <artifactId>core</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.3</version>
 </dependency>
 ```
 

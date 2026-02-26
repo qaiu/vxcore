@@ -212,7 +212,7 @@ mvn archetype:generate \
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <vxcore.version>1.2.2</vxcore.version>
+        <vxcore.version>1.2.3</vxcore.version>
         <vertx.version>4.5.25</vertx.version>
     </properties>
     

@@ -120,7 +120,7 @@ public class UserController {
 <dependency>
     <groupId>cn.qaiu</groupId>
     <artifactId>vxcore-core</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
 </dependency>
 ```
 

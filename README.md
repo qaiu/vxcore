@@ -1,10 +1,12 @@
-# VXCore
+# VXCore（微克）
 
-一个基于 Vert.x 的现代化 Java 框架，提供类似 Spring Boot 的开发体验，集成了代码生成器、jOOQ DSL、WebSocket、反向代理等企业级功能。
+[English](README.en.md) | [中文文档](docs/README.md)
+
+一个基于 Vert.x 的**轻量级** Java 框架，专注 **JSON API 服务**，核心打包 **30MB 以内**；提供类似 Spring Boot 的开发体验，集成了代码生成器、jOOQ DSL、WebSocket、反向代理等企业级功能。对标 Quarkus：云原生、高性能、开发友好。
 
 ## 项目简介
 
-VXCore 是一个高性能、响应式的 Java 框架，专为构建现代化 Web 应用程序而设计。它结合了 Vert.x 的异步编程模型、jOOQ 的类型安全数据库操作、以及丰富的注解支持，提供了简洁而强大的开发体验。
+**VXCore（微克）** 主打轻量：只做 JSON API 服务，核心体积控制在 30MB 以内，不铺功能面。它是高性能、响应式的 Java 框架，专为构建现代化 Web API 而设计，结合 Vert.x 的异步编程模型、jOOQ 的类型安全数据库操作与丰富注解，提供简洁而强大的开发体验。
 
 ### 🎨 设计思想：简单而不失优雅
 
@@ -17,6 +19,9 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 这一设计思想使 VXCore 既适合新手快速上手，也能满足专家级用户的复杂需求。
 
 ## 🔄 最新更新
+
+### v1.2.3 (2026-02)
+- ✅ **版本号升级**: 1.2.2 → 1.2.3
 
 ### v1.2.2 (2026-02)
 - ✅ **依赖漏洞修复**: 升级 Vert.x 4.5.25（内置 Netty 4.1.130.Final，修复 CVE-2025-67735 CRLF 注入漏洞）、Jackson 2.18.3、Logback 1.5.17、PostgreSQL 42.7.10
@@ -170,7 +175,7 @@ VXCore 已发布到 Maven 中央仓库，可直接在项目中引入：
 
 ```xml
 <properties>
-    <vxcore.version>1.2.2</vxcore.version>
+    <vxcore.version>1.2.3</vxcore.version>
 </properties>
 
 <dependencies>
@@ -453,7 +458,7 @@ mvn test jacoco:report
 
 ## 📈 版本历史
 
-### v1.2.2 (当前版本)
+### v1.2.3 (当前版本)
 - ✅ **依赖漏洞修复**: 升级 Vert.x 4.5.25（内置 Netty 4.1.130.Final，修复 CVE-2025-67735 CRLF 注入漏洞）、Jackson 2.18.3、Logback 1.5.17、PostgreSQL 42.7.10
 - ✅ **版本统一管理**: 消除子模块硬编码版本，统一由父 POM 管理
 - ✅ **AOP 代理修复**: 修复 ServiceRegistry 中服务实例未应用 AOP 代理的问题

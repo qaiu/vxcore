@@ -81,7 +81,7 @@ core-database/src/main/java/cn/qaiu/db/
 <dependency>
     <groupId>cn.qaiu</groupId>
     <artifactId>vxcore-database</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
 </dependency>
 ```
 
@@ -806,7 +806,7 @@ public class DatabaseConfig {
 
 ## 📝 更新记录
 
-### v1.2.2 - 依赖安全升级 + 版本统一 (当前版本)
+### v1.2.3 (当前版本)
 
 #### ✅ 主要变化
 
@@ -817,7 +817,7 @@ public class DatabaseConfig {
 
 2. **版本统一管理**
    - 消除子模块硬编码版本，统一由父 POM 管理
-   - 文档中所有版本引用统一为 1.2.2
+   - 文档中所有版本引用统一为 1.2.3
 
 3. **代码质量提升**
    - JaCoCo 测试覆盖率报告恢复

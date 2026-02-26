@@ -1,11 +1,14 @@
-# VXCore 项目概述
+# VXCore（微克）项目概述
+
+[English](en/01-overview.md) | [中文](README.md)
 
 ## 🎯 项目简介
 
-VXCore 是一个基于 **Vert.x** 和 **jOOQ** 的现代化 Java Web 框架，提供类似 Spring Boot 的开发体验，集成了代码生成器、Lambda 查询、多数据源、WebSocket、反向代理等企业级功能。
+**VXCore（微克）** 主打轻量：只做 **JSON API 服务**，核心打包 **30MB 以内**，不铺功能面。基于 **Vert.x** 和 **jOOQ** 的现代化 Java Web 框架，提供类似 Spring Boot 的开发体验，集成了代码生成器、Lambda 查询、多数据源、WebSocket、反向代理等企业级功能。对标 Quarkus：轻量、云原生、高性能、开发体验优先。
 
 ### 🌟 核心价值
 
+- **🪶 轻量**: 核心体积 30MB 以内，专注 JSON API，无冗余
 - **🚀 高性能**: 基于 Vert.x 异步非阻塞 I/O，支持数万并发连接
 - **🔒 类型安全**: 基于 jOOQ DSL 编译时检查，完全防止 SQL 注入
 - **🌐 Web 开发**: 注解式路由、WebSocket、反向代理支持
@@ -414,7 +417,7 @@ public class UserController {
 
 ## 📈 版本规划
 
-### 当前版本 (v1.2.2)
+### 当前版本 (v1.2.3)
 - ✅ Lambda 查询增强
 - ✅ 多数据源支持
 - ✅ 批量操作优化

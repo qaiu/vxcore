@@ -6,7 +6,7 @@
 
     <groupId>cn.qaiu.demo</groupId>
     <artifactId>vxcore-demo</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
     <packaging>pom</packaging>
     <name>vxcore-demo</name>
     <description>VXCore documentation verification demos - independent project</description>
@@ -28,7 +28,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <vxcore.version>1.2.2</vxcore.version>
+        <vxcore.version>1.2.3</vxcore.version>
         <vertx.version>4.5.25</vertx.version>
         <slf4j.version>2.0.5</slf4j.version>
         <logback.version>1.5.17</logback.version>
