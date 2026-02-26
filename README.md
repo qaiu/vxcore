@@ -39,10 +39,57 @@ VXCore 的设计哲学是"**简单而不失优雅**"：
 ## 🎯 核心特性
 
 ### 🚀 高性能异步架构
-- **Vert.x 4.5+**: 基于事件驱动的异步非阻塞 I/O
-- **响应式编程**: 支持 Future、Promise、Observable
-- **高并发处理**: 单线程处理大量并发连接
-- **内存优化**: 零拷贝、对象池、连接池
+
+VXCore 构建在 **Vert.x** 的事件驱动、非阻塞 I/O 模型之上，从根本上区别于传统框架的线程-请求模型。
+
+#### 事件循环（Event Loop）模型
+
+```
+传统框架（线程-请求模型）              VXCore / Vert.x（事件循环模型）
+─────────────────────────────          ──────────────────────────────────────
+请求1 ──► 线程1（等待 DB）  阻塞        请求1 ──┐
+请求2 ──► 线程2（等待 DB）  阻塞        请求2 ──┤
+请求3 ──► 线程3（等待 I/O） 阻塞        请求3 ──┤──► Event Loop ──► 注册回调，立即返回
+请求N ──► 线程N（OOM 风险） 阻塞        请求N ──┘      │
+                                                      │ DB 响应 ──► 执行回调
+每连接 ~1MB 线程栈内存                                │ I/O 完成 ──► 执行回调
+并发上限受线程池大小限制                  单线程处理数万并发，内存占用极低
+```
+
+#### 核心优势
+
+| 特性 | 传统框架（Spring MVC） | VXCore（Vert.x） |
+|------|----------------------|-----------------|
+| 并发模型 | 线程池（每请求一线程） | 事件循环（非阻塞） |
+| 每连接内存 | ~1 MB（线程栈） | 几 KB |
+| 万并发内存 | ~10 GB | ~数百 MB |
+| I/O 等待 | 线程阻塞，资源浪费 | 异步回调，零阻塞 |
+| 吞吐量（QPS） | 受线程数上限制约 | 硬件 I/O 上限 |
+| 延迟 | 线程调度开销 | 微秒级事件分发 |
+
+#### Future 组合式异步编程
+
+```java
+// 多个异步操作串联/并行，全程非阻塞
+public Future<OrderResult> placeOrder(OrderRequest req) {
+    return userDao.findById(req.getUserId())           // 1. 异步查询用户
+        .compose(user -> inventoryService.lock(req))   // 2. 异步锁库存
+        .compose(locked -> paymentService.charge(req)) // 3. 异步扣款
+        .compose(paid -> orderDao.create(req, paid))   // 4. 异步创建订单
+        .onSuccess(order -> eventBus.publish("order.created", order))
+        .recover(e -> {
+            inventoryService.unlock(req);              // 失败时自动回滚
+            return Future.failedFuture(e);
+        });
+    // 以上所有操作均不阻塞任何线程
+}
+```
+
+- **Vert.x 4.5+**: 基于事件驱动的异步非阻塞 I/O，内置 Netty 高性能网络层
+- **Verticle 架构**: 轻量级并发单元，每个 Verticle 在独立事件循环上运行
+- **Future/Promise**: 可组合的异步编程模型，支持链式调用、并行聚合、错误恢复
+- **高并发处理**: 单 JVM 实例可处理 50,000+ QPS，支持数万并发 WebSocket 连接
+- **内存优化**: 零拷贝 I/O、对象池、数据库连接池，内存利用率远优于传统框架
 
 ### 🔒 类型安全数据库操作
 - **jOOQ DSL**: 编译时类型检查，完全防止 SQL 注入
