@@ -107,7 +107,7 @@ jobs:
         cache: maven
     
     - name: 运行 OWASP 依赖检查
-      run: mvn org.owasp:dependency-check-maven:check -B -DfailOnError=false || echo "::warning::发现依赖安全问题，请查看报告"
+      run: mvn org.owasp:dependency-check-maven:check -B -DfailOnError=false -DnvdApiKey=${{ secrets.NVD_API_KEY }} || echo "::warning::发现依赖安全问题，请查看报告"
     
     - name: 上传依赖检查报告
       if: always()
