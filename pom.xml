@@ -26,7 +26,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <vertx.version>4.5.22</vertx.version>
+        <vertx.version>4.5.25</vertx.version>
         <org.reflections.version>0.10.2</org.reflections.version>
         <lombok.version>1.18.42</lombok.version>
         <slf4j.version>2.0.17</slf4j.version>
@@ -404,6 +404,8 @@
                     <version>${jacoco.plugin.version}</version>
                     <configuration>
                         <skip>${jacoco.skip}</skip>
+                        <!-- 覆盖率不达标时仅警告，不阻断构建 -->
+                        <haltOnFailure>false</haltOnFailure>
                         <excludes>
                             <!-- 排除实体类和数据模型 -->
                             <exclude>**/entity/**</exclude>

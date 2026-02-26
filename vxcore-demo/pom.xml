@@ -29,7 +29,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <vxcore.version>1.2.2</vxcore.version>
-        <vertx.version>4.5.22</vertx.version>
+        <vertx.version>4.5.25</vertx.version>
         <slf4j.version>2.0.5</slf4j.version>
         <logback.version>1.5.17</logback.version>
         <dagger.version>2.57.2</dagger.version>
