@@ -48,6 +48,12 @@ public interface ConfigConstant {
   /** 基础位置配置键 */
   String BASE_LOCATIONS = "baseLocations";
 
-  /** 路由超时配置键 */
+  /** 路由超时配置键（毫秒），未配置时使用默认值 */
   String ROUTE_TIME_OUT = "routeTimeOut";
+
+  /** 是否启用跨域响应头（默认 true） */
+  String CORS_ENABLED = "corsEnabled";
+
+  /** 是否在响应中添加 x-response-time 头（默认 true） */
+  String X_RESPONSE_TIME_ENABLED = "xResponseTimeEnabled";
 }

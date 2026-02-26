@@ -1,6 +1,8 @@
 package cn.qaiu.vx.core.handlerfactory;
 
+import static cn.qaiu.vx.core.util.ConfigConstant.CORS_ENABLED;
 import static cn.qaiu.vx.core.util.ConfigConstant.ROUTE_TIME_OUT;
+import static cn.qaiu.vx.core.util.ConfigConstant.X_RESPONSE_TIME_ENABLED;
 import static cn.qaiu.vx.core.verticle.ReverseProxyVerticle.REROUTE_PATH_PREFIX;
 import static io.vertx.core.http.HttpHeaders.*;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
@@ -136,14 +138,16 @@ public class RouterHandlerFactory implements BaseHttpApi {
     // 请求重写处理
     router.route().handler(this::handleRequestRewrite);
 
-    // CORS处理
-    router
-        .route()
-        .handler(
-            CorsHandler.create()
-                .addOriginWithRegex(".*")
-                .allowCredentials(true)
-                .allowedMethods(httpMethods));
+    // CORS 处理（仅当配置启用时）
+    if (isCorsEnabled()) {
+      router
+          .route()
+          .handler(
+              CorsHandler.create()
+                  .addOriginWithRegex(".*")
+                  .allowCredentials(true)
+                  .allowedMethods(httpMethods));
+    }
 
     // 文件上传处理
     router.route().handler(BodyHandler.create().setUploadsDirectory("uploads"));
@@ -167,12 +171,25 @@ public class RouterHandlerFactory implements BaseHttpApi {
         ctx.request().absoluteURI(),
         ctx.request().method());
 
-    // 设置CORS头
-    setCorsHeaders(ctx);
+    if (isCorsEnabled()) {
+      setCorsHeaders(ctx);
+    }
     ctx.next();
   }
 
-  /** 设置CORS头 */
+  /** 是否启用跨域（默认 true） */
+  private boolean isCorsEnabled() {
+    JsonObject config = SharedDataUtil.getCustomConfig();
+    return config == null || config.getBoolean(CORS_ENABLED, true);
+  }
+
+  /** 是否启用 x-response-time 响应头（默认 true） */
+  private boolean isXResponseTimeEnabled() {
+    JsonObject config = SharedDataUtil.getCustomConfig();
+    return config == null || config.getBoolean(X_RESPONSE_TIME_ENABLED, true);
+  }
+
+  /** 设置 CORS 相关响应头 */
   private void setCorsHeaders(RoutingContext ctx) {
     ctx.response().headers().add(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
     ctx.response().headers().add(DATE, LocalDateTime.now().format(ISO_LOCAL_DATE_TIME));
@@ -578,10 +595,16 @@ public class RouterHandlerFactory implements BaseHttpApi {
       route.consumes(mineType);
     }
 
-    // 设置默认超时和响应时间
-    route.handler(
-        TimeoutHandler.create(SharedDataUtil.getCustomConfig().getInteger(ROUTE_TIME_OUT)));
-    route.handler(ResponseTimeHandler.create());
+    // 默认超时时间（毫秒），未配置时 30000
+    int timeoutMs = 30000;
+    JsonObject customConfig = SharedDataUtil.getCustomConfig();
+    if (customConfig != null && customConfig.containsKey(ROUTE_TIME_OUT)) {
+      timeoutMs = customConfig.getInteger(ROUTE_TIME_OUT, timeoutMs);
+    }
+    route.handler(TimeoutHandler.create(timeoutMs));
+    if (isXResponseTimeEnabled()) {
+      route.handler(ResponseTimeHandler.create());
+    }
   }
 
   /** 注册WebSocket路由 */

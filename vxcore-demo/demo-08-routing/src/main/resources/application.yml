@@ -1,3 +1,8 @@
 server:
   http:
     port: 18084
+
+# 框架可选配置（压测场景关闭跨域与 x-response-time）
+custom:
+  corsEnabled: false
+  xResponseTimeEnabled: false
