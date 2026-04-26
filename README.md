@@ -2,7 +2,7 @@
 
 [English](README.en.md) | [中文文档](docs/README.md)
 
-一个基于 Vert.x 的**轻量级** Java 框架，专注 **JSON API 服务**，核心打包 **30MB 以内**；提供类似 Spring Boot 的开发体验，集成了代码生成器、jOOQ DSL、WebSocket、反向代理等企业级功能。对标 Quarkus：云原生、高性能、开发友好。
+一个基于 Vert.x 的**轻量级** Java 框架，专注 **JSON API 服务**，核心打包 **30MB 以内**；提供类似 Spring Boot 的开发体验，集成了代码生成器、jOOQ DSL、WebSocket、反向代理等企业级功能。相比于Quarkus可以带来更高性能、更友好的开发体验。
 
 ## 项目简介
 
